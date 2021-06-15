@@ -4,50 +4,77 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const amqp = require('amqplib');
-
-const logAndExit = (msg) => {
-  console.error(msg);
-  process.exit();
-};
+const { worker } = require('cluster');
 
 const dir = '../data';
-const uri =
-  'https://opendata.dwd.de/weather/weather_reports/synoptic/germany/geojson/Z__C_EDZW_20210527073600_bda01%2Csynop_bufr_GER_999999_999999__MW_885.geojson.gz';
 
 const downloadNewDataFromURL = (uri) => {
   const url = new URL(uri);
   const basename = path.basename(url.pathname);
   const file = fs.createWriteStream(path.join(dir, encodeURI(basename)));
 
+  console.log('Downloading ' + url.href + ' …');
+
   const request = https.get(url.href, function (response) {
     response.pipe(file);
   });
+
+  return path.join(dir, encodeURI(basename));
+};
+
+const logAndExit = (msg) => {
+  console.error(msg);
+  process.exit();
 };
 
 (async function main() {
-  var connection = await amqp
+  const connection = await amqp
     .connect('amqp://localhost', 'heartbeat=60')
     .catch(logAndExit);
-  var channel = await connection.createChannel().catch(logAndExit);
-  var queue = 'downloadNewDataFromURL_queue';
+  const channel = await connection.createChannel().catch(logAndExit);
+  const downloadQueue = 'download';
+  const resultQueue = 'results';
 
-  channel.assertQueue(queue, {
+  channel.assertQueue(downloadQueue, {
     durable: true
   });
 
+  console.log(
+    ' [*] Downloader waiting for messages in %s. To exit press CTRL+C',
+    downloadQueue
+  );
   channel.consume(
-    queue,
+    downloadQueue,
     function (msg) {
-      msgString = msg.content.toString();
-      downloadNewDataFromURL(uri); // TODO: may be provided as argument by queue
-      console.log(' [x] Downloaded new File: %s', msgString);
-      if (msgString === 'finished') {
-        return;
+      try {
+        const job = JSON.parse(msg.content.toString());
+        console.log(
+          ' [x] Downloader received a message in download queue: %s',
+          JSON.stringify(job.content.nextJob)
+        );
+        const workerJob = job.content.nextJob.job;
+        const uri = workerJob.datasetURI;
+
+        const pathName = downloadNewDataFromURL(uri);
+
+        workerJob.status = 'success';
+        workerJob.fileURI = pathName;
+
+        channel.sendToQueue(
+          resultQueue,
+          Buffer.from(JSON.stringify(job.content)),
+          {
+            persistent: true
+          }
+        );
+        channel.ack(msg);
+      } catch (e) {
+        console.log('catched: ', e);
+        channel.sendToQueue(resultQueue, Buffer.from(msg.content.toString()), {
+          persistent: true
+        });
+        channel.nack(msg);
       }
-      channel.sendToQueue(queue, Buffer.from('finished'), {
-        persistent: true
-      });
-      channel.ack(msg);
     },
     {
       noAck: false
