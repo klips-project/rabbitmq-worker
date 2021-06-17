@@ -69,7 +69,7 @@ const logAndExit = (msg) => {
         );
         channel.ack(msg);
       } catch (e) {
-        console.log('catched: ', e);
+        console.error('catched: ', e);
         channel.sendToQueue(resultQueue, Buffer.from(msg.content.toString()), {
           persistent: true
         });
