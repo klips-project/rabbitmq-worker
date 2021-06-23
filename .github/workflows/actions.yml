@@ -27,12 +27,25 @@ jobs:
       - name: Login to DockerHub 🔧
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: nexus.terrestris.de
+          username: ${{ secrets.NEXUS_USERNAME }}
+          password: ${{ secrets.NEXUS_TOKEN }}
+
+      - name: Copy package.json 🔧
+        uses: canastro/copy-file-action@master
+        with:
+          source: 'package.json'
+          target: 'src/downloadNewDataFromURL/package.json'
+
+      - name: Copy package-lock.json 🔧
+        uses: canastro/copy-file-action@master
+        with:
+          source: 'package-lock.json'
+          target: 'src/downloadNewDataFromURL/package-lock.json'
 
       - name: Build and push downloadNewDataFromURL 🚀
         uses: docker/build-push-action@v2
         with:
           context: ./src/downloadNewDataFromURL
           push: true
-          tags: mholthausen/download-new-data-from-url:latest
+          tags: nexus.terrestris.de/terrestris/mqm-worker/download-new-data-from-url:latest
