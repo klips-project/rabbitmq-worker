@@ -13,7 +13,26 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install and Test 🔧 # This example project is built using npm and outputs the result to the 'build' folder. Replace with the commands required to build your project, or remove this step entirely if your site is pre-built.
+      - name: Install and Build 🔧 # This example project is built using npm and outputs the result to the 'build' folder. Replace with the commands required to build your project, or remove this step entirely if your site is pre-built.
         uses: actions/setup-node@v2.1.5
       - run: npm ci
       - run: npm run test
+
+      - name: Set up QEMU 🔧
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx 🔧
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to DockerHub 🔧
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push downloadNewDataFromURL 🚀
+        uses: docker/build-push-action@v2
+        with:
+          context: ./src/downloadNewDataFromURL
+          push: true
+          tags: mholthausen/download-new-data-from-url:latest
