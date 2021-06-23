@@ -6,7 +6,7 @@ const https = require('https');
 const amqp = require('amqplib');
 const { worker } = require('cluster');
 
-const dir = '../data';
+const dir = '/home/data';
 
 const downloadNewDataFromURL = (uri) => {
   const url = new URL(uri);
@@ -29,7 +29,7 @@ const logAndExit = (msg) => {
 
 (async function main() {
   const connection = await amqp
-    .connect('amqp://localhost', 'heartbeat=60')
+    .connect('amqp://rabbitmq', 'heartbeat=60')
     .catch(logAndExit);
   const channel = await connection.createChannel().catch(logAndExit);
   const downloadQueue = 'download';

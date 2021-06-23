@@ -38,7 +38,7 @@ const gunzipDownloadedFile = (file) => {
 
 (async function main() {
   const connection = await amqp
-    .connect('amqp://localhost', 'heartbeat=60')
+    .connect('amqp://rabbitmq', 'heartbeat=60')
     .catch(logAndExit);
   const channel = await connection.createChannel().catch(logAndExit);
   const extractQueue = 'extract';
