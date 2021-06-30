@@ -32,7 +32,8 @@ jobs:
       - name: Build and push downloadNewDataFromURL 🚀
         uses: docker/build-push-action@v2
         with:
-          context: ./src/downloadNewDataFromURL
+          context: .
+          file: ./src/downloadNewDataFromURL/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/mqm-worker/download-new-data-from-url:latest
 
@@ -40,6 +41,7 @@ jobs:
       - name: Build and push gunzipFile 🚀
         uses: docker/build-push-action@v2
         with:
-          context: ./src/gunzipFile
+          context: .
+          file: ./src/gunzipFile/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/mqm-worker/gunzip-file:latest
