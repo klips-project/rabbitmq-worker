@@ -6,9 +6,12 @@
   "dependencies": {
     "amqplib": "^0.8.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^7.29.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint -c .eslintrc.yml src",
+    "test": "npm run lint"
   },
   "repository": {
     "type": "git",
