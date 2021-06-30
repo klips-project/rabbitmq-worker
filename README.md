@@ -56,6 +56,6 @@ An example Job used with these workers might look like
 ## Creatig a new worker
 Please make use of the templateWorker.js as seen in the exisiting workers.
 
-That way you only need to implement you custom handler function.
+That way you only need to implement your custom handler function.
 
 Make sure to put your responses into the "outputs" of the current worker job.
