@@ -3,9 +3,13 @@ name: Build and Publish
 on:
   push:
     branches:
-      - 'main'
+      - 'loop-images'
 jobs:
   build-and-deploy:
+    strategy:
+      matrix:
+        workers_paths: [downloadNewDataFromURL, gunzipFile]
+        workers_names: [download-new-data-from-url, gunzip-file]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
@@ -28,20 +32,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # downloadNewDataFromURL
-      - name: Build and push downloadNewDataFromURL 🚀
+      - name: Build and push ${{ matrix.workers_names }} 🚀
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./src/downloadNewDataFromURL/Dockerfile
+          file: ./src/${{ matrix.workers_paths }}/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/mqm-worker/download-new-data-from-url:latest
-
-      # gunzipFile
-      - name: Build and push gunzipFile 🚀
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./src/gunzipFile/Dockerfile
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/mqm-worker/gunzip-file:latest
+          tags: ghcr.io/${{ github.repository_owner }}/mqm-worker/${{ matrix.workers_names }}:latest
