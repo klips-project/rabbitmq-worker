@@ -13,10 +13,11 @@ const rabbitHost = 'amqp://rabbitmq';
 /**
  * Downloads data for the given URL.
  * Modifies the given job object in place with status and results.
- * @param {Object} workerJob The job object containing the URL to download 
+ * @param {Object} workerJob The job object
+ * @param {Array} inputs The inputs for this process
  */
-const downloadNewDataFromURL = async(workerJob) => {
-  const uri = workerJob.datasetURI;
+const downloadNewDataFromURL = async(workerJob, inputs) => {
+  const uri = inputs[0];
   const url = new URL(uri);
   const basename = path.basename(url.pathname);
   const pathName = path.join(dir, encodeURI(basename));
@@ -40,7 +41,7 @@ const downloadNewDataFromURL = async(workerJob) => {
   }).catch(worker.errorAndExit);
 
   workerJob.status = 'success';
-  workerJob.fileURI = pathName;
+  workerJob.outputs = [pathName];
 };
 
 // Initialize and start the worker process

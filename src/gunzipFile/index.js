@@ -11,10 +11,11 @@ const rabbitHost = 'amqp://rabbitmq';
 /**
  * Extracts a given `*.gz` file.
  * Modifies the given job object in place with status and results.
- * @param {Object} workerJob The job object containing the fileURI to extract 
+ * @param {Object} workerJob The job object
+ * @param {Array} inputs The inputs for this process
  */
-const gunzipDownloadedFile = async(workerJob) => {
-  const file = workerJob.fileURI;
+const gunzipDownloadedFile = async(workerJob, inputs) => {
+  const file = inputs[0];
   let chunks = [];
   let fileBuffer;
   let fileStream = fs.createReadStream(file);
@@ -46,7 +47,7 @@ const gunzipDownloadedFile = async(workerJob) => {
 
   fileName = encodeURI(fileName);
   workerJob.status = 'success';
-  workerJob.extractedFile = fileName;
+  workerJob.outputs = [fileName];
 };
 
 // Initialize and start the worker process

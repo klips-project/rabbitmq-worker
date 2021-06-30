@@ -45,9 +45,7 @@ function log(msg) {
  * @param {Function} callBack The callback function getting called when a job is received
  */
 async function initialize(rabbitHost, workerQueue, resultQueue, callBack) {
-  const connection = await amqp
-    .connect(rabbitHost, 'heartbeat=60')
-    .catch(errorAndExit);
+  const connection = await amqp.connect(rabbitHost, 'heartbeat=60').catch(errorAndExit);
   channel = await connection.createChannel().catch(errorAndExit);
   workerId = parseInt(new Date() * Math.random(), 10);
   resultsQueue = resultQueue;
@@ -66,8 +64,7 @@ async function initialize(rabbitHost, workerQueue, resultQueue, callBack) {
           JSON.stringify(job.content.nextJob)
         );
         let workerJob = job.content.nextJob.job;
-
-        await callBack(workerJob);
+        await callBack(workerJob, getInputs(job.content.job, workerJob));
 
         channel.sendToQueue(
           resultQueue,
@@ -86,6 +83,25 @@ async function initialize(rabbitHost, workerQueue, resultQueue, callBack) {
       noAck: false
     }
   );
+}
+
+/**
+ * Returns the inputs array, modified to contain outputs of other processes
+ *   if specified like shown in the `README.md`
+ * @param {Object} job The main job
+ * @param {Object} workerJob The current worker job
+ * @returns {Array} inputs The inputs
+ */
+function getInputs(job, workerJob) {
+  const inputs = [];
+  workerJob.inputs.forEach(el => {
+    if (el instanceof Object && el.outputOfId) {
+      inputs.push(job.find(proc => proc.id === el.outputOfId).outputs[el.outputIndex]);
+    } else {
+      inputs.push(el);
+    }
+  });
+  return inputs;
 }
 
 module.exports = {
