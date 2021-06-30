@@ -2,82 +2,46 @@
 
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
-const amqp = require('amqplib');
-const { worker } = require('cluster');
+const request = require('request');
 
+const worker = require('../workerTemplate');
 const dir = '/home/data';
+const workerQueue = 'download';
+const resultQueue = 'results';
+const rabbitHost = 'amqp://rabbitmq';
 
-const downloadNewDataFromURL = (uri) => {
+/**
+ * Downloads data for the given URL.
+ * Modifies the given job object in place with status and results.
+ * @param {Object} workerJob The job object containing the URL to download 
+ */
+const downloadNewDataFromURL = async(workerJob) => {
+  const uri = workerJob.datasetURI;
   const url = new URL(uri);
   const basename = path.basename(url.pathname);
+  const pathName = path.join(dir, encodeURI(basename));
   const file = fs.createWriteStream(path.join(dir, encodeURI(basename)));
 
-  console.log('Downloading ' + url.href + ' …');
+  file.on('error', worker.errorAndExit);
+  worker.log('Downloading ' + url.href + ' …');
 
-  const request = https.get(url.href, function (response) {
-    response.pipe(file);
-  });
+  await new Promise((resolve, reject) => {
+    request({
+        uri: url.href,
+    })
+    .pipe(file)
+    .on('finish', () => {
+        worker.log('The download has finished.');
+        resolve();
+    })
+    .on('error', (error) => {
+        reject(error);
+    })
+  }).catch(worker.errorAndExit);
 
-  return path.join(dir, encodeURI(basename));
+  workerJob.status = 'success';
+  workerJob.fileURI = pathName;
 };
 
-const logAndExit = (msg) => {
-  console.error(msg);
-  process.exit();
-};
-
-(async function main() {
-  const connection = await amqp
-    .connect('amqp://rabbitmq', 'heartbeat=60')
-    .catch(logAndExit);
-  const channel = await connection.createChannel().catch(logAndExit);
-  const downloadQueue = 'download';
-  const resultQueue = 'results';
-
-  channel.assertQueue(downloadQueue, {
-    durable: true
-  });
-
-  console.log(
-    ' [*] Downloader waiting for messages in %s. To exit press CTRL+C',
-    downloadQueue
-  );
-  channel.consume(
-    downloadQueue,
-    function (msg) {
-      try {
-        const job = JSON.parse(msg.content.toString());
-        console.log(
-          ' [x] Downloader received a message in download queue: %s',
-          JSON.stringify(job.content.nextJob)
-        );
-        const workerJob = job.content.nextJob.job;
-        const uri = workerJob.datasetURI;
-
-        const pathName = downloadNewDataFromURL(uri);
-
-        workerJob.status = 'success';
-        workerJob.fileURI = pathName;
-
-        channel.sendToQueue(
-          resultQueue,
-          Buffer.from(JSON.stringify(job.content)),
-          {
-            persistent: true
-          }
-        );
-        channel.ack(msg);
-      } catch (e) {
-        console.error('catched: ', e);
-        channel.sendToQueue(resultQueue, Buffer.from(msg.content.toString()), {
-          persistent: true
-        });
-        channel.nack(msg);
-      }
-    },
-    {
-      noAck: false
-    }
-  );
-})();
+// Initialize and start the worker process
+worker.initialize(rabbitHost, workerQueue, resultQueue, downloadNewDataFromURL);

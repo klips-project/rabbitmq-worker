@@ -4,7 +4,8 @@
   "description": "Collection of different workers for a RabbitMQ workflow",
   "main": "index.js",
   "dependencies": {
-    "amqplib": "^0.8.0"
+    "amqplib": "^0.8.0",
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "eslint": "^7.29.0"
