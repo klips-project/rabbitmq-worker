@@ -2,92 +2,52 @@
 
 const zlib = require('zlib');
 const fs = require('fs');
-const path = require('path');
-const amqp = require('amqplib');
 
-const logAndExit = (msg) => {
-  console.error(msg);
-  process.exit();
-};
+const worker = require('../workerTemplate');
+const workerQueue = 'extract';
+const resultQueue = 'results';
+const rabbitHost = 'amqp://rabbitmq';
 
-const gunzipDownloadedFile = (file) => {
+/**
+ * Extracts a given `*.gz` file.
+ * Modifies the given job object in place with status and results.
+ * @param {Object} workerJob The job object containing the fileURI to extract 
+ */
+const gunzipDownloadedFile = async(workerJob) => {
+  const file = workerJob.fileURI;
   let chunks = [];
   let fileBuffer;
   let fileStream = fs.createReadStream(file);
   let fileName = file.replace(/.gz$/, '');
 
-  fileStream.once('error', (err) => {
-    console.error(err);
-  });
-
-  fileStream.once('end', () => {
-    fileBuffer = Buffer.concat(chunks);
-
-    zlib.gunzip(fileBuffer, function (error, result) {
-      if (error) throw error;
-      fs.writeFileSync(encodeURI(fileName), result.toString());
-    });
-  });
+  worker.log('Extracting ' + file + ' …');
 
   fileStream.on('data', (chunk) => {
     chunks.push(chunk);
   });
 
-  return encodeURI(fileName);
+  await new Promise((resolve, reject) => {
+    fileStream.once('end', () => {
+      fileBuffer = Buffer.concat(chunks);
+      zlib.gunzip(fileBuffer, function (error, result) {
+        if (error) {
+          worker.errorAndExit(error);
+        }
+        fs.writeFileSync(encodeURI(fileName), result.toString());
+        worker.log('The extract has finished.');
+        resolve();
+      });
+    });
+    fileStream.once('error', (err) => {
+      worker.errorAndExit(err);
+      reject(err);
+    })
+  }).catch(worker.errorAndExit);
+
+  fileName = encodeURI(fileName);
+  workerJob.status = 'success';
+  workerJob.extractedFile = fileName;
 };
 
-(async function main() {
-  const connection = await amqp
-    .connect('amqp://rabbitmq', 'heartbeat=60')
-    .catch(logAndExit);
-  const channel = await connection.createChannel().catch(logAndExit);
-  const extractQueue = 'extract';
-  const resultQueue = 'results';
-
-  channel.assertQueue(extractQueue, {
-    durable: true
-  });
-
-  console.log(
-    ' [*] Unzip waiting for messages in %s. To exit press CTRL+C',
-    extractQueue
-  );
-  channel.consume(
-    extractQueue,
-    function (msg) {
-      try {
-        const job = JSON.parse(msg.content.toString());
-        console.log(
-          ' [x] Unzipper received a message in unzip queue: %s',
-          JSON.stringify(job.content.nextJob)
-        );
-        const workerJob = job.content.nextJob.job;
-
-        const file = job.content.job[0].fileURI;
-
-        const fileName = gunzipDownloadedFile(file);
-
-        workerJob.status = 'success';
-        workerJob.extractedFile = fileName;
-
-        channel.sendToQueue(
-          resultQueue,
-          Buffer.from(JSON.stringify(job.content)),
-          {
-            persistent: true
-          }
-        );
-        channel.ack(msg);
-      } catch (e) {
-        console.error('catched: ', e);
-        channel.sendToQueue(resultQueue, Buffer.from(msg.content.toString()), {
-          persistent: true
-        });
-        channel.nack(msg);
-      }
-    },
-    {
-      noAck: false
-    }
-  );
-})();
+// Initialize and start the worker process
+worker.initialize(rabbitHost, workerQueue, resultQueue, gunzipDownloadedFile);

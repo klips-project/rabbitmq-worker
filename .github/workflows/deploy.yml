@@ -29,18 +29,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # downloadNewDataFromURL
-      - name: Copy downloadNewDataFromURL package.json 🔧
-        uses: canastro/copy-file-action@master
-        with:
-          source: 'package.json'
-          target: 'src/downloadNewDataFromURL/package.json'
-
-      - name: Copy downloadNewDataFromURL package-lock.json 🔧
-        uses: canastro/copy-file-action@master
-        with:
-          source: 'package-lock.json'
-          target: 'src/downloadNewDataFromURL/package-lock.json'
-
       - name: Build and push downloadNewDataFromURL 🚀
         uses: docker/build-push-action@v2
         with:
@@ -49,18 +37,6 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/mqm-worker/download-new-data-from-url:latest
 
       # gunzipFile
-      - name: Copy gunzipFile package.json 🔧
-        uses: canastro/copy-file-action@master
-        with:
-          source: 'package.json'
-          target: 'src/gunzipFile/package.json'
-
-      - name: Copy gunzipFile package-lock.json 🔧
-        uses: canastro/copy-file-action@master
-        with:
-          source: 'package-lock.json'
-          target: 'src/gunzipFile/package-lock.json'
-
       - name: Build and push gunzipFile 🚀
         uses: docker/build-push-action@v2
         with:
