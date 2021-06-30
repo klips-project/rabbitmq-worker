@@ -24,3 +24,38 @@ download-new-data-from-url:
 ```
 
 Via the mounted directory (`data`) the downloaded files are stored and processed if necessary.
+
+## Job example
+
+An example Job used with these workers might look like
+```
+{
+    "job": [
+        {
+            "id": 123,
+            "type": "download",
+            "inputs": [
+              "https://example.com/test.txt.gz"
+            ]
+        },
+        {
+            "id": 456,
+            "type": "extract",
+            "inputs": [
+                {
+                    "outputOfId": 123,
+                    "outputIndex": 0
+                }
+            ]
+        }
+    ],
+    "emailAddress": "peter@tosh.com"
+}
+```
+
+## Creatig a new worker
+Please make use of the templateWorker.js as seen in the exisiting workers.
+
+That way you only need to implement your custom handler function.
+
+Make sure to put your responses into the "outputs" of the current worker job.
