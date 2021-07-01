@@ -1,9 +1,7 @@
-#!/usr/bin/env node
+import zlib from 'zlib';
+import fs from 'fs';
+import { initialize, log, errorAndExit } from '../workerTemplate.js';
 
-const zlib = require('zlib');
-const fs = require('fs');
-
-const worker = require('../workerTemplate');
 const workerQueue = 'extract';
 const resultQueue = 'results';
 const rabbitHost = 'amqp://rabbitmq';
@@ -21,7 +19,7 @@ const gunzipDownloadedFile = async(workerJob, inputs) => {
   let fileStream = fs.createReadStream(file);
   let fileName = file.replace(/.gz$/, '');
 
-  worker.log('Extracting ' + file + ' …');
+  log('Extracting ' + file + ' …');
 
   fileStream.on('data', (chunk) => {
     chunks.push(chunk);
@@ -32,18 +30,18 @@ const gunzipDownloadedFile = async(workerJob, inputs) => {
       fileBuffer = Buffer.concat(chunks);
       zlib.gunzip(fileBuffer, function (error, result) {
         if (error) {
-          worker.errorAndExit(error);
+          errorAndExit(error);
         }
         fs.writeFileSync(encodeURI(fileName), result.toString());
-        worker.log('The extract has finished.');
+        log('The extract has finished.');
         resolve();
       });
     });
     fileStream.once('error', (err) => {
-      worker.errorAndExit(err);
+      errorAndExit(err);
       reject(err);
     })
-  }).catch(worker.errorAndExit);
+  }).catch(errorAndExit);
 
   fileName = encodeURI(fileName);
   workerJob.status = 'success';
@@ -51,4 +49,4 @@ const gunzipDownloadedFile = async(workerJob, inputs) => {
 };
 
 // Initialize and start the worker process
-worker.initialize(rabbitHost, workerQueue, resultQueue, gunzipDownloadedFile);
+initialize(rabbitHost, workerQueue, resultQueue, gunzipDownloadedFile);
