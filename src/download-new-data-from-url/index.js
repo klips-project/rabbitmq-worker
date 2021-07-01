@@ -1,10 +1,8 @@
-#!/usr/bin/env node
+import fs from 'fs';
+import path from 'path';
+import request from 'request';
 
-const fs = require('fs');
-const path = require('path');
-const request = require('request');
-
-const worker = require('../workerTemplate');
+import { initialize, errorAndExit, log } from '../workerTemplate.js';
 const dir = '/home/data';
 const workerQueue = 'download';
 const resultQueue = 'results';
@@ -23,8 +21,8 @@ const downloadNewDataFromURL = async(workerJob, inputs) => {
   const pathName = path.join(dir, encodeURI(basename));
   const file = fs.createWriteStream(path.join(dir, encodeURI(basename)));
 
-  file.on('error', worker.errorAndExit);
-  worker.log('Downloading ' + url.href + ' …');
+  file.on('error', errorAndExit);
+  log('Downloading ' + url.href + ' …');
 
   await new Promise((resolve, reject) => {
     request({
@@ -32,17 +30,17 @@ const downloadNewDataFromURL = async(workerJob, inputs) => {
     })
     .pipe(file)
     .on('finish', () => {
-        worker.log('The download has finished.');
+        log('The download has finished.');
         resolve();
     })
     .on('error', (error) => {
         reject(error);
     })
-  }).catch(worker.errorAndExit);
+  }).catch(errorAndExit);
 
   workerJob.status = 'success';
   workerJob.outputs = [pathName];
 };
 
 // Initialize and start the worker process
-worker.initialize(rabbitHost, workerQueue, resultQueue, downloadNewDataFromURL);
+initialize(rabbitHost, workerQueue, resultQueue, downloadNewDataFromURL);

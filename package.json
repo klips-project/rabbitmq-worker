@@ -3,6 +3,11 @@
   "version": "0.0.1",
   "description": "Collection of different workers for a RabbitMQ workflow",
   "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
   "dependencies": {
     "amqplib": "^0.8.0",
     "request": "^2.88.2"

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+import amqp from 'amqplib';
 
 /*
  * This is a template rabbitmq worker.
@@ -7,7 +7,6 @@
  * Results will be reported in the given result queue.
  * See the different workers for implementation examples
  */
-const amqp = require('amqplib');
 let channel;
 let workerId;
 let resultsQueue;
@@ -16,7 +15,7 @@ let resultsQueue;
  * Reports error and exits
  * @param {String} msg The error message
  */
-function errorAndExit(msg) {
+export function errorAndExit(msg) {
   log('Error caught: ' + msg);
   if (channel && msg && msg.content) {
     channel.sendToQueue(resultsQueue, Buffer.from(msg.content.toString()), {
@@ -31,7 +30,7 @@ function errorAndExit(msg) {
  * Log a message with current timestamp and worker ID
  * @param {String} msg 
  */
-function log(msg) {
+export function log(msg) {
   console.log(' [*] ' + new Date().toISOString() + ' ID:' + workerId + ': ' + msg);
 }
 
@@ -44,7 +43,7 @@ function log(msg) {
  * @param {String} resultQueue The name of the result queue to report back to
  * @param {Function} callBack The callback function getting called when a job is received
  */
-async function initialize(rabbitHost, workerQueue, resultQueue, callBack) {
+export async function initialize(rabbitHost, workerQueue, resultQueue, callBack) {
   const connection = await amqp.connect(rabbitHost, 'heartbeat=60').catch(errorAndExit);
   channel = await connection.createChannel().catch(errorAndExit);
   workerId = parseInt(new Date() * Math.random(), 10);
@@ -103,9 +102,3 @@ function getInputs(job, workerJob) {
   });
   return inputs;
 }
-
-module.exports = {
-    log,
-    errorAndExit,
-    initialize
-};
