@@ -7,6 +7,12 @@ This repository currently provides two different base workers:
 
 The initialization is done by the command `npm i`.
 
+## Requirements
+
+NodeJS v14 and up is needed
+
+## How it works
+
 The workers are authored to be used as a Docker image in conjunction with a message queue system called RabbitMQ, whose container hostname is `rabbitmq` (`connect('amqp://rabbitmq)'`).
 
 Changes to workers are automatically deployed from the `main` branch and published to `ghcr.io/klips-project/mqm-worker/`.
