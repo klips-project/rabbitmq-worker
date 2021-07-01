@@ -26,7 +26,7 @@ jobs:
     needs: test
     strategy:
       matrix:
-        workers: [download-new-data-from-url, gunzip-file]
+        workers: ${{ env.WORKERS }}
     runs-on: ubuntu-latest
     steps:
       - name: Set up Docker Buildx 🔧
