@@ -8,7 +8,7 @@ jobs:
   build-and-deploy:
     strategy:
       matrix:
-        workers: ${{ env.WORKERS }}
+        workers: [download-new-data-from-url, gunzip-file]  # add new workers here
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
