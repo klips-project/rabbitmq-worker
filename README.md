@@ -34,7 +34,8 @@ Via the mounted directory (`data`) the downloaded files are stored and processed
 ## Job example
 
 An example Job used with these workers might look like
-```
+
+```json
 {
     "job": [
         {
@@ -60,8 +61,11 @@ An example Job used with these workers might look like
 ```
 
 ## Creatig a new worker
+
 Please make use of the templateWorker.js as seen in the exisiting workers.
 
 That way you only need to implement your custom handler function.
 
 Make sure to put your responses into the "outputs" of the current worker job.
+
+Furthermore, the name of the new worker must be included in the file `./src/packagesToBuild.json`. The name must not use uppercase letters or spaces and must match the name of the folder.
