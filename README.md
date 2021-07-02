@@ -1,11 +1,14 @@
 # RabbitMQ Worker
 
-This repository currently provides two different base workers:
+This repository provides several workers, e.g:
 
-- download sample dataset (`downloadNewDataFromURL`)
-- unzip sample dataset (`gunzipFile`)
+- download sample dataset (`download-new-data-from-url`)
+- unzip sample dataset (`gunzip-file`)
+- geoserver publish SLD (`geoserver-publish-sld`)
 
 The initialization is done by the command `npm i`.
+Some workers require environment variables to be set, which can be given e.g. by a docker-compose file.
+See the worker definition for the required variables.
 
 ## Requirements
 
@@ -54,7 +57,15 @@ An example Job used with these workers might look like
                     "outputIndex": 0
                 }
             ]
-        }
+        },
+        {
+          "type": "geoserver-publish-sld",
+          "inputs": [
+            "<?xml version='1.0' encoding='UTF-8'?><StyledLayerDescriptor version='1.0.0'  xsi:schemaLocation='http://www.opengis.net/sld StyledLayerDescriptor.xsd'  xmlns='http://www.opengis.net/sld'  xmlns:ogc='http://www.opengis.net/ogc'  xmlns:xlink='http://www.w3.org/1999/xlink'  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'> <NamedLayer> <Name>default_line</Name> <UserStyle> <Title>Default Line</Title> <Abstract>A sample style that draws a line</Abstract> <FeatureTypeStyle> <Rule> <Name>rule1</Name> <Title>Blue Line</Title> <Abstract>A solid blue line with a 1 pixel width</Abstract> <LineSymbolizer> <Stroke> <CssParameter name='stroke'>#0000FF</CssParameter> </Stroke> </LineSymbolizer> </Rule> </FeatureTypeStyle> </UserStyle> </NamedLayer></StyledLayerDescriptor>",
+           "simplePointStyle",
+           "defaultWorkspace"
+         ]
+       }
     ],
     "emailAddress": "peter@tosh.com"
 }
