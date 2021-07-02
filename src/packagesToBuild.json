@@ -1,5 +1,1 @@
-[
-    "download-new-data-from-url",
-    "gunzip-file",
-    "geoserver-publish-sld"
-]
+["download-new-data-from-url","gunzip-file","geoserver-publish-sld"]
