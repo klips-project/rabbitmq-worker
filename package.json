@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "amqplib": "^0.8.0",
-    "geoserver-node-client": "https://github.com/meggsimum/geoserver-node-client.git#master",
+    "geoserver-node-client": "0.0.2",
     "request": "^2.88.2"
   },
   "devDependencies": {
