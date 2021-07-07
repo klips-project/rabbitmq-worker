@@ -5,6 +5,7 @@ This repository provides several workers, e.g:
 - download sample dataset (`download-new-data-from-url`)
 - unzip sample dataset (`gunzip-file`)
 - geoserver publish SLD (`geoserver-publish-sld`)
+- send email (`send-email`)
 
 The initialization is done by the command `npm i`.
 Some workers require environment variables to be set, which can be given e.g. by a docker-compose file.
@@ -19,7 +20,7 @@ NodeJS v14 and up is needed
 The workers are authored to be used as a Docker image in conjunction with a message queue system called RabbitMQ, whose container hostname is `rabbitmq` (`connect('amqp://rabbitmq)'`).
 
 Changes to workers are automatically deployed from the `main` branch and published to `ghcr.io/klips-project/mqm-worker/`.
-*Note*: For each additional worker, the `.github/workflows/deploy.yml` file must be extended accordingly.
+_Note_: For each additional worker, the file `./src/packagesToBuild.json` file must be extended accordingly.
 
 The desired workers can then be included within a project via Docker Compose as follows:
 
@@ -40,34 +41,37 @@ An example Job used with these workers might look like
 
 ```json
 {
-    "job": [
+  "job": [
+    {
+      "id": 123,
+      "type": "download",
+      "inputs": ["https://example.com/test.txt.gz"]
+    },
+    {
+      "id": 456,
+      "type": "extract",
+      "inputs": [
         {
-            "id": 123,
-            "type": "download",
-            "inputs": [
-              "https://example.com/test.txt.gz"
-            ]
-        },
-        {
-            "id": 456,
-            "type": "extract",
-            "inputs": [
-                {
-                    "outputOfId": 123,
-                    "outputIndex": 0
-                }
-            ]
-        },
-        {
-          "type": "geoserver-publish-sld",
-          "inputs": [
-            "<?xml version='1.0' encoding='UTF-8'?><StyledLayerDescriptor version='1.0.0'  xsi:schemaLocation='http://www.opengis.net/sld StyledLayerDescriptor.xsd'  xmlns='http://www.opengis.net/sld'  xmlns:ogc='http://www.opengis.net/ogc'  xmlns:xlink='http://www.w3.org/1999/xlink'  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'> <NamedLayer> <Name>default_line</Name> <UserStyle> <Title>Default Line</Title> <Abstract>A sample style that draws a line</Abstract> <FeatureTypeStyle> <Rule> <Name>rule1</Name> <Title>Blue Line</Title> <Abstract>A solid blue line with a 1 pixel width</Abstract> <LineSymbolizer> <Stroke> <CssParameter name='stroke'>#0000FF</CssParameter> </Stroke> </LineSymbolizer> </Rule> </FeatureTypeStyle> </UserStyle> </NamedLayer></StyledLayerDescriptor>",
-           "simplePointStyle",
-           "defaultWorkspace"
-         ]
-       }
-    ],
-    "emailAddress": "peter@tosh.com"
+          "outputOfId": 123,
+          "outputIndex": 0
+        }
+      ]
+    },
+    {
+      "id": 789,
+      "type": "geoserver-publish-sld",
+      "inputs": [
+        "<?xml version='1.0' encoding='UTF-8'?><StyledLayerDescriptor version='1.0.0'  xsi:schemaLocation='http://www.opengis.net/sld StyledLayerDescriptor.xsd'  xmlns='http://www.opengis.net/sld'  xmlns:ogc='http://www.opengis.net/ogc'  xmlns:xlink='http://www.w3.org/1999/xlink'  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'> <NamedLayer> <Name>default_line</Name> <UserStyle> <Title>Default Line</Title> <Abstract>A sample style that draws a line</Abstract> <FeatureTypeStyle> <Rule> <Name>rule1</Name> <Title>Blue Line</Title> <Abstract>A solid blue line with a 1 pixel width</Abstract> <LineSymbolizer> <Stroke> <CssParameter name='stroke'>#0000FF</CssParameter> </Stroke> </LineSymbolizer> </Rule> </FeatureTypeStyle> </UserStyle> </NamedLayer></StyledLayerDescriptor>",
+        "simplePointStyle",
+        "defaultWorkspace"
+      ]
+    },
+    {
+      "id": 1001,
+      "type": "send-email",
+      "inputs": ["to@recipient.org", "subject", "content"]
+    }
+  ]
 }
 ```
 
