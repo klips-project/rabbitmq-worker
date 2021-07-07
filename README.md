@@ -19,7 +19,7 @@ NodeJS v14 and up is needed
 The workers are authored to be used as a Docker image in conjunction with a message queue system called RabbitMQ, whose container hostname is `rabbitmq` (`connect('amqp://rabbitmq)'`).
 
 Changes to workers are automatically deployed from the `main` branch and published to `ghcr.io/klips-project/mqm-worker/`.
-*Note*: For each additional worker, the `.github/workflows/deploy.yml` file must be extended accordingly.
+_Note_: For each additional worker, the `.github/workflows/deploy.yml` file must be extended accordingly.
 
 The desired workers can then be included within a project via Docker Compose as follows:
 
