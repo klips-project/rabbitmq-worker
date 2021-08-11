@@ -93,12 +93,14 @@ export async function initialize(rabbitHost, workerQueue, resultQueue, callBack)
  */
 function getInputs(job, workerJob) {
   const inputs = [];
-  workerJob.inputs.forEach(el => {
-    if (el instanceof Object && el.outputOfId) {
-      inputs.push(job.find(proc => proc.id === el.outputOfId).outputs[el.outputIndex]);
-    } else {
-      inputs.push(el);
-    }
-  });
+  if (workerJob.inputs) {
+    workerJob.inputs.forEach(el => {
+      if (el instanceof Object && el.outputOfId) {
+        inputs.push(job.find(proc => proc.id === el.outputOfId).outputs[el.outputIndex]);
+      } else {
+        inputs.push(el);
+      }
+    });
+  }
   return inputs;
 }
