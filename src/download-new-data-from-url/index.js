@@ -4,9 +4,11 @@ import request from 'request';
 
 import { initialize, errorAndExit, log } from '../workerTemplate.js';
 const dir = '/home/data';
-const workerQueue = 'download';
-const resultQueue = 'results';
-const rabbitHost = 'amqp://rabbitmq';
+const workerQueue = process.env.WORKERQUEUE;
+const resultQueue = process.env.RESULTSQUEUE;
+const rabbitHost = process.env.RABBITHOST;
+const rabbitUser = process.env.RABBITUSER;
+const rabbitPass = process.env.RABBITPASS;
 
 /**
  * Downloads data for the given URL.
@@ -43,4 +45,4 @@ const downloadNewDataFromURL = async(workerJob, inputs) => {
 };
 
 // Initialize and start the worker process
-initialize(rabbitHost, workerQueue, resultQueue, downloadNewDataFromURL);
+initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, downloadNewDataFromURL);
