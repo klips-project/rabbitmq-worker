@@ -38,13 +38,20 @@ export function log(msg) {
  * Main method used to implement a worker.
  * Calls the given callback when a message is received and report back
  *
- * @param {String} rabbitHost The amqp rabbitmq host, e.g. `amqp://localhost` 
+ * @param {String} rabbitHost The amqp rabbitmq host, e.g. `localhost`
+ * @param {String} rabbitUser The username
+ * @param {String} rabbitPass The password
  * @param {String} workerQueue The name of the worker queue to look for jobs
  * @param {String} resultQueue The name of the result queue to report back to
  * @param {Function} callBack The callback function getting called when a job is received
  */
-export async function initialize(rabbitHost, workerQueue, resultQueue, callBack) {
-  const connection = await amqp.connect(rabbitHost, 'heartbeat=60').catch(errorAndExit);
+export async function initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callBack) {
+  const connection = await amqp.connect({
+    hostname: rabbitHost,
+    username: rabbitUser,
+    password: rabbitPass,
+    heartbeat: 60
+  }).catch(errorAndExit);
   channel = await connection.createChannel().catch(errorAndExit);
   workerId = parseInt(new Date() * Math.random(), 10);
   resultsQueue = resultQueue;
