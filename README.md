@@ -31,6 +31,12 @@ download-new-data-from-url:
         - ../data:/home/data:Z
     depends_on:
         - rabbitmq
+    environment:
+      - RABBITHOST=rabbitmq
+      - RABBITUSER=username
+      - RABBITPASS=password
+      - WORKERQUEUE=download-new-data-from-url
+      - RESULTSQUEUE=results
 ```
 
 Via the mounted directory (`data`) the downloaded files are stored and processed if necessary.

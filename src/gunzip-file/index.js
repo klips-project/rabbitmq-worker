@@ -2,9 +2,11 @@ import zlib from 'zlib';
 import fs from 'fs';
 import { initialize, log, errorAndExit } from '../workerTemplate.js';
 
-const workerQueue = 'extract';
-const resultQueue = 'results';
-const rabbitHost = 'amqp://rabbitmq';
+const workerQueue = process.env.WORKERQUEUE;
+const resultQueue = process.env.RESULTSQUEUE;
+const rabbitHost = process.env.RABBITHOST;
+const rabbitUser = process.env.RABBITUSER;
+const rabbitPass = process.env.RABBITPASS;
 
 /**
  * Extracts a given `*.gz` file.
@@ -49,4 +51,4 @@ const gunzipDownloadedFile = async(workerJob, inputs) => {
 };
 
 // Initialize and start the worker process
-initialize(rabbitHost, workerQueue, resultQueue, gunzipDownloadedFile);
+initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, gunzipDownloadedFile);

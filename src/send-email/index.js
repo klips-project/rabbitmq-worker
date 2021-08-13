@@ -4,6 +4,8 @@ import { log, initialize, errorAndExit } from '../workerTemplate.js';
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
+const rabbitUser = process.env.RABBITUSER;
+const rabbitPass = process.env.RABBITPASS;
 const mailHost = process.env.MAILHOST;
 const mailPort = process.env.MAILPORT;
 const secure = process.env.SECURE === 'true' ? true : false;
@@ -65,4 +67,4 @@ const sendEmail = async (workerJob, inputs) => {
 };
 
 // Initialize and start the worker process
-initialize(rabbitHost, workerQueue, resultQueue, sendEmail);
+initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, sendEmail);

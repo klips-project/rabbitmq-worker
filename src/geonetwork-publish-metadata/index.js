@@ -7,6 +7,8 @@ const pw = process.env.GNPASS;
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
+const rabbitUser = process.env.RABBITUSER;
+const rabbitPass = process.env.RABBITPASS;
 const gnos = new GeoNetworkClient(url, user, pw);
 
 /**
@@ -51,4 +53,4 @@ const geonetworkPublishMetdata = async(workerJob, inputs) => {
 };
 
 // Initialize and start the worker process
-initialize(rabbitHost, workerQueue, resultQueue, geonetworkPublishMetdata);
+initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geonetworkPublishMetdata);
