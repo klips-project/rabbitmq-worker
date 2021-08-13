@@ -12,4 +12,4 @@ WORKDIR /home/
 RUN npm install 
 COPY src/geoserver-publish-layer-from-db/index.js worker/
 COPY src/workerTemplate.js .
-CMD ["sh", "-c", "node worker/index.js ${GSHOST} ${GSUSER} ${GSPASS} ${RABBITHOST} ${WORKERQUEUE} ${RESULTQUEUE}"]
+CMD ["sh", "-c", "node worker/index.js ${GSHOST} ${GSUSER} ${GSPASS} ${RABBITHOST} ${RABBITUSER} ${RABBITPASS} ${WORKERQUEUE} ${RESULTQUEUE}"]
