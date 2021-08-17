@@ -13,4 +13,4 @@ RUN npm install
 COPY src/geonetwork-publish-metadata/index.js worker/
 COPY src/workerTemplate.js .
 COPY src/gnos-client.js .
-CMD ["sh", "-c", "node worker/index.js ${GNHOST} ${GNUSER} ${GNPASS} ${RABBITHOST} ${WORKERQUEUE} ${RESULTQUEUE}"]
+CMD ["sh", "-c", "node worker/index.js ${GNHOST} ${GNUSER} ${GNPASS} ${RABBITHOST} ${RABBITUSER} ${RABBITPASS} ${WORKERQUEUE} ${RESULTQUEUE}"]

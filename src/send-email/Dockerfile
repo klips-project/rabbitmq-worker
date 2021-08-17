@@ -16,4 +16,4 @@ WORKDIR /home/
 RUN npm install 
 COPY src/send-email/index.js worker/
 COPY src/workerTemplate.js .
-CMD ["sh", "-c", "node worker/index.js ${MAILHOST} ${MAILPORT} ${SECURE} ${AUTHUSER} ${AUTHPASS} ${FROMSENDERNAME} ${FROMSENDEREMAIL} ${RABBITHOST} ${WORKERQUEUE} ${RESULTQUEUE}"]
+CMD ["sh", "-c", "node worker/index.js ${MAILHOST} ${MAILPORT} ${SECURE} ${AUTHUSER} ${AUTHPASS} ${FROMSENDERNAME} ${FROMSENDEREMAIL} ${RABBITHOST} ${RABBITUSER} ${RABBITPASS} ${WORKERQUEUE} ${RESULTQUEUE}"]

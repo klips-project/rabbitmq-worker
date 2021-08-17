@@ -5,4 +5,4 @@ WORKDIR /home/
 RUN npm install 
 COPY src/gunzip-file/index.js worker/
 COPY src/workerTemplate.js .
-CMD ["node", "worker/index.js"]
+CMD ["sh", "-c", "node worker/index.js ${RABBITHOST} ${RABBITUSER} ${RABBITPASS} ${WORKERQUEUE} ${RESULTQUEUE}"]
