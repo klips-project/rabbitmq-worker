@@ -3,7 +3,6 @@ import path from 'path';
 import request from 'request';
 
 import { initialize, errorAndExit, log } from '../workerTemplate.js';
-const dir = '/home/data';
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
@@ -11,17 +10,18 @@ const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
 
 /**
- * Downloads data for the given URL.
+ * Downloads data into the given target from the given URL.
  * Modifies the given job object in place with status and results.
  * @param {Object} workerJob The job object
  * @param {Array} inputs The inputs for this process
  */
 const downloadNewDataFromURL = async(workerJob, inputs) => {
   const uri = inputs[0];
+  const target = inputs[1];
   const url = new URL(uri);
   const basename = path.basename(url.pathname);
-  const pathName = path.join(dir, encodeURI(basename));
-  const file = fs.createWriteStream(path.join(dir, encodeURI(basename)));
+  const pathName = path.join(target, encodeURI(basename));
+  const file = fs.createWriteStream(path.join(target, encodeURI(basename)));
 
   file.on('error', errorAndExit);
   log('Downloading ' + url.href + ' …');
