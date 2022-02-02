@@ -115,7 +115,7 @@ const handleNextTask = (msg) => {
     if (nextTaskEntry) {
       job.nextTask = {
         task: nextTaskEntry,
-        idx: chain.findIndex((el, idx) => el === nextTaskEntry ? idx : -1)
+        idx: chain.findIndex(el => el.id === nextTaskEntry.id)
       };
       log(`Sending the next task to queue ${nextTaskEntry.type} ...`);
       channel.sendToQueue(
