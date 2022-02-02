@@ -31,6 +31,9 @@ export function errorAndExit(msg) {
  * @param {String} msg 
  */
 export function log(msg) {
+  if (!workerId) {
+    workerId = parseInt(new Date() * Math.random(), 10);
+  }
   console.log(' [*] ' + new Date().toISOString() + ' ID:' + workerId + ': ' + msg);
 }
 
@@ -60,16 +63,16 @@ export async function initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue
     durable: true
   });
 
-  log(`Worker waiting for messages in ${workerQueue}. To exit press CTRL+C`);
+  log(`Worker waiting for messages in ${workerQueue}.`);
   channel.consume(
     workerQueue,
     async function (msg) {
       try {
         const job = JSON.parse(msg.content.toString());
         log(`Received a message in queue ${workerQueue}: ` +
-          JSON.stringify(job.content.nextJob)
+          JSON.stringify(job.content.nextTask)
         );
-        let workerJob = job.content.nextJob.job;
+        let workerJob = job.content.nextTask.job;
         await callBack(workerJob, getInputs(job.content.job, workerJob));
 
         channel.sendToQueue(
@@ -95,13 +98,13 @@ export async function initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue
  * Returns the inputs array, modified to contain outputs of other processes
  *   if specified like shown in the `README.md`
  * @param {Object} job The main job
- * @param {Object} workerJob The current worker job
+ * @param {Object} task The current task
  * @returns {Array} inputs The inputs
  */
-function getInputs(job, workerJob) {
+function getInputs(job, task) {
   const inputs = [];
-  if (workerJob.inputs) {
-    workerJob.inputs.forEach(el => {
+  if (task.inputs) {
+    task.inputs.forEach(el => {
       if (el instanceof Object && el.outputOfId) {
         inputs.push(job.find(proc => proc.id === el.outputOfId).outputs[el.outputIndex]);
       } else {
