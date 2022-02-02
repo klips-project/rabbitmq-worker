@@ -73,7 +73,7 @@ export async function initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue
         log(`Received a message in queue ${workerQueue}: ` +
           JSON.stringify(job.content.nextTask)
         );
-        let workerJob = job.content.nextTask.job;
+        let workerJob = job.content.nextTask.task;
         await callBack(workerJob, getInputs(job.content.job, workerJob));
 
         channel.sendToQueue(
