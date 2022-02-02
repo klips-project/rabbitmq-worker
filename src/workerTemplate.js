@@ -1,4 +1,5 @@
 import amqp from 'amqplib';
+import { randomUUID } from 'crypto'
 
 /*
  * This is a template rabbitmq worker.
@@ -32,7 +33,7 @@ export function errorAndExit(msg) {
  */
 export function log(msg) {
   if (!workerId) {
-    workerId = parseInt(new Date() * Math.random(), 10);
+    workerId = randomUUID();
   }
   console.log(' [*] ' + new Date().toISOString() + ' ID:' + workerId + ': ' + msg);
 }
@@ -56,7 +57,7 @@ export async function initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue
     heartbeat: 60
   }).catch(errorAndExit);
   channel = await connection.createChannel().catch(errorAndExit);
-  workerId = parseInt(new Date() * Math.random(), 10);
+  workerId = randomUUID();
   resultsQueue = resultQueue;
 
   channel.assertQueue(workerQueue, {

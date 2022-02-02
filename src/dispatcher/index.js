@@ -1,11 +1,13 @@
 import amqp from 'amqplib';
 import { errorAndExit, log } from '../workerTemplate.js';
+import { randomUUID } from 'crypto'
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
+const rabbitHeartbeat = process.env.RABBITHEARTBEAT || 60;
 
 let channel;
 
@@ -15,7 +17,7 @@ let channel;
  * a worker configuration is used as the queue name to push the job and its configuration to.
  * In the following example, the first worker will be called by passing a message to the
  * queue named `download`, while the message itself is the original job message extend by
- * a `nextJob` entry which indicates which task shall be handled next.
+ * a `nextTask` entry which indicates which task shall be handled next.
  * If tasks finish succesfully, they usually return values which will then be appended to
  * the specific task configuration via the `outputs` array.
  *
@@ -49,7 +51,7 @@ const dispatcher = async() => {
     hostname: rabbitHost,
     username: rabbitUser,
     password: rabbitPass,
-    heartbeat: 60
+    heartbeat: rabbitHeartbeat
   }).catch(errorAndExit);
 
   channel = await connection.createChannel().catch(errorAndExit);
@@ -103,16 +105,16 @@ const handleNextTask = (msg) => {
 
     // create unique ID if necessary (on first run)
     if (!job.id) {
-      job.id = parseInt(new Date() * Math.random(), 10);
+      job.id = randomUUID();
       firstIteration = true;
     }
 
-    // find next job entry that has not run yet (no status set)
-    nextTaskEntry = chain.find(task => !task.status);
+    // find next task that has not run yet (status is not 'success')
+    nextTaskEntry = chain.find(task => !(task.status && task.status === 'success'));
 
     if (nextTaskEntry) {
       job.nextTask = {
-        job: nextTaskEntry,
+        task: nextTaskEntry,
         idx: chain.findIndex((el, idx) => el === nextTaskEntry ? idx : -1)
       };
       log(`Sending the next task to queue ${nextTaskEntry.type} ...`);
@@ -147,12 +149,12 @@ const handleResults = (msg) => {
   try {
     const job = JSON.parse(msg.content.toString());
     log('Got a new task result...')
-    if (job && job.nextJob && job.nextJob.job &&
-      job.nextJob.job.status === 'success') {
+    if (job && job.nextTask && job.nextTask.task &&
+      job.nextTask.task.status === 'success') {
       // write back outputs to original job config
-      job.job[job.nextJob.idx] = job.nextJob.job;
-      // remove the succeeded job from the `nextjob` queue
-      delete job.nextJob;
+      job.job[job.nextTask.idx] = job.nextTask.task;
+      // remove the succeeded job from the `nextTask` queue
+      delete job.nextTask;
     } else {
       channel.nack(msg);
       throw('Processing failed for task' + JSON.stringify(job));
