@@ -83,7 +83,7 @@ An example Job used with these workers might look like
 
 ## Creatig a new worker
 
-Please make use of the templateWorker.js as seen in the exisiting workers.
+Please make use of the templateWorker.js as seen in the existing workers.
 
 That way you only need to implement your custom handler function.
 
