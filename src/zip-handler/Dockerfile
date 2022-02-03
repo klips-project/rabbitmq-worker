@@ -2,7 +2,7 @@ FROM node:alpine
 
 COPY ./package.json ./package-lock.json /home/
 WORKDIR /home/
-RUN npm install 
+RUN npm install
 COPY src/zip-handler/index.js worker/
 COPY src/workerTemplate.js .
-CMD ["sh", "-c", "node worker/index.js ${RABBITHOST} ${RABBITUSER} ${RABBITPASS} ${WORKERQUEUE} ${RESULTQUEUE}"]
+CMD ["sh", "-c", "node worker/index.js"]
