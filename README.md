@@ -93,7 +93,7 @@ Furthermore, the name of the new worker must be included in the file `./src/pack
 
 ## Docker Images
 
-The Docker images are built automatically by the GitHub CI. For local development the can be build them individually like this:
+The Docker images are built automatically by the GitHub CI. For local development they can be build individually like this:
 
 ```shell
 # make sure you are in the root of the project
