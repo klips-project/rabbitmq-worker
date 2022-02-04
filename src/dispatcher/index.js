@@ -67,7 +67,6 @@ const dispatcher = async () => {
 
   channel.bindQueue('DeadLetterQueue', 'DeadLetterExchange', '');
 
-  // TODO: implement deadLetterExchange
   channel.assertQueue(workerQueue, {
     durable: true,
     arguments: {
@@ -144,6 +143,10 @@ const handleNextTask = (msg) => {
       channel.ack(msg);
     }
   } catch (e) {
+    // TODO: we reach here because of unreadable job (produced by erroring in worker).
+    // While its great to reach here in case of an error, the job should still be parseable
+    // and we should explicitly detect the error and exit
+    log('Processing failed for task' + msg);
     errorAndExit(e, msg, channel);
   }
 };
@@ -168,9 +171,6 @@ const handleResults = (msg) => {
       job.job[job.nextTask.idx] = job.nextTask.task;
       // remove the succeeded job from the `nextTask` queue
       delete job.nextTask;
-    } else {
-      channel.nack(msg, false, false);
-      throw 'Processing failed for task' + JSON.stringify(job);
     }
     log(`Sending job back to main worker queue ${workerQueue} ...`);
     channel.sendToQueue(workerQueue, Buffer.from(JSON.stringify(job)), {

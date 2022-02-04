@@ -18,19 +18,12 @@ let resultsQueue;
  * @param {String} e The error message
  */
 export function errorAndExit(e, msg, chnl) {
-  console.log('==== ERROR AND EXIT =====');
-  console.log('e (Error): ');
-  console.log(e);
-  console.log('msg (RMQ): ');
-  console.log(msg);
-
+  console.log('Error caught: ', e);
   if (!channel) {
     channel = chnl;
   }
 
   if (channel && msg) {
-    console.log('im channel & msg IF geladnet');
-    console.log(channel);
     if (msg.content) {
       channel.sendToQueue(resultsQueue, Buffer.from(msg.content.toString()), {
         persistent: true
@@ -86,9 +79,6 @@ export async function initialize(
 
   channel.assertQueue(workerQueue, {
     durable: true
-    // arguments: {
-    //   'x-dead-letter-exchange': 'DeadLetterExchange'
-    // }
   });
 
   log(`Worker waiting for messages in ${workerQueue}.`);
