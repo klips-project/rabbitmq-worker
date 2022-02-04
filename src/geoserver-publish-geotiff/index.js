@@ -9,6 +9,7 @@ const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
+
 const grc = new GeoServerRestClient(url, user, pw);
 
 /**
@@ -17,10 +18,10 @@ const grc = new GeoServerRestClient(url, user, pw);
  * @param {Object} workerJob The job object
  * @param {Array} inputs The inputs for this process
  *   First input is the workspace to publish to
- *   Second Input is the name of the created datastore
- *   Third Input is the the name of the created layer
- *   Fourth Input is the title of the created layer
- *   Fifth Input is the local path where the GeoTIFF is located
+ *   Second input is the name of the created datastore
+ *   Third input is the the name of the created layer
+ *   Fourth input is the title of the created layer
+ *   Fifth input is the local path where the GeoTIFF is located
  * @example
     {
        "id": 123,
