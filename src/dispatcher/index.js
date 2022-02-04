@@ -58,9 +58,21 @@ const dispatcher = async () => {
 
   channel = await connection.createChannel().catch(errorAndExit);
 
+  channel.assertExchange('DeadLetterExchange', 'fanout', {
+    durable: true,
+    autoDelete: false
+  });
+
+  channel.assertQueue('DeadLetterQueue', { durable: true });
+
+  channel.bindQueue('DeadLetterQueue', 'DeadLetterExchange', '');
+
   // TODO: implement deadLetterExchange
   channel.assertQueue(workerQueue, {
-    durable: true
+    durable: true,
+    arguments: {
+      'x-dead-letter-exchange': 'DeadLetterExchange'
+    }
   });
   channel.assertQueue(resultQueue, {
     durable: true
@@ -95,7 +107,7 @@ const handleNextTask = (msg) => {
 
     // validate
     if (!chain || chain.length < 1) {
-      errorAndExit(msg, 'Invalid arguments given' + job);
+      errorAndExit('Invalid arguments given' + job, msg, channel);
     }
 
     // create unique ID if necessary (on first run)
@@ -132,7 +144,7 @@ const handleNextTask = (msg) => {
       channel.ack(msg);
     }
   } catch (e) {
-    errorAndExit(msg, e);
+    errorAndExit(e, msg, channel);
   }
 };
 
@@ -157,7 +169,7 @@ const handleResults = (msg) => {
       // remove the succeeded job from the `nextTask` queue
       delete job.nextTask;
     } else {
-      channel.nack(msg);
+      channel.nack(msg, false, false);
       throw 'Processing failed for task' + JSON.stringify(job);
     }
     log(`Sending job back to main worker queue ${workerQueue} ...`);
@@ -166,7 +178,7 @@ const handleResults = (msg) => {
     });
     channel.ack(msg);
   } catch (e) {
-    errorAndExit(msg, e);
+    errorAndExit(e, msg, channel);
   }
 };
 

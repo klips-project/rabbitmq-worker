@@ -23,7 +23,6 @@ const downloadNewDataFromURL = async(workerJob, inputs) => {
   const pathName = path.join(target, encodeURI(basename));
   const file = fs.createWriteStream(path.join(target, encodeURI(basename)));
 
-  file.on('error', errorAndExit);
   log('Downloading ' + url.href + ' …');
 
   await new Promise((resolve, reject) => {
@@ -33,15 +32,16 @@ const downloadNewDataFromURL = async(workerJob, inputs) => {
     .pipe(file)
     .on('finish', () => {
         log('The download has finished.');
+        workerJob.status = 'success';
+        workerJob.outputs = [pathName];
         resolve();
     })
     .on('error', (error) => {
         reject(error);
     })
-  }).catch(errorAndExit);
+  });
 
-  workerJob.status = 'success';
-  workerJob.outputs = [pathName];
+  
 };
 
 // Initialize and start the worker process

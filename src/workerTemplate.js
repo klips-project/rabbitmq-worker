@@ -14,17 +14,30 @@ let resultsQueue;
 
 /**
  * Reports error and exits
- * @param {String} msg The error message
+ * @param {String} msg The RabbitMQ Message
+ * @param {String} e The error message
  */
-export function errorAndExit(msg) {
-  log('Error caught: ' + msg);
-  if (channel && msg && msg.content) {
-    channel.sendToQueue(resultsQueue, Buffer.from(msg.content.toString()), {
-      persistent: true
-    });
-    channel.nack(msg);
+export function errorAndExit(e, msg, chnl) {
+  console.log('==== ERROR AND EXIT =====');
+  console.log('e (Error): ');
+  console.log(e);
+  console.log('msg (RMQ): ');
+  console.log(msg);
+
+  if (!channel) {
+    channel = chnl;
   }
-  process.exit();
+
+  if (channel && msg) {
+    console.log('im channel & msg IF geladnet');
+    console.log(channel);
+    if (msg.content) {
+      channel.sendToQueue(resultsQueue, Buffer.from(msg.content.toString()), {
+        persistent: true
+      });
+    }
+    channel.nack(msg, false, false);
+  }
 }
 
 /**
@@ -73,6 +86,9 @@ export async function initialize(
 
   channel.assertQueue(workerQueue, {
     durable: true
+    // arguments: {
+    //   'x-dead-letter-exchange': 'DeadLetterExchange'
+    // }
   });
 
   log(`Worker waiting for messages in ${workerQueue}.`);
@@ -98,7 +114,7 @@ export async function initialize(
         channel.ack(msg);
         log('Worker finished');
       } catch (e) {
-        errorAndExit(e);
+        errorAndExit(e, msg);
       }
     },
     {
