@@ -1,6 +1,6 @@
 import amqp from 'amqplib';
 import { errorAndExit, log } from '../workerTemplate.js';
-import { randomUUID } from 'crypto'
+import { randomUUID } from 'crypto';
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -46,13 +46,15 @@ let channel;
     ]
   }
  */
-const dispatcher = async() => {
-  const connection = await amqp.connect({
-    hostname: rabbitHost,
-    username: rabbitUser,
-    password: rabbitPass,
-    heartbeat: rabbitHeartbeat
-  }).catch(errorAndExit);
+const dispatcher = async () => {
+  const connection = await amqp
+    .connect({
+      hostname: rabbitHost,
+      username: rabbitUser,
+      password: rabbitPass,
+      heartbeat: rabbitHeartbeat
+    })
+    .catch(errorAndExit);
 
   channel = await connection.createChannel().catch(errorAndExit);
 
@@ -64,24 +66,17 @@ const dispatcher = async() => {
     durable: true
   });
 
-  log(`Dispatcher waiting for messages in ` +
-    `${workerQueue} and ${resultQueue}.`);
-
-  channel.consume(
-    workerQueue,
-    handleNextTask,
-    {
-      noAck: false
-    }
+  log(
+    `Dispatcher waiting for messages in ` + `${workerQueue} and ${resultQueue}.`
   );
 
-  channel.consume(
-    resultQueue,
-    handleResults,
-    {
-      noAck: false
-    }
-  );
+  channel.consume(workerQueue, handleNextTask, {
+    noAck: false
+  });
+
+  channel.consume(resultQueue, handleResults, {
+    noAck: false
+  });
 };
 
 /**
@@ -96,7 +91,7 @@ const handleNextTask = (msg) => {
   try {
     const job = JSON.parse(msg.content.toString());
     const chain = job.job;
-    log('Received a job configuration, invoking workers...')
+    log('Received a job configuration, invoking workers...');
 
     // validate
     if (!chain || chain.length < 1) {
@@ -110,17 +105,19 @@ const handleNextTask = (msg) => {
     }
 
     // find next task that has not run yet (status is not 'success')
-    nextTaskEntry = chain.find(task => !(task.status && task.status === 'success'));
+    nextTaskEntry = chain.find(
+      (task) => !(task.status && task.status === 'success')
+    );
 
     if (nextTaskEntry) {
       job.nextTask = {
         task: nextTaskEntry,
-        idx: chain.findIndex(el => el.id === nextTaskEntry.id)
+        idx: chain.findIndex((el) => el.id === nextTaskEntry.id)
       };
       log(`Sending the next task to queue ${nextTaskEntry.type} ...`);
       channel.sendToQueue(
         nextTaskEntry.type,
-        Buffer.from(JSON.stringify({content: job})),
+        Buffer.from(JSON.stringify({ content: job })),
         {
           persistent: true
         }
@@ -148,25 +145,25 @@ const handleNextTask = (msg) => {
 const handleResults = (msg) => {
   try {
     const job = JSON.parse(msg.content.toString());
-    log('Got a new task result...')
-    if (job && job.nextTask && job.nextTask.task &&
-      job.nextTask.task.status === 'success') {
+    log('Got a new task result...');
+    if (
+      job &&
+      job.nextTask &&
+      job.nextTask.task &&
+      job.nextTask.task.status === 'success'
+    ) {
       // write back outputs to original job config
       job.job[job.nextTask.idx] = job.nextTask.task;
       // remove the succeeded job from the `nextTask` queue
       delete job.nextTask;
     } else {
       channel.nack(msg);
-      throw('Processing failed for task' + JSON.stringify(job));
+      throw 'Processing failed for task' + JSON.stringify(job);
     }
     log(`Sending job back to main worker queue ${workerQueue} ...`);
-    channel.sendToQueue(
-      workerQueue,
-      Buffer.from(JSON.stringify(job)),
-      {
-        persistent: true
-      }
-    );
+    channel.sendToQueue(workerQueue, Buffer.from(JSON.stringify(job)), {
+      persistent: true
+    });
     channel.ack(msg);
   } catch (e) {
     errorAndExit(msg, e);

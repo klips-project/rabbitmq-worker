@@ -1,5 +1,5 @@
 import amqp from 'amqplib';
-import { randomUUID } from 'crypto'
+import { randomUUID } from 'crypto';
 
 /*
  * This is a template rabbitmq worker.
@@ -20,7 +20,7 @@ export function errorAndExit(msg) {
   log('Error caught: ' + msg);
   if (channel && msg && msg.content) {
     channel.sendToQueue(resultsQueue, Buffer.from(msg.content.toString()), {
-        persistent: true
+      persistent: true
     });
     channel.nack(msg);
   }
@@ -29,13 +29,15 @@ export function errorAndExit(msg) {
 
 /**
  * Log a message with current timestamp and worker ID
- * @param {String} msg 
+ * @param {String} msg
  */
 export function log(msg) {
   if (!workerId) {
     workerId = randomUUID();
   }
-  console.log(' [*] ' + new Date().toISOString() + ' ID:' + workerId + ': ' + msg);
+  console.log(
+    ' [*] ' + new Date().toISOString() + ' ID:' + workerId + ': ' + msg
+  );
 }
 
 /**
@@ -49,13 +51,22 @@ export function log(msg) {
  * @param {String} resultQueue The name of the result queue to report back to
  * @param {Function} callBack The callback function getting called when a job is received
  */
-export async function initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callBack) {
-  const connection = await amqp.connect({
-    hostname: rabbitHost,
-    username: rabbitUser,
-    password: rabbitPass,
-    heartbeat: 60
-  }).catch(errorAndExit);
+export async function initialize(
+  rabbitHost,
+  rabbitUser,
+  rabbitPass,
+  workerQueue,
+  resultQueue,
+  callBack
+) {
+  const connection = await amqp
+    .connect({
+      hostname: rabbitHost,
+      username: rabbitUser,
+      password: rabbitPass,
+      heartbeat: 60
+    })
+    .catch(errorAndExit);
   channel = await connection.createChannel().catch(errorAndExit);
   workerId = randomUUID();
   resultsQueue = resultQueue;
@@ -70,8 +81,9 @@ export async function initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue
     async function (msg) {
       try {
         const job = JSON.parse(msg.content.toString());
-        log(`Received a message in queue ${workerQueue}: ` +
-          JSON.stringify(job.content.nextTask)
+        log(
+          `Received a message in queue ${workerQueue}: ` +
+            JSON.stringify(job.content.nextTask)
         );
         let workerJob = job.content.nextTask.task;
         await callBack(workerJob, getInputs(job.content.job, workerJob));
@@ -105,9 +117,11 @@ export async function initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue
 function getInputs(job, task) {
   const inputs = [];
   if (task.inputs) {
-    task.inputs.forEach(el => {
+    task.inputs.forEach((el) => {
       if (el instanceof Object && el.outputOfId) {
-        inputs.push(job.find(proc => proc.id === el.outputOfId).outputs[el.outputIndex]);
+        inputs.push(
+          job.find((proc) => proc.id === el.outputOfId).outputs[el.outputIndex]
+        );
       } else {
         inputs.push(el);
       }
