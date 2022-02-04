@@ -1,6 +1,6 @@
 FROM node:alpine
 
-COPY ./package.json ./package-lock.json /home/
+COPY src/geoserver-publish-geotiff/package.json src/geoserver-publish-geotiff/package-lock.json /home/
 WORKDIR /home/
 RUN npm install
 COPY src/geoserver-publish-geotiff/index.js worker/

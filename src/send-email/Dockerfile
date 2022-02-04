@@ -11,7 +11,7 @@ ENV RABBITHOST amqp://rabbitmq
 ENV WORKERQUEUE send-email
 ENV RESULTSQUEUE results
 
-COPY ./package.json ./package-lock.json /home/
+COPY src/send-email/package.json src/send-email/package-lock.json /home/
 WORKDIR /home/
 RUN npm install
 COPY src/send-email/index.js worker/

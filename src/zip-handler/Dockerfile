@@ -1,6 +1,6 @@
 FROM node:alpine
 
-COPY ./package.json ./package-lock.json /home/
+COPY src/zip-handler/package.json src/zip-handler/package-lock.json /home/
 WORKDIR /home/
 RUN npm install
 COPY src/zip-handler/index.js worker/

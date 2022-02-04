@@ -1,6 +1,6 @@
 FROM node:alpine
 
-COPY ./package.json ./package-lock.json /home/
+COPY src/dispatcher/package.json src/dispatcher/package-lock.json /home/
 WORKDIR /home/
 RUN npm install
 COPY src/dispatcher/index.js worker/

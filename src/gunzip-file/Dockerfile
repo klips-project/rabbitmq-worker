@@ -1,6 +1,6 @@
 FROM node:alpine
 
-COPY ./package.json ./package-lock.json /home/
+COPY src/gunzip-file/package.json src/gunzip-file/package-lock.json /home/
 WORKDIR /home/
 RUN npm install
 COPY src/gunzip-file/index.js worker/
