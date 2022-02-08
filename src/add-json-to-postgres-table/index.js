@@ -21,6 +21,17 @@ if (
 }
 
 /**
+ * NOTE: This worker is for demonstration only so far. It requires a table in the database with this structure:
+
+  CREATE TABLE public.dummy (
+    id SERIAL PRIMARY KEY,
+    "json" json,
+    geom geometry(point, 4326)
+  );
+
+ */
+
+/**
  * Reads JSON file from disk and inserts it in a DB table
  *
  * @param {Object} workerJob The job object
