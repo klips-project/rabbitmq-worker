@@ -1,5 +1,5 @@
 import GeoServerRestClient from 'geoserver-node-client/geoserver-rest-client.js';
-import { log, initialize, errorAndExit } from '../workerTemplate.js';
+import { log, initialize } from '../workerTemplate.js';
 
 const url = process.env.GSHOST;
 const user = process.env.GSUSER;
@@ -46,17 +46,17 @@ const geoserverPublishLayerFromDb = async(workerJob, inputs) => {
   log('Checking GeoServer connectivity …')
   const gsExists = await grc.exists();
   if (!gsExists) {
-    errorAndExit('GeoServer not found');
+    throw 'GeoServer not found';
   }
   
   const workspaceExists = await grc.workspaces.get(workspace);
   if (!workspaceExists) {
-    errorAndExit('Workspace does not exist, exiting …');
+    throw 'Workspace does not exist, exiting …';
   }
 
   const dataStoreExists = await grc.datastores.getDataStore(workspace, dataStore);
   if (!dataStoreExists) {
-    errorAndExit('Datastore does not exist, exiting …');
+    throw 'Datastore does not exist, exiting …';
   }
 
   const created = await grc.layers.publishFeatureType(
@@ -65,7 +65,7 @@ const geoserverPublishLayerFromDb = async(workerJob, inputs) => {
   if (created) {
     log('Succesfully published Layer');
   } else {
-    errorAndExit('Could not publish Layer');
+    throw 'Could not publish Layer';
   }
   
   log('GeoServer worker finished');
