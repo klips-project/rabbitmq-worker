@@ -43,7 +43,7 @@ if (
   "job": [
     {
        "id": 123,
-       "type": "add-json-to-postgres-table",
+       "type": "json-to-postgres-table",
        "inputs": ['dummy','/path/to/json']
     }
   ]

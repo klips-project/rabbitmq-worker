@@ -1,1 +1,1 @@
-["download-file","gunzip-file","geoserver-publish-sld","geoserver-publish-layer-from-db","geonetwork-publish-metadata","send-email","dispatcher","zip-handler","upload-file", "geoserver-publish-geotiff", "add-json-to-postgres-table"]
+["download-file","gunzip-file","geoserver-publish-sld","geoserver-publish-layer-from-db","geonetwork-publish-metadata","send-email","dispatcher","zip-handler","upload-file", "geoserver-publish-geotiff", "json-to-postgres-table"]
