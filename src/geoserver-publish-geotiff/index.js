@@ -1,5 +1,5 @@
 import GeoServerRestClient from 'geoserver-node-client/geoserver-rest-client.js';
-import { log, initialize, errorAndExit } from '../workerTemplate.js';
+import { log, initialize } from '../workerTemplate.js';
 
 const url = process.env.GEOSERVER_REST_URL;
 const user = process.env.GEOSERVER_USER;
@@ -45,7 +45,7 @@ const geoserverPublishGeoTiff = async (workerJob, inputs) => {
 
   const gsExists = await grc.exists();
   if (!gsExists) {
-    errorAndExit('GeoServer not found');
+    throw 'GeoServer not found';
   }
 
   const geotiffCreated = await grc.datastores.createGeotiffFromFile(
@@ -55,7 +55,7 @@ const geoserverPublishGeoTiff = async (workerJob, inputs) => {
   if (geotiffCreated) {
     log('Successfully published GeoTIFF');
   } else {
-    errorAndExit('Could not publish GeoTIFF')
+    throw 'Could not publish GeoTIFF';
   }
 
   workerJob.status = 'success';
