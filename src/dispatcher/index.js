@@ -1,5 +1,5 @@
 import amqp from 'amqplib';
-import { errorAndExit, log } from '../workerTemplate.js';
+import { log } from '../workerTemplate.js';
 import { randomUUID } from 'crypto';
 
 const workerQueue = process.env.WORKERQUEUE;
@@ -27,7 +27,7 @@ let channel;
     "job": [
       {
         "id": 123,
-        "type": "download-new-data-from-url",
+        "type": "download-file",
         "inputs": [
           "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/cdrom/debian-cd_info.tar.gz",
           "/home/data/"
@@ -47,16 +47,14 @@ let channel;
   }
  */
 const dispatcher = async () => {
-  const connection = await amqp
-    .connect({
-      hostname: rabbitHost,
-      username: rabbitUser,
-      password: rabbitPass,
-      heartbeat: rabbitHeartbeat
-    })
-    .catch(errorAndExit);
+  const connection = await amqp.connect({
+    hostname: rabbitHost,
+    username: rabbitUser,
+    password: rabbitPass,
+    heartbeat: rabbitHeartbeat
+  });
 
-  channel = await connection.createChannel().catch(errorAndExit);
+  channel = await connection.createChannel();
 
   channel.assertExchange('DeadLetterExchange', 'fanout', {
     durable: true,
@@ -93,26 +91,30 @@ const dispatcher = async () => {
 /**
  * Determine the next task from job list and sends it to worker queue.
  * If there is no task left, finish the execution with success.
+ * If an error is detected in a result message, we `nack` the job message which
+ * then will be forwarded to the dead letter exchange.
  * @param {Object} msg The message
  */
 const handleNextTask = (msg) => {
   let nextTaskEntry;
-  let firstIteration = false;
 
   try {
     const job = JSON.parse(msg.content.toString());
     const chain = job.job;
-    log('Received a job configuration, invoking workers...');
+    log('Received a job configuration ...');
+
+    if (job.error) {
+      throw job.error;
+    }
 
     // validate
     if (!chain || chain.length < 1) {
-      errorAndExit('Invalid arguments given' + job, msg, channel);
+      throw 'Invalid arguments given' + job; 
     }
 
     // create unique ID if necessary (on first run)
     if (!job.id) {
       job.id = randomUUID();
-      firstIteration = true;
     }
 
     // find next task that has not run yet (status is not 'success')
@@ -136,18 +138,13 @@ const handleNextTask = (msg) => {
     } else {
       // overall job success
       job.status = 'success';
-      log('Job done!', JSON.stringify(job));
+      log('Job finished successfully: ' + JSON.stringify(job));
     }
-    // acknowledge messages that are not the first / initial job
-    if (!firstIteration) {
-      channel.ack(msg);
-    }
+    channel.ack(msg);
   } catch (e) {
-    // TODO: we reach here because of unreadable job (produced by erroring in worker).
-    // While its great to reach here in case of an error, the job should still be parseable
-    // and we should explicitly detect the error and exit
-    log('Processing failed for task' + msg);
-    errorAndExit(e, msg, channel);
+    log('Processing failed for task. ' + e);
+    // send to dead letter exchange
+    channel.nack(msg, false, false);
   }
 };
 
@@ -178,7 +175,9 @@ const handleResults = (msg) => {
     });
     channel.ack(msg);
   } catch (e) {
-    errorAndExit(e, msg, channel);
+    log('Processing failed for result. ' + e);
+    // send to dead letter exchange
+    channel.nack(msg, false, false);
   }
 };
 

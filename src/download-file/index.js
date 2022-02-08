@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import request from 'request';
 
-import { initialize, errorAndExit, log } from '../workerTemplate.js';
+import { initialize, log } from '../workerTemplate.js';
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
@@ -15,7 +15,7 @@ const rabbitPass = process.env.RABBITPASS;
  * @param {Object} workerJob The job object
  * @param {Array} inputs The inputs for this process
  */
-const downloadNewDataFromURL = async(workerJob, inputs) => {
+const downloadFile = async(workerJob, inputs) => {
   const uri = inputs[0];
   const target = inputs[1];
   const url = new URL(uri);
@@ -25,7 +25,7 @@ const downloadNewDataFromURL = async(workerJob, inputs) => {
 
   log('Downloading ' + url.href + ' …');
 
-  await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     request({
         uri: url.href,
     })
@@ -40,9 +40,7 @@ const downloadNewDataFromURL = async(workerJob, inputs) => {
         reject(error);
     })
   });
-
-  
 };
 
 // Initialize and start the worker process
-initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, downloadNewDataFromURL);
+initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, downloadFile);

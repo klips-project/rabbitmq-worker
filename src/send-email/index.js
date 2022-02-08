@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { log, initialize, errorAndExit } from '../workerTemplate.js';
+import { log, initialize } from '../workerTemplate.js';
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -47,7 +47,7 @@ const sendEmail = async (workerJob, inputs) => {
 
   transporter.verify(async function (error) {
     if (error) {
-      log(error);
+      throw error;
     } else {
       await transporter
         .sendMail({
@@ -55,8 +55,7 @@ const sendEmail = async (workerJob, inputs) => {
           to: recipientEmail,
           subject,
           text
-        })
-        .catch(errorAndExit);
+        });
     }
   });
 

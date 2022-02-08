@@ -1,5 +1,5 @@
 import GeoNetworkClient from '../gnos-client.js';
-import { log, initialize, errorAndExit } from '../workerTemplate.js';
+import { log, initialize } from '../workerTemplate.js';
 
 const url = process.env.GNHOST;
 const user = process.env.GNUSER;
@@ -29,21 +29,21 @@ const gnos = new GeoNetworkClient(url, user, pw);
        ]
      }
  */
-const geonetworkPublishMetdata = async(workerJob, inputs) => {
+const geonetworkPublishMetadata = async(workerJob, inputs) => {
   const metadataXml = inputs[0];
   const mode = inputs[1] || 'CREATE';
 
   log('Checking GeoNetwork connectivity …')
   const gnExists = await gnos.exists();
   if (!gnExists) {
-    errorAndExit('GeoNetwork not found');
+    throw 'GeoNetwork not found';
   }
 
   const uuid = await gnos.publish(metadataXml, mode);
   if (uuid) {
-    log('Succesfully published Metdata');
+    log('Succesfully published Metadata');
   } else {
-    errorAndExit('Could not publish Metdata');
+    throw 'Could not publish Metadata';
   }
   
   log('GeoNetwork worker finished');
@@ -53,4 +53,4 @@ const geonetworkPublishMetdata = async(workerJob, inputs) => {
 };
 
 // Initialize and start the worker process
-initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geonetworkPublishMetdata);
+initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geonetworkPublishMetadata);

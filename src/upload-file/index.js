@@ -2,7 +2,7 @@ import fs from 'fs';
 import FormData from 'form-data';
 import fetch from 'node-fetch';
 
-import { initialize, errorAndExit, log } from '../workerTemplate.js';
+import { initialize, log } from '../workerTemplate.js';
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -47,7 +47,7 @@ const uploadFile = async(workerJob, inputs) => {
     workerJob.status = 'success';
     workerJob.outputs = [];
   } else {
-    errorAndExit('Upload failed: ' + response.statusText)
+    throw 'Upload failed: ' + response.statusText;
   }
 };
 

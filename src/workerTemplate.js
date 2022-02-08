@@ -13,40 +13,6 @@ let workerId;
 let resultsQueue;
 
 /**
- * Reports error and exits
- * @param {String} msg The RabbitMQ Message
- * @param {String} e The error message
- */
-export function errorAndExit(e, msg, chnl) {
-  console.log('Error caught: ', e);
-  if (!channel) {
-    channel = chnl;
-  }
-
-  if (channel && msg) {
-    if (msg.content) {
-      channel.sendToQueue(resultsQueue, Buffer.from(msg.content.toString()), {
-        persistent: true
-      });
-    }
-    channel.nack(msg, false, false);
-  }
-}
-
-/**
- * Log a message with current timestamp and worker ID
- * @param {String} msg
- */
-export function log(msg) {
-  if (!workerId) {
-    workerId = randomUUID();
-  }
-  console.log(
-    ' [*] ' + new Date().toISOString() + ' ID:' + workerId + ': ' + msg
-  );
-}
-
-/**
  * Main method used to implement a worker.
  * Calls the given callback when a message is received and report back
  *
@@ -65,15 +31,13 @@ export async function initialize(
   resultQueue,
   callBack
 ) {
-  const connection = await amqp
-    .connect({
-      hostname: rabbitHost,
-      username: rabbitUser,
-      password: rabbitPass,
-      heartbeat: 60
-    })
-    .catch(errorAndExit);
-  channel = await connection.createChannel().catch(errorAndExit);
+  const connection = await amqp.connect({
+    hostname: rabbitHost,
+    username: rabbitUser,
+    password: rabbitPass,
+    heartbeat: 60
+  });
+  channel = await connection.createChannel();
   workerId = randomUUID();
   resultsQueue = resultQueue;
 
@@ -101,11 +65,11 @@ export async function initialize(
             persistent: true
           }
         );
-        channel.ack(msg);
         log('Worker finished');
       } catch (e) {
-        errorAndExit(e, msg);
+        reportError(e, msg);
       }
+      channel.ack(msg);
     },
     {
       noAck: false
@@ -134,4 +98,36 @@ function getInputs(job, task) {
     });
   }
   return inputs;
+}
+
+/**
+ * Reports error to the results queue
+ * @param {String} error The error message
+ * @param {String} message The optional RabbitMQ Message
+ */
+ export function reportError(error, message) {
+  console.log('Error caught: ', error);
+
+  if (channel && message && message.content) {
+    const job = JSON.parse(message.content.toString());
+    job.content.error = error.toString();
+    channel.sendToQueue(resultsQueue, Buffer.from(JSON.stringify(job.content)), {
+      persistent: true
+    });
+  } else {
+    throw 'Could not report error to results queue, missing message or channel';
+  }
+}
+
+/**
+ * Log a message with current timestamp and worker ID
+ * @param {String} msg
+ */
+export function log(msg) {
+  if (!workerId) {
+    workerId = randomUUID();
+  }
+  console.log(
+    ' [*] ' + new Date().toISOString() + ' ID:' + workerId + ': ' + msg
+  );
 }
