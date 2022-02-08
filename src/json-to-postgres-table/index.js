@@ -1,4 +1,4 @@
-import { log, initialize, errorAndExit } from '../workerTemplate.js';
+import { log, initialize } from '../workerTemplate.js';
 import fs from 'fs';
 import pkg from 'pg';
 const { Client } = pkg;
@@ -61,7 +61,7 @@ const addJsonToPostgresTable = async (workerJob, inputs) => {
     data = JSON.parse(rawData);
     jsonAsString = JSON.stringify(data);
   } catch (error) {
-    errorAndExit('Reading JSON from disk failed')
+    throw 'Reading JSON from disk failed'
   }
 
   try {
@@ -76,7 +76,7 @@ const addJsonToPostgresTable = async (workerJob, inputs) => {
     log('Successfully inserted JSON')
     await client.end()
   } catch (error) {
-    errorAndExit('Inserting JSON failed')
+    throw 'Inserting JSON failed'
   }
   workerJob.status = 'success';
   workerJob.outputs = [];
