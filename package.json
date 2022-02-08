@@ -15,6 +15,7 @@
     "geoserver-node-client": "0.0.5",
     "node-fetch": "^2.6.1",
     "nodemailer": "^6.6.2",
+    "pg": "^8.7.3",
     "request": "^2.88.2",
     "unzipper": "^0.10.11"
   },
