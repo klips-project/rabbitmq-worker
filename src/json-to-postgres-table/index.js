@@ -25,8 +25,7 @@ if (
 
   CREATE TABLE public.dummy (
     id SERIAL PRIMARY KEY,
-    "json" json,
-    geom geometry(point, 4326)
+    "json" json
   );
 
  */
@@ -67,9 +66,8 @@ const addJsonToPostgresTable = async (workerJob, inputs) => {
   try {
     const client = new Client()
     await client.connect()
-    let sql = `INSERT INTO ${table} (json, geom) VALUES (
-        '${jsonAsString}'::json,
-        ST_SetSRID(ST_MakePoint(7.2, 42.3), 4326)
+    let sql = `INSERT INTO ${table} (json) VALUES (
+        '${jsonAsString}'::json
       )`;
     await client.query(sql);
 
