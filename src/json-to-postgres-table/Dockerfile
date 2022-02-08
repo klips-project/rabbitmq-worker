@@ -1,6 +1,6 @@
 FROM node:alpine
 
-COPY ./package.json ./package-lock.json /home/
+COPY src/json-to-postgres-table/package.json src/json-to-postgres-table/package-lock.json /home/
 WORKDIR /home/
 RUN npm install
 COPY src/json-to-postgres-table/index.js worker/
