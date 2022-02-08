@@ -7,7 +7,7 @@ ENV RABBITHOST amqp://rabbitmq
 ENV WORKERQUEUE geonetwork-publish-metadata
 ENV RESULTSQUEUE results
 
-COPY ./package.json ./package-lock.json /home/
+COPY src/geonetwork-publish-metadata/package.json src/geonetwork-publish-metadata/package-lock.json /home/
 WORKDIR /home/
 RUN npm install
 COPY src/geonetwork-publish-metadata/index.js worker/

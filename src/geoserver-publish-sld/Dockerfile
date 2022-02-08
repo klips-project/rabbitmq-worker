@@ -7,7 +7,7 @@ ENV RABBITHOST amqp://rabbitmq
 ENV WORKERQUEUE geoserver-publish-sld
 ENV RESULTSQUEUE results
 
-COPY ./package.json ./package-lock.json /home/
+COPY src/geoserver-publish-sld/package.json src/geoserver-publish-sld/package-lock.json /home/
 WORKDIR /home/
 RUN npm install
 COPY src/geoserver-publish-sld/index.js worker/
