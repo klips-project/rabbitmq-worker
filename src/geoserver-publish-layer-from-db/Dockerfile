@@ -7,7 +7,7 @@ ENV RABBITHOST amqp://rabbitmq
 ENV WORKERQUEUE geoserver-publish-layer-from-db
 ENV RESULTSQUEUE results
 
-COPY ./package.json ./package-lock.json /home/
+COPY src/geoserver-publish-layer-from-db/package.json src/geoserver-publish-layer-from-db/package-lock.json /home/
 WORKDIR /home/
 RUN npm install
 COPY src/geoserver-publish-layer-from-db/index.js worker/
