@@ -1,5 +1,5 @@
 import amqp from 'amqplib';
-import { randomUUID } from 'crypto'
+import { randomUUID } from 'crypto';
 
 /*
  * This is a template rabbitmq worker.
@@ -13,32 +13,6 @@ let workerId;
 let resultsQueue;
 
 /**
- * Reports error and exits
- * @param {String} msg The error message
- */
-export function errorAndExit(msg) {
-  log('Error caught: ' + msg);
-  if (channel && msg && msg.content) {
-    channel.sendToQueue(resultsQueue, Buffer.from(msg.content.toString()), {
-        persistent: true
-    });
-    channel.nack(msg);
-  }
-  process.exit();
-}
-
-/**
- * Log a message with current timestamp and worker ID
- * @param {String} msg 
- */
-export function log(msg) {
-  if (!workerId) {
-    workerId = randomUUID();
-  }
-  console.log(' [*] ' + new Date().toISOString() + ' ID:' + workerId + ': ' + msg);
-}
-
-/**
  * Main method used to implement a worker.
  * Calls the given callback when a message is received and report back
  *
@@ -49,14 +23,21 @@ export function log(msg) {
  * @param {String} resultQueue The name of the result queue to report back to
  * @param {Function} callBack The callback function getting called when a job is received
  */
-export async function initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callBack) {
+export async function initialize(
+  rabbitHost,
+  rabbitUser,
+  rabbitPass,
+  workerQueue,
+  resultQueue,
+  callBack
+) {
   const connection = await amqp.connect({
     hostname: rabbitHost,
     username: rabbitUser,
     password: rabbitPass,
     heartbeat: 60
-  }).catch(errorAndExit);
-  channel = await connection.createChannel().catch(errorAndExit);
+  });
+  channel = await connection.createChannel();
   workerId = randomUUID();
   resultsQueue = resultQueue;
 
@@ -70,8 +51,9 @@ export async function initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue
     async function (msg) {
       try {
         const job = JSON.parse(msg.content.toString());
-        log(`Received a message in queue ${workerQueue}: ` +
-          JSON.stringify(job.content.nextTask)
+        log(
+          `Received a message in queue ${workerQueue}: ` +
+            JSON.stringify(job.content.nextTask)
         );
         let workerJob = job.content.nextTask.task;
         await callBack(workerJob, getInputs(job.content.job, workerJob));
@@ -83,11 +65,11 @@ export async function initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue
             persistent: true
           }
         );
-        channel.ack(msg);
         log('Worker finished');
       } catch (e) {
-        errorAndExit(e);
+        reportError(e, msg);
       }
+      channel.ack(msg);
     },
     {
       noAck: false
@@ -105,13 +87,47 @@ export async function initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue
 function getInputs(job, task) {
   const inputs = [];
   if (task.inputs) {
-    task.inputs.forEach(el => {
+    task.inputs.forEach((el) => {
       if (el instanceof Object && el.outputOfId) {
-        inputs.push(job.find(proc => proc.id === el.outputOfId).outputs[el.outputIndex]);
+        inputs.push(
+          job.find((proc) => proc.id === el.outputOfId).outputs[el.outputIndex]
+        );
       } else {
         inputs.push(el);
       }
     });
   }
   return inputs;
+}
+
+/**
+ * Reports error to the results queue
+ * @param {String} error The error message
+ * @param {String} message The optional RabbitMQ Message
+ */
+ export function reportError(error, message) {
+  console.log('Error caught: ', error);
+
+  if (channel && message && message.content) {
+    const job = JSON.parse(message.content.toString());
+    job.content.error = error.toString();
+    channel.sendToQueue(resultsQueue, Buffer.from(JSON.stringify(job.content)), {
+      persistent: true
+    });
+  } else {
+    throw 'Could not report error to results queue, missing message or channel';
+  }
+}
+
+/**
+ * Log a message with current timestamp and worker ID
+ * @param {String} msg
+ */
+export function log(msg) {
+  if (!workerId) {
+    workerId = randomUUID();
+  }
+  console.log(
+    ' [*] ' + new Date().toISOString() + ' ID:' + workerId + ': ' + msg
+  );
 }

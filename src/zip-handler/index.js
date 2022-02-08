@@ -4,7 +4,7 @@ import archiver from 'archiver';
 import unzip from 'unzipper';
 import path from 'path';
 
-import { initialize, errorAndExit, log } from '../workerTemplate.js';
+import { initialize, log } from '../workerTemplate.js';
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -51,7 +51,7 @@ const zipFiles = async(workerJob, inputs) => {
   const output = fs.createWriteStream(tempFilePath);
   const zip = archiver('zip');
 
-  zip.on('error', errorAndExit);
+  zip.on('error', (e) => {throw e});
   zip.pipe(output);
   zip.directory(folder, false);
   zip.finalize();

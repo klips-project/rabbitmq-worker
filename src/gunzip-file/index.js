@@ -1,6 +1,6 @@
 import zlib from 'zlib';
 import fs from 'fs';
-import { initialize, log, errorAndExit } from '../workerTemplate.js';
+import { initialize, log } from '../workerTemplate.js';
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -27,27 +27,25 @@ const gunzipDownloadedFile = async(workerJob, inputs) => {
     chunks.push(chunk);
   });
 
-  await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     fileStream.once('end', () => {
       fileBuffer = Buffer.concat(chunks);
       zlib.gunzip(fileBuffer, function (error, result) {
         if (error) {
-          errorAndExit(error);
+          reject(error);
         }
         fs.writeFileSync(encodeURI(fileName), result.toString());
         log('The extract has finished.');
+        fileName = encodeURI(fileName);
+        workerJob.status = 'success';
+        workerJob.outputs = [fileName];
         resolve();
       });
     });
     fileStream.once('error', (err) => {
-      errorAndExit(err);
       reject(err);
     })
-  }).catch(errorAndExit);
-
-  fileName = encodeURI(fileName);
-  workerJob.status = 'success';
-  workerJob.outputs = [fileName];
+  });
 };
 
 // Initialize and start the worker process

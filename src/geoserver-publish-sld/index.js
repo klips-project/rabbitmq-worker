@@ -1,5 +1,5 @@
 import GeoServerRestClient from 'geoserver-node-client/geoserver-rest-client.js';
-import { log, initialize, errorAndExit } from '../workerTemplate.js';
+import { log, initialize } from '../workerTemplate.js';
 
 const url = process.env.GSHOST;
 const user = process.env.GSUSER;
@@ -38,14 +38,14 @@ const geoserverPublishSLD = async(workerJob, inputs) => {
   log('Checking GeoServer connectivity …')
   const gsExists = await grc.exists();
   if (!gsExists) {
-    errorAndExit('GeoServer not found');
+    throw 'GeoServer not found';
   }
   const workspaceExists = await grc.workspaces.get(sldWorkspace);
   if (!workspaceExists) {
     log('Workspace does not exist, creating …');
     const workspaceCreated = grc.workspaces.create(sldWorkspace);
     if (!workspaceCreated) {
-      errorAndExit('Could not create workspace');
+      throw 'Could not create workspace';
     } else {
       log('Workspace created');
     }
@@ -53,14 +53,14 @@ const geoserverPublishSLD = async(workerJob, inputs) => {
 
   const styleExists = await grc.styles.getStyleInformation(sldName, sldWorkspace);
   if (styleExists) {
-    errorAndExit('Style already exists, cancelling …');
+    throw 'Style already exists, cancelling …';
   }
 
   const created = await grc.styles.publish(sldWorkspace, sldName, sldBody);
   if (created) {
     log('Succesfully published SLD');
   } else {
-    errorAndExit('Could not publish SLD');
+    throw 'Could not publish SLD';
   }
   
   log('GeoServer worker finished');
