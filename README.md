@@ -31,15 +31,15 @@ Consider a job definition given as JSON as described in [job example](#jobexampl
 The dispatcher cares about this job by sending messages to several workers which handle inidivdual tasks, reporting errors and determining when a job has completely finished.
 
 It assumes that jobs are sent to a message queue.
-The dispatcher receives the job JSON, determines which single tasks it consists of and for every single task, send a message to a queue that is named equally as the `type` given in a task.
+The dispatcher receives the job JSON, determines which single tasks it consists of and for every single task, sends a message to a queue that is named equally as the `type` given in a task.
 
-As soon as a worker returned (with a result or excpetion), a message appears in another called (defaults to `results`). The `dispatcher` picks up these messages and determines if the task succeeded and configures information about the next task.
+As soon as a worker finishes (with a result or exception), a message will be sent to a results queue (name defaults to `results`). The `dispatcher` picks up these messages and determines if the task succeeded and configures information about the next task.
 
-It will then send a message conatining the job and the generated results and information back to the job queue.
+It will then send a message containing the job and the generated results and information back to the job queue.
 
 The listener on the job queue inspects the job message again and determines if the next task should be called, the job completed or an error occured.
 
-In case of an error, the job message and the error will be reported to the `DeadLetterQueue`, where the failed jobs can be reviewed.
+In case of an error, the job message and the error will be reported to the `DeadLetterQueue`, where the failed jobs can be reviewed later.
 
 Changes to workers are automatically deployed from the `main` branch and published to `ghcr.io/klips-project/mqm-worker/`via Pull Requests.
 
