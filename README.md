@@ -2,7 +2,7 @@
 
 This repository provides several workers, e.g:
 
-- download sample dataset (`download-new-data-from-url`)
+- download sample dataset (`download-file`)
 - unzip sample dataset (`gunzip-file`)
 - geoserver publish SLD (`geoserver-publish-sld`)
 - send email (`send-email`)
@@ -25,8 +25,8 @@ _Note_: For each additional worker, the file `./src/packagesToBuild.json` file m
 The desired workers can then be included within a project via Docker Compose as follows:
 
 ```text
-download-new-data-from-url:
-    image: ghcr.io/klips-project/download-new-data-from-url
+download-file:
+    image: ghcr.io/klips-project/download-file
     volumes:
         - ../data:/home/data:Z
     depends_on:
@@ -35,7 +35,7 @@ download-new-data-from-url:
       - RABBITHOST=rabbitmq
       - RABBITUSER=username
       - RABBITPASS=password
-      - WORKERQUEUE=download-new-data-from-url
+      - WORKERQUEUE=download-file
       - RESULTSQUEUE=results
 ```
 
@@ -81,7 +81,7 @@ An example Job used with these workers might look like
 }
 ```
 
-## Creatig a new worker
+## Creating a new worker
 
 Please make use of the templateWorker.js as seen in the existing workers.
 
