@@ -10,6 +10,9 @@
     "devDependencies": {
       "eslint": "^7.29.0"
     },
+    "dependencies": {
+      "amqplib": "^0.8.0"
+    },
     "scripts": {
       "lint": "eslint -c .eslintrc.yml src",
       "test": "npm run lint"
