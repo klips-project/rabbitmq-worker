@@ -1,25 +1,48 @@
 # RabbitMQ Worker
 
-This repository provides several workers, e.g:
+This repository provides a minimal workflow engine based on NodeJS and rabbitmq. It consists of several `workers` that handle different tasks based on a `job` definition.
 
-- download sample dataset (`download-file`)
-- unzip sample dataset (`gunzip-file`)
-- geoserver publish SLD (`geoserver-publish-sld`)
-- send email (`send-email`)
+A job consists of one or more single tasks, that will be handled sequentially.
 
-The initialization is done by the command `npm i`.
-Some workers require environment variables to be set, which can be given e.g. by a docker-compose file.
-See the worker definition for the required variables.
+Jobs are handled by a main worker, called `dispatcher` (see `src/dispatcher`).
+
+All communication / invoking of workers is done via rabbitmq messages in different queues.
+
+See the next sections for details.
 
 ## Requirements
 
-NodeJS v14 and up is needed
+Development: NodeJS v14 and up is needed
+
+Production: Docker needs to be installed in order to work with the docker images. Workers require environment variables to be set, which can be given e.g. by a docker-compose file or via commandline.
+
+### Example for invoking the dispatcher from commandline:
+
+First do a `npm i` to install dependencies inside a specific worker directory, then issue from the root folder (or adjust the path to the js file)
+```
+RABBITHOST=localhost RABBITUSER=user RABBITPASS=user WORKERQUEUE=jobs RESULTSQUEUE=results node src/dispatcher/index.js
+```
+An example for docker can be seen in the next section
 
 ## How it works
 
-The workers are authored to be used as a Docker image in conjunction with a message queue system called RabbitMQ, whose container hostname is `rabbitmq` (`connect('amqp://rabbitmq)'`).
+Consider a job definition given as JSON as described in [job example](#jobexample)
 
-Changes to workers are automatically deployed from the `main` branch and published to `ghcr.io/klips-project/mqm-worker/`.
+The dispatcher cares about this job by sending messages to several workers which handle inidivdual tasks, reporting errors and determining when a job has completely finished.
+
+It assumes that jobs are sent to a message queue.
+The dispatcher receives the job JSON, determines which single tasks it consists of and for every single task, send a message to a queue that is named equally as the `type` given in a task.
+
+As soon as a worker returned (with a result or excpetion), a message appears in another called (defaults to `results`). The `dispatcher` picks up these messages and determines if the task succeeded and configures information about the next task.
+
+It will then send a message conatining the job and the generated results and information back to the job queue.
+
+The listener on the job queue inspects the job message again and determines if the next task should be called, the job completed or an error occured.
+
+In case of an error, the job message and the error will be reported to the `DeadLetterQueue`, where the failed jobs can be reviewed.
+
+Changes to workers are automatically deployed from the `main` branch and published to `ghcr.io/klips-project/mqm-worker/`via Pull Requests.
+
 _Note_: For each additional worker, the file `./src/packagesToBuild.json` file must be extended accordingly.
 
 The desired workers can then be included within a project via Docker Compose as follows:
@@ -41,6 +64,7 @@ download-file:
 
 Via the mounted directory (`data`) the downloaded files are stored and processed if necessary.
 
+[](#jobexample)
 ## Job example
 
 An example Job used with these workers might look like
@@ -50,12 +74,12 @@ An example Job used with these workers might look like
   "job": [
     {
       "id": 123,
-      "type": "download",
-      "inputs": ["https://example.com/test.txt.gz"]
+      "type": "download-file",
+      "inputs": ["https://example.com/test.txt.gz", "/tmp"]
     },
     {
       "id": 456,
-      "type": "extract",
+      "type": "gunzip",
       "inputs": [
         {
           "outputOfId": 123,
