@@ -1,12 +1,12 @@
 # RabbitMQ Worker
 
-This repository provides a minimal workflow engine based on NodeJS and rabbitmq. It consists of several `workers` that handle different tasks based on a `job` definition.
+This repository provides a minimal workflow engine based on NodeJS and RabbitMQ. It consists of several `workers` that handle different tasks based on a `job` definition.
 
 A job consists of one or more single tasks, that will be handled sequentially.
 
 Jobs are handled by a main worker, called `dispatcher` (see `src/dispatcher`).
 
-All communication / invoking of workers is done via rabbitmq messages in different queues.
+All communication / invoking of workers is done via RabbitMQ messages in different queues.
 
 See the next sections for details.
 
@@ -28,7 +28,7 @@ An example for docker can be seen in the next section
 
 Consider a job definition given as JSON as described in [job example](#jobexample)
 
-The dispatcher cares about this job by sending messages to several workers which handle inidivdual tasks, reporting errors and determining when a job has completely finished.
+The dispatcher cares about this job by sending messages to several workers which handle individual tasks, reporting errors and determining when a job has completely finished.
 
 It assumes that jobs are sent to a message queue.
 The dispatcher receives the job JSON, determines which single tasks it consists of and for every single task, sends a message to a queue that is named equally as the `type` given in a task.
@@ -37,11 +37,11 @@ As soon as a worker finishes (with a result or exception), a message will be sen
 
 It will then send a message containing the job and the generated results and information back to the job queue.
 
-The listener on the job queue inspects the job message again and determines if the next task should be called, the job completed or an error occured.
+The listener on the job queue inspects the job message again and determines if the next task should be called, the job completed or an error occurred.
 
 In case of an error, the job message and the error will be reported to the `DeadLetterQueue`, where the failed jobs can be reviewed later.
 
-Changes to workers are automatically deployed from the `main` branch and published to `ghcr.io/klips-project/mqm-worker/`via Pull Requests.
+Changes to workers are automatically deployed from the `main` branch and published to `ghcr.io/klips-project/mqm-worker/` via Pull Requests.
 
 _Note_: For each additional worker, the file `./src/packagesToBuild.json` file must be extended accordingly.
 
@@ -67,7 +67,7 @@ Via the mounted directory (`data`) the downloaded files are stored and processed
 [](#jobexample)
 ## Job example
 
-An example Job used with these workers might look like
+An example job used with these workers might look like
 
 ```json
 {
@@ -107,11 +107,11 @@ An example Job used with these workers might look like
 
 ## Creating a new worker
 
-Please make use of the templateWorker.js as seen in the existing workers.
+Please make use of the `templateWorker.js` as seen in the existing workers.
 
 That way you only need to implement your custom handler function.
 
-Make sure to put your responses into the "outputs" of the current worker job.
+Make sure to put your responses into the `outputs` of the current worker job.
 
 Furthermore, the name of the new worker must be included in the file `./src/packagesToBuild.json`. The name must not use uppercase letters or spaces and must match the name of the folder.
 
