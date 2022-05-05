@@ -16,7 +16,7 @@ let globalResultQueue;
  * Main method used to implement a worker.
  * Calls the given callback when a message is received and report back
  *
- * @param {String} rabbitHost The amqp RabbitMQ host, e.g. `localhost`
+ * @param {String} rabbitHost The AMQP RabbitMQ host, e.g. `localhost`
  * @param {String} rabbitUser The username
  * @param {String} rabbitPass The password
  * @param {String} workerQueue The name of the worker queue to look for jobs
