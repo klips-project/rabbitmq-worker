@@ -1,12 +1,21 @@
 import assert from 'assert';
 import fs from 'fs';
 
+import gdal from 'gdal-async';
+
 import { initialize, log } from '../workerTemplate.js';
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
+
+const allowedEPSGCodes = [
+  "4326",
+  "3857",
+  "25832",
+  "25833"
+];
 
 /**
  * Checks if a GeoTIFF is valid
@@ -16,32 +25,75 @@ const rabbitPass = process.env.RABBITPASS;
  */
 const validateGeoTiff = async (workerJob, inputs) => {
   const filePath = inputs[0];
+  // define fallback validation step if nothing is defined in input arguments
+  const validationSteps = inputs[1] && inputs[1].validationSteps ? inputs[1].validationSteps : ['filesize'];
 
-  // TODO: currently a dummy test with the file size is done
-  //       some actual validation should be performed
-  let stats;
-  try {
-    stats = fs.statSync(filePath);
+  const validationResults = await Promise.all(validationSteps.map(async (step) => {
+    let testResult;
+    switch (step) {
+      case "filesize":
+        testResult = validateFilesize(filePath);
+        log("step1");
+        return testResult;
+      case "projection":
+        testResult = await validateProjection(filePath, allowedEPSGCodes);
+        log("step2");
+        return testResult;
+      default:
+        break;
+    }
+  }));
+
+  if (validationResults.every(result => result)) {
+      log("step3");
+      log('GeoTiff is valid.');
+      workerJob.status = 'success';
+      workerJob.outputs = [filePath];
+    } else {
+      throw 'GeoTIFF is invalid.';
+    }
+
+}
+
+/**
+ * Checks if a GeoTIFF has a minimum file size
+ *
+ * @param {String} filePath Path to a GeoTIFF file
+ * @param {Number} minimumFileSize The minimum file size in bytes
+ * @returns Boolean True, if GeoTIFF is greater than the minimum file size
+ */
+const validateFilesize = (filePath, minimumFileSize = 1000) => {
+  let stats = fs.statSync(filePath);
     assert(stats.size);
-  } catch (error) {
-    throw 'Could not get stats about input file'
-  }
 
-  const kiloByte = 1000;
+  const valid = stats.size > minimumFileSize;
 
-  console.log(stats);
-  console.log(stats.size);
-
-  const valid = stats.size > kiloByte;
-  console.log(valid);
   if (valid) {
-    log('GeoTIFF is valid');
+    return true;
   } else {
-    throw 'GeoTIFF is invalid';
+    log(`GeoTIFF file size is below the defined minium file size of ${minimumFileSize}.`);
+    throw 'GeoTIFF has invalid file size.';
   }
+}
 
-  workerJob.status = 'success';
-  workerJob.outputs = [filePath];
+/**
+ * Checks if a GeoTIFF has an allowed projection.
+ *
+ * @param {String} filePath Path to a GeoTIFF file
+ * @param {Array} List of allowed EPSG codes
+ * @returns Boolean True, if GeoTIFF srs is supported
+ */
+const validateProjection = async (filePath, allowedEPSGCodes) => {
+    const dataset = await gdal.openAsync(filePath);
+    const projectionCode = dataset?.srs?.getAuthorityCode();
+    log(`Projection Code of GeoTiff: ${projectionCode}`);
+
+    if (allowedEPSGCodes.includes(projectionCode)) {
+      return true;
+    }
+    else {
+      throw `Projection code EPSG:${projectionCode} currently not supported.`;
+    }
 }
 
 // Initialize and start the worker process

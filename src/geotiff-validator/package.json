@@ -9,7 +9,8 @@
     "npm": ">=6.0.0"
   },
   "dependencies": {
-    "amqplib": "^0.8.0"
+    "amqplib": "^0.8.0",
+    "gdal-async": "^3.4.3"
   },
   "devDependencies": {
     "eslint": "^7.29.0"
