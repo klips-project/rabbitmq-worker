@@ -118,7 +118,7 @@ const validateFilesize = (filePath, minimumFileSize = 1000) => {
 /**
  * Checks if a GeoTIFF has an allowed projection.
  *
- * @param {String} filePath Path to a GeoTIFF file
+ * @param {Object} dataset GDAL dataset
  * @param {Array} List of allowed EPSG codes
  * @returns Boolean True, if GeoTIFF srs is supported
  */
@@ -137,7 +137,7 @@ const validateProjection = async (dataset, allowedEPSGCodes) => {
 /**
  * Checks if a GeoTIFF has an allowed projection.
  *
- * @param {String} filePath Path to a GeoTIFF file
+ * @param {Object} dataset GDAL dataset
  * @param {Array} List of allowed EPSG codes
  * @returns Boolean True, if GeoTIFF srs is supported
  */
@@ -162,7 +162,7 @@ const validateExtent = async (dataset, allowedExtent) => {
 /**
  * Checks if a GeoTIFF has an allowed datatype.
  *
- * @param {String} filePath Path to a GeoTIFF file
+ * @param {Object} dataset GDAL dataset
  * @param {Array} Allowed datatypes
  * @returns Boolean True, if GeoTIFF datatype is supported
  */
@@ -183,7 +183,7 @@ const validateDataType = async (dataset, allowedDataTypes) => {
  * Checks if a GeoTIFF has a minimum number of bands.
  * TODO Enhance this test or check if it is necessary.
  *
- * @param {String} filePath Path to a GeoTIFF file
+ * @param {Object} dataset GDAL dataset
  * @returns Boolean True, if GeoTIFF has minimum number of bands
  */
 const validateBands = async (dataset) => {
