@@ -2,7 +2,7 @@ import amqp from 'amqplib';
 import { randomUUID } from 'crypto';
 
 /*
- * This is a template rabbitmq worker.
+ * This is a template RabbitMQ worker.
  * It connects to the given queue listening for jobs.
  * Jobs will get processed through the given callback function.
  * Results will be reported in the given result queue.
@@ -10,13 +10,13 @@ import { randomUUID } from 'crypto';
  */
 let channel;
 let workerId;
-let resultsQueue;
+let globalResultQueue;
 
 /**
  * Main method used to implement a worker.
  * Calls the given callback when a message is received and report back
  *
- * @param {String} rabbitHost The amqp rabbitmq host, e.g. `localhost`
+ * @param {String} rabbitHost The AMQP RabbitMQ host, e.g. `localhost`
  * @param {String} rabbitUser The username
  * @param {String} rabbitPass The password
  * @param {String} workerQueue The name of the worker queue to look for jobs
@@ -39,7 +39,7 @@ export async function initialize(
   });
   channel = await connection.createChannel();
   workerId = randomUUID();
-  resultsQueue = resultQueue;
+  globalResultQueue = resultQueue;
 
   channel.assertQueue(workerQueue, {
     durable: true
@@ -55,7 +55,7 @@ export async function initialize(
           `Received a message in queue ${workerQueue}: ` +
             JSON.stringify(job.content.nextTask)
         );
-        let workerJob = job.content.nextTask.task;
+        const workerJob = job.content.nextTask.task;
         await callBack(workerJob, getInputs(job.content.job, workerJob));
 
         channel.sendToQueue(
@@ -111,7 +111,7 @@ function getInputs(job, task) {
   if (channel && message && message.content) {
     const job = JSON.parse(message.content.toString());
     job.content.error = error.toString();
-    channel.sendToQueue(resultsQueue, Buffer.from(JSON.stringify(job.content)), {
+    channel.sendToQueue(globalResultQueue, Buffer.from(JSON.stringify(job.content)), {
       persistent: true
     });
   } else {

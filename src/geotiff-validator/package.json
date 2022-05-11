@@ -1,0 +1,32 @@
+{
+  "name": "geotiff-validator",
+  "version": "0.0.1",
+  "description": "Validates a GeoTIFF file",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=14.17.0",
+    "npm": ">=6.0.0"
+  },
+  "dependencies": {
+    "amqplib": "^0.8.0",
+    "gdal-async": "^3.4.3",
+    "ol": "^6.14.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.29.0"
+  },
+  "scripts": {
+    "lint": "eslint -c ../../.eslintrc.yml .",
+    "test": "npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/klips-project/rabbitmq-worker.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/klips-project/rabbitmq-worker/issues"
+  },
+  "homepage": "https://github.com/klips-project/rabbitmq-worker#readme"
+}

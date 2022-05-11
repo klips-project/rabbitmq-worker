@@ -18,11 +18,11 @@ let channel;
  * In the following example, the first worker will be called by passing a message to the
  * queue named `download`, while the message itself is the original job message extend by
  * a `nextTask` entry which indicates which task shall be handled next.
- * If tasks finish succesfully, they usually return values which will then be appended to
+ * If tasks finish successfully, they usually return values which will then be appended to
  * the specific task configuration via the `outputs` array.
  *
  * @example job message content:
- * 
+ *
   {
     "job": [
       {
@@ -109,7 +109,7 @@ const handleNextTask = (msg) => {
 
     // validate
     if (!chain || chain.length < 1) {
-      throw 'Invalid arguments given' + job; 
+      throw 'Invalid arguments given' + job;
     }
 
     // create unique ID if necessary (on first run)
