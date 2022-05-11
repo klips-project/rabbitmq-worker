@@ -3,6 +3,8 @@ import fs from 'fs';
 
 import gdal from 'gdal-async';
 
+import { boundingExtent, containsExtent } from 'ol/extent.js';
+
 import { initialize, log } from '../workerTemplate.js';
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -12,10 +14,26 @@ const rabbitPass = process.env.RABBITPASS;
 
 const allowedEPSGCodes = [
   "4326",
-  "3857",
-  "25832",
-  "25833"
+  "3857"
 ];
+
+const allowedExtent = boundingExtent([
+  [
+    5.85, 
+    47.27,
+  ],
+  [
+    15.02,
+    55.07
+  ]
+]);
+
+// TODO define allowed datatypes, cf. https://gdal.org/user/raster_data_model.html
+const allowedDataTypes = [
+  'Byte',
+  'Int16',
+  'Float32'
+]
 
 /**
  * Checks if a GeoTIFF is valid
@@ -33,11 +51,18 @@ const validateGeoTiff = async (workerJob, inputs) => {
     switch (step) {
       case "filesize":
         testResult = validateFilesize(filePath);
-        log("step1");
         return testResult;
       case "projection":
         testResult = await validateProjection(filePath, allowedEPSGCodes);
-        log("step2");
+        return testResult;
+      case "extent":
+        testResult = await validateExtent(filePath, allowedExtent);
+        return testResult;
+      case "datatype":
+        testResult = await validateDataType(filePath, allowedDataTypes);
+        return testResult;
+      case "bands":
+        testResult = await validateBands(filePath);
         return testResult;
       default:
         break;
@@ -45,7 +70,7 @@ const validateGeoTiff = async (workerJob, inputs) => {
   }));
 
   if (validationResults.every(result => result)) {
-      log("step3");
+      log("step4");
       log('GeoTiff is valid.');
       workerJob.status = 'success';
       workerJob.outputs = [filePath];
@@ -94,6 +119,74 @@ const validateProjection = async (filePath, allowedEPSGCodes) => {
     else {
       throw `Projection code EPSG:${projectionCode} currently not supported.`;
     }
+}
+
+/**
+ * Checks if a GeoTIFF has an allowed projection.
+ *
+ * @param {String} filePath Path to a GeoTIFF file
+ * @param {Array} List of allowed EPSG codes
+ * @returns Boolean True, if GeoTIFF srs is supported
+ */
+ const validateExtent = async (filePath, allowedExtent) => {
+  const dataset = await gdal.openAsync(filePath);
+  const envenlope = dataset?.bands?.getEnvelope();
+  // compose ol extent
+  const olExtent = boundingExtent([
+    [envenlope.minX, envenlope.minY],
+    [envenlope.maxX, envenlope.maxY]
+  ]);
+
+  log(`Extent of GeoTiff: ${olExtent}`);
+
+  if (containsExtent(allowedExtent, olExtent)) {
+    return true;
+  }
+  else {
+    throw `Invalid extent: ${olExtent.toString()}.`;
+  }
+}
+
+/**
+ * Checks if a GeoTIFF has an allowed datatype.
+ *
+ * @param {String} filePath Path to a GeoTIFF file
+ * @param {Array} Allowed datatypes
+ * @returns Boolean True, if GeoTIFF datatype is supported
+ */
+ const validateDataType = async (filePath, allowedDataTypes) => {
+  const dataset = await gdal.openAsync(filePath);
+  const dataType = dataset?.bands?.get(1)?.dataType;
+
+  log(`Datatype of GeoTiff: ${dataType}`);
+
+  if (allowedDataTypes.includes(dataType)) {
+    return true;
+  }
+  else {
+    throw `Datatype :${dataType} currently not supported.`;
+  }
+}
+
+/**
+ * Checks if a GeoTIFF has a minimum number of bands.
+ * TODO Enhance this test or check if it is necessary.
+ *
+ * @param {String} filePath Path to a GeoTIFF file
+ * @returns Boolean True, if GeoTIFF has minimum number of bands
+ */
+ const validateBands = async (filePath) => {
+  const dataset = await gdal.openAsync(filePath);
+  const countBands = dataset?.bands?.count();
+
+  log(`GeoTiff has ${countBands} band(s).`);
+  
+  if (countBands > 0) {
+    return true;
+  }
+  else {
+    throw `GeoTIFF has an invalid number of bands.`;
+  }
 }
 
 // Initialize and start the worker process
