@@ -19,7 +19,7 @@ const allowedEPSGCodes = [
 
 const allowedExtent = boundingExtent([
   [
-    5.85, 
+    5.85,
     47.27,
   ],
   [
@@ -45,6 +45,21 @@ const validateGeoTiff = async (workerJob, inputs) => {
   const filePath = inputs[0];
   // define fallback validation step if nothing is defined in input arguments
   const validationSteps = inputs[1] && inputs[1].validationSteps ? inputs[1].validationSteps : ['filesize'];
+  let dataset;
+
+  // check if validationsteps include a GDAL based validator
+  if (validationSteps.filter(step => [
+      'projection',
+      'extent',
+      'datatype',
+      'bands'
+    ].includes(step)).length) {
+      try {
+        dataset = await gdal.openAsync(filePath);
+      } catch (error) {
+        throw `Could not open dataset: $error`;
+      }
+  }
 
   const validationResults = await Promise.all(validationSteps.map(async (step) => {
     let testResult;
@@ -53,16 +68,16 @@ const validateGeoTiff = async (workerJob, inputs) => {
         testResult = validateFilesize(filePath);
         return testResult;
       case "projection":
-        testResult = await validateProjection(filePath, allowedEPSGCodes);
+        testResult = await validateProjection(dataset, allowedEPSGCodes);
         return testResult;
       case "extent":
-        testResult = await validateExtent(filePath, allowedExtent);
+        testResult = await validateExtent(dataset, allowedExtent);
         return testResult;
       case "datatype":
-        testResult = await validateDataType(filePath, allowedDataTypes);
+        testResult = await validateDataType(dataset, allowedDataTypes);
         return testResult;
       case "bands":
-        testResult = await validateBands(filePath);
+        testResult = await validateBands(dataset);
         return testResult;
       default:
         break;
@@ -70,18 +85,17 @@ const validateGeoTiff = async (workerJob, inputs) => {
   }));
 
   if (validationResults.every(result => result)) {
-      log("step4");
-      log('GeoTiff is valid.');
-      workerJob.status = 'success';
-      workerJob.outputs = [filePath];
-    } else {
-      throw 'GeoTIFF is invalid.';
-    }
+    log('GeoTiff is valid.');
+    workerJob.status = 'success';
+    workerJob.outputs = [filePath];
+  } else {
+    throw 'GeoTIFF is invalid.';
+  }
 
 }
 
 /**
- * Checks if a GeoTIFF has a minimum file size
+ * Checks if a GeoTIFF has a minimum file size.
  *
  * @param {String} filePath Path to a GeoTIFF file
  * @param {Number} minimumFileSize The minimum file size in bytes
@@ -89,7 +103,7 @@ const validateGeoTiff = async (workerJob, inputs) => {
  */
 const validateFilesize = (filePath, minimumFileSize = 1000) => {
   let stats = fs.statSync(filePath);
-    assert(stats.size);
+  assert(stats.size);
 
   const valid = stats.size > minimumFileSize;
 
@@ -108,17 +122,16 @@ const validateFilesize = (filePath, minimumFileSize = 1000) => {
  * @param {Array} List of allowed EPSG codes
  * @returns Boolean True, if GeoTIFF srs is supported
  */
-const validateProjection = async (filePath, allowedEPSGCodes) => {
-    const dataset = await gdal.openAsync(filePath);
-    const projectionCode = dataset?.srs?.getAuthorityCode();
-    log(`Projection Code of GeoTiff: ${projectionCode}`);
+const validateProjection = async (dataset, allowedEPSGCodes) => {
+  const projectionCode = dataset?.srs?.getAuthorityCode();
+  log(`Projection Code of GeoTiff: ${projectionCode}`);
 
-    if (allowedEPSGCodes.includes(projectionCode)) {
-      return true;
-    }
-    else {
-      throw `Projection code EPSG:${projectionCode} currently not supported.`;
-    }
+  if (allowedEPSGCodes.includes(projectionCode)) {
+    return true;
+  }
+  else {
+    throw `Projection code EPSG:${projectionCode} currently not supported.`;
+  }
 }
 
 /**
@@ -128,8 +141,7 @@ const validateProjection = async (filePath, allowedEPSGCodes) => {
  * @param {Array} List of allowed EPSG codes
  * @returns Boolean True, if GeoTIFF srs is supported
  */
- const validateExtent = async (filePath, allowedExtent) => {
-  const dataset = await gdal.openAsync(filePath);
+const validateExtent = async (dataset, allowedExtent) => {
   const envenlope = dataset?.bands?.getEnvelope();
   // compose ol extent
   const olExtent = boundingExtent([
@@ -154,8 +166,7 @@ const validateProjection = async (filePath, allowedEPSGCodes) => {
  * @param {Array} Allowed datatypes
  * @returns Boolean True, if GeoTIFF datatype is supported
  */
- const validateDataType = async (filePath, allowedDataTypes) => {
-  const dataset = await gdal.openAsync(filePath);
+const validateDataType = async (dataset, allowedDataTypes) => {
   const dataType = dataset?.bands?.get(1)?.dataType;
 
   log(`Datatype of GeoTiff: ${dataType}`);
@@ -175,12 +186,11 @@ const validateProjection = async (filePath, allowedEPSGCodes) => {
  * @param {String} filePath Path to a GeoTIFF file
  * @returns Boolean True, if GeoTIFF has minimum number of bands
  */
- const validateBands = async (filePath) => {
-  const dataset = await gdal.openAsync(filePath);
+const validateBands = async (dataset) => {
   const countBands = dataset?.bands?.count();
 
   log(`GeoTiff has ${countBands} band(s).`);
-  
+
   if (countBands > 0) {
     return true;
   }
