@@ -1,0 +1,30 @@
+{
+  "name": "json-schema-validator",
+  "version": "0.0.1",
+  "description": "Validates a JSON",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=14.17.0",
+    "npm": ">=6.0.0"
+  },
+  "dependencies": {
+    "ajv": "^8.11.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.29.0"
+  },
+  "scripts": {
+    "lint": "eslint -c ../../.eslintrc.yml .",
+    "test": "npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/klips-project/rabbitmq-worker.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/klips-project/rabbitmq-worker/issues"
+  },
+  "homepage": "https://github.com/klips-project/rabbitmq-worker#readme"
+}
