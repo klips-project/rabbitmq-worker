@@ -1,4 +1,3 @@
-import assert from 'assert';
 import fs from 'fs';
 
 import gdal from 'gdal-async';
@@ -17,7 +16,7 @@ const allowedEPSGCodes = [
   "3857"
 ];
 
-const allowedExtent = boundingExtent([
+const extentGermany = boundingExtent([
   [
     5.85,
     47.27,
@@ -27,6 +26,7 @@ const allowedExtent = boundingExtent([
     55.07
   ]
 ]);
+const allowedExtent = extentGermany;
 
 // TODO define allowed datatypes, cf. https://gdal.org/user/raster_data_model.html
 const allowedDataTypes = [
@@ -36,7 +36,7 @@ const allowedDataTypes = [
 ]
 
 /**
- * Checks if a GeoTIFF is valid
+ * Checks if a GeoTIFF is valid.
  *
  * @param {Object} workerJob The job object
  * @param {Array} inputs The inputs for this process
@@ -48,37 +48,33 @@ const validateGeoTiff = async (workerJob, inputs) => {
   let dataset;
 
   // check if validationsteps include a GDAL based validator
-  if (validationSteps.filter(step => [
-      'projection',
-      'extent',
-      'datatype',
-      'bands'
-    ].includes(step)).length) {
-      try {
-        dataset = await gdal.openAsync(filePath);
-      } catch (error) {
-        throw `Could not open dataset: $error`;
-      }
+  const requiresGdalvalidation = validationSteps.filter(step => [
+    'projection',
+    'extent',
+    'datatype',
+    'bands'
+  ].includes(step)).length;
+
+  if (requiresGdalvalidation) {
+    try {
+      dataset = await gdal.openAsync(filePath);
+    } catch (error) {
+      throw `Could not open dataset: $error`;
+    }
   }
 
   const validationResults = await Promise.all(validationSteps.map(async (step) => {
-    let testResult;
     switch (step) {
       case "filesize":
-        testResult = validateFilesize(filePath);
-        return testResult;
+        return validateFilesize(filePath);
       case "projection":
-        testResult = await validateProjection(dataset, allowedEPSGCodes);
-        return testResult;
+        return await validateProjection(dataset, allowedEPSGCodes);
       case "extent":
-        testResult = await validateExtent(dataset, allowedExtent);
-        return testResult;
+        return await validateExtent(dataset, allowedExtent);
       case "datatype":
-        testResult = await validateDataType(dataset, allowedDataTypes);
-        return testResult;
+        return await validateDataType(dataset, allowedDataTypes);
       case "bands":
-        testResult = await validateBands(dataset);
-        return testResult;
+        return await validateBands(dataset);
       default:
         break;
     }
@@ -99,13 +95,11 @@ const validateGeoTiff = async (workerJob, inputs) => {
  *
  * @param {String} filePath Path to a GeoTIFF file
  * @param {Number} minimumFileSize The minimum file size in bytes
- * @returns Boolean True, if GeoTIFF is greater than the minimum file size
+ * @returns {Boolean} True, if GeoTIFF is greater than the minimum file size
  */
 const validateFilesize = (filePath, minimumFileSize = 1000) => {
   let stats = fs.statSync(filePath);
-  assert(stats.size);
-
-  const valid = stats.size > minimumFileSize;
+  const valid = stats.size && stats.size > minimumFileSize;
 
   if (valid) {
     return true;
@@ -120,7 +114,7 @@ const validateFilesize = (filePath, minimumFileSize = 1000) => {
  *
  * @param {Object} dataset GDAL dataset
  * @param {Array} List of allowed EPSG codes
- * @returns Boolean True, if GeoTIFF srs is supported
+ * @returns {Boolean} True, if GeoTIFF srs is supported
  */
 const validateProjection = async (dataset, allowedEPSGCodes) => {
   const projectionCode = dataset?.srs?.getAuthorityCode();
@@ -139,7 +133,7 @@ const validateProjection = async (dataset, allowedEPSGCodes) => {
  *
  * @param {Object} dataset GDAL dataset
  * @param {Array} List of allowed EPSG codes
- * @returns Boolean True, if GeoTIFF srs is supported
+ * @returns {Boolean} True, if GeoTIFF srs is supported
  */
 const validateExtent = async (dataset, allowedExtent) => {
   const envenlope = dataset?.bands?.getEnvelope();
@@ -164,7 +158,7 @@ const validateExtent = async (dataset, allowedExtent) => {
  *
  * @param {Object} dataset GDAL dataset
  * @param {Array} Allowed datatypes
- * @returns Boolean True, if GeoTIFF datatype is supported
+ * @returns {Boolean} True, if GeoTIFF datatype is supported
  */
 const validateDataType = async (dataset, allowedDataTypes) => {
   const dataType = dataset?.bands?.get(1)?.dataType;
@@ -184,7 +178,7 @@ const validateDataType = async (dataset, allowedDataTypes) => {
  * TODO Enhance this test or check if it is necessary.
  *
  * @param {Object} dataset GDAL dataset
- * @returns Boolean True, if GeoTIFF has minimum number of bands
+ * @returns {Boolean} True, if GeoTIFF has minimum number of bands
  */
 const validateBands = async (dataset) => {
   const countBands = dataset?.bands?.count();
