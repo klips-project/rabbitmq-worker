@@ -55,7 +55,7 @@ export async function initialize(
           `Received a message in queue ${workerQueue}: ` +
             JSON.stringify(job.content.nextTask)
         );
-        let workerJob = job.content.nextTask.task;
+        const workerJob = job.content.nextTask.task;
         await callBack(workerJob, getInputs(job.content.job, workerJob));
 
         channel.sendToQueue(
