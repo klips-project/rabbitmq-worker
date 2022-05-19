@@ -137,7 +137,7 @@ cat workflows/publish-geotiff.json | rabbitmqadmin -u rabbit -p rabbit publish e
 
 It can be downloaded either from your local RabbitMQ instance via: http://localhost:15672/cli/rabbitmqadmin
 
-Or from GitHub via https://raw.githubusercontent.com/rabbitmq/rabbitmq-server/v3.10.0/deps/rabbitmq_management/bin/rabbitmqadmin - Make sure to select version matching your RabbitMQ instance.
+Or from GitHub via https://raw.githubusercontent.com/rabbitmq/rabbitmq-server/v3.10.0/deps/rabbitmq_management/bin/rabbitmqadmin - Make sure to select the version matching your RabbitMQ instance.
 
 Make the programm executable via:
 
