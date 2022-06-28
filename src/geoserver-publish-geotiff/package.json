@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "amqplib": "^0.8.0",
-    "geoserver-node-client": "0.0.7"
+    "geoserver-node-client": "1.1.0"
   },
   "devDependencies": {
     "eslint": "^7.29.0"
