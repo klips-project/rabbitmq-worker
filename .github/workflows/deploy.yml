@@ -37,7 +37,7 @@ jobs:
 
       - name: Get current timestamp
         id: timestamp
-        run: echo "::set-output name=timestamp::$(date +'%Y-%m-%dT%H:%M')"
+        run: echo "::set-output name=timestamp::$(date +'%Y%m%dT%H%M')"
 
       - name: Build and push ${{ matrix.workers_names }} 🚀
         uses: docker/build-push-action@v2
