@@ -43,8 +43,17 @@ const geoserverPublishGeoTiff = async (workerJob, inputs) => {
   const layerTitle = inputs[3];
   const geoTiffPath = inputs[4];
 
+  if (! await isGeoServerAvailable()){
+    console.log('Geoserver not available');
+    console.log('Job should be requeued!');
+    // TODO: reject job, because dependencies are not available
+    //       job should NOT be nacked but
+    // TODO: check if this is the right approach
+    workerJob.missingDependencies = true;
+    return;
+  }
+
   try {
-    await grc.about.exists();
     await grc.datastores.createGeotiffFromFile(
       workspace, dataStore, layerName, layerTitle, geoTiffPath
     );
@@ -58,5 +67,14 @@ const geoserverPublishGeoTiff = async (workerJob, inputs) => {
   workerJob.outputs = [];
 };
 
+/**
+ * Check if the GeoServer is running.
+ *
+ * @returns {Boolean} If the GeoServer is running.
+ */
+const isGeoServerAvailable = async () => {
+  return await grc.about.exists();
+}
+
 // Initialize and start the worker process
-initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geoserverPublishGeoTiff);
+initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geoserverPublishGeoTiff, isGeoServerAvailable);

@@ -11,6 +11,12 @@ import { randomUUID } from 'crypto';
 let channel;
 let workerId;
 let globalResultQueue;
+// the tag of the consumer to the queue
+let consumerTag;
+// needed to ensure reconnection only happens once
+let reconnectionInProgress = false;
+let rabbitConnectionEstablished = false;
+
 
 /**
  * Main method used to implement a worker.
@@ -22,6 +28,8 @@ let globalResultQueue;
  * @param {String} workerQueue The name of the worker queue to look for jobs
  * @param {String} resultQueue The name of the result queue to report back to
  * @param {Function} callBack The callback function getting called when a job is received
+ * @param {Function} areDependenciesAvailable Function to check if depencies of a worker are available
+ * @param {Number} [intervalSeconds=10] How often, in seconds, the dependencies of the worker should be checked
  */
 export async function initialize(
   rabbitHost,
@@ -29,7 +37,8 @@ export async function initialize(
   rabbitPass,
   workerQueue,
   resultQueue,
-  callBack
+  callBack,
+  areDependenciesAvailable
 ) {
   const connection = await amqp.connect({
     hostname: rabbitHost,
@@ -46,35 +55,32 @@ export async function initialize(
   });
 
   log(`Worker waiting for messages in ${workerQueue}.`);
-  channel.consume(
+  await connectToQueue(
     workerQueue,
-    async function (msg) {
-      try {
-        const job = JSON.parse(msg.content.toString());
-        log(
-          `Received a message in queue ${workerQueue}: ` +
-            JSON.stringify(job.content.nextTask)
-        );
-        const workerJob = job.content.nextTask.task;
-        await callBack(workerJob, getInputs(job.content.job, workerJob));
+    resultQueue,
+    callBack)
 
-        channel.sendToQueue(
-          resultQueue,
-          Buffer.from(JSON.stringify(job.content)),
-          {
-            persistent: true
-          }
-        );
-        log('Worker finished');
-      } catch (e) {
-        reportError(e, msg);
-      }
-      channel.ack(msg);
-    },
-    {
-      noAck: false
-    }
-  );
+  await controlRabbitConnection(workerQueue,
+    resultQueue,
+    callBack,
+    areDependenciesAvailable);
+
+  const intervalSeconds = 5;
+  let intervalMilliSeconds;
+  if (intervalSeconds) {
+    intervalMilliSeconds = intervalSeconds * 1000;
+  } else {
+    const defaultintervalSeconds = 10;
+    intervalMilliSeconds = defaultintervalSeconds * 1000;
+  }
+
+  setInterval(async () => {
+    await controlRabbitConnection(workerQueue,
+      resultQueue,
+      callBack,
+      areDependenciesAvailable)
+  },
+    intervalMilliSeconds)
 }
 
 /**
@@ -105,7 +111,7 @@ function getInputs(job, task) {
  * @param {String} error The error message
  * @param {String} message The optional RabbitMQ Message
  */
- export function reportError(error, message) {
+export function reportError(error, message) {
   console.log('Error caught: ', error);
 
   if (channel && message && message.content) {
@@ -116,6 +122,101 @@ function getInputs(job, task) {
     });
   } else {
     throw 'Could not report error to results queue, missing message or channel';
+  }
+}
+
+/**
+ * Initialize the connection to the queue.
+ *
+ * tododocs
+ * @param {*} workerQueue
+ * @param {*} resultQueue
+ * @param {*} callBack
+ */
+async function connectToQueue(
+  workerQueue,
+  resultQueue,
+  callBack) {
+
+  const consumeInfo = await channel.consume(
+    workerQueue,
+    async function (msg) {
+      try {
+        const job = JSON.parse(msg.content.toString());
+        log(
+          `Received a message in queue ${workerQueue}: ` +
+          JSON.stringify(job.content.nextTask)
+        );
+        const workerJob = job.content.nextTask.task;
+        await callBack(workerJob, getInputs(job.content.job, workerJob));
+
+        // TODO: check if this is the right approach
+        if (workerJob.missingDependencies) {
+          console.log('Depencies of Worker are missing. Job will be requeued');
+          channel.nack(msg);
+          return;
+        }
+        channel.sendToQueue(
+          resultQueue,
+          Buffer.from(JSON.stringify(job.content)),
+          {
+            persistent: true
+          }
+        );
+        log('Worker finished');
+      } catch (e) {
+        reportError(e, msg);
+      }
+      channel.ack(msg);
+    },
+    {
+      noAck: false
+    }
+  );
+  // unique tag of the consumer, needed for stopping it
+  consumerTag = consumeInfo.consumerTag;
+  rabbitConnectionEstablished = true;
+}
+/**
+ * Check if worker should still be connected to RabbitMQ.
+ *
+ * // TODO: docs
+ * @param {*} workerQueue
+ * @param {*} resultQueue
+ * @param {*} callBack
+ * @param {*} areDependenciesAvailable
+ */
+async function controlRabbitConnection(workerQueue,
+  resultQueue,
+  callBack,
+  areDependenciesAvailable) {
+
+  const dependenciesAvailable = await areDependenciesAvailable();
+  if (dependenciesAvailable) {
+    console.log("All dependencies are available");
+    if (!rabbitConnectionEstablished) {
+      if (reconnectionInProgress) {
+        console.log('Reconnection to RabbitMQ already in progress');
+      } else {
+        reconnectionInProgress = true;
+        console.log("... Reconnecting to RabbitMQ");
+        await connectToQueue(workerQueue,
+          resultQueue,
+          callBack
+        )
+        reconnectionInProgress = false;
+        console.log('Reestablished rabbit connection');
+      }
+    }
+  } else {
+    console.log('ERROR: Dependencies are not available');
+    if (rabbitConnectionEstablished) {
+      console.log('Deactivated Rabbit connection');
+      rabbitConnectionEstablished = false;
+      await channel.cancel(consumerTag);
+    } else {
+      console.log('Rabbit connection is already deactivated');
+    }
   }
 }
 
