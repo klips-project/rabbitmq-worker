@@ -191,6 +191,7 @@ async function controlRabbitConnection(workerQueue,
   callBack,
   areDependenciesAvailable) {
 
+  // TODO: ensure that 'areDependenciesAvailable' can also be null
   const dependenciesAvailable = await areDependenciesAvailable();
   if (dependenciesAvailable) {
     console.log("All dependencies are available");
