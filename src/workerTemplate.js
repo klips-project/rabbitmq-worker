@@ -17,7 +17,6 @@ let consumerTag;
 let reconnectionInProgress = false;
 let rabbitConnectionEstablished = false;
 
-
 /**
  * Main method used to implement a worker.
  * Calls the given callback when a message is received and report back
@@ -189,8 +188,15 @@ async function controlRabbitConnection(workerQueue,
   callBack,
   areDependenciesAvailable) {
 
-  // TODO: ensure that 'areDependenciesAvailable' can also be null
-  const dependenciesAvailable = await areDependenciesAvailable();
+  // TODO: there might be a more elegant way
+
+  let dependenciesAvailable;
+  // check if a function is provided
+  if (areDependenciesAvailable){
+    dependenciesAvailable = await areDependenciesAvailable();
+  } else {
+    dependenciesAvailable = true;
+  }
   if (dependenciesAvailable) {
     console.log("All dependencies are available");
     if (!rabbitConnectionEstablished) {
