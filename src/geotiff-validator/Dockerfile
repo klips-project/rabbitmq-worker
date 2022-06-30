@@ -11,5 +11,5 @@ WORKDIR /home/
 RUN npm install
 COPY src/geotiff-validator/index.js worker/
 COPY src/workerTemplate.js .
-CMD [ "./wait-for.sh", ${RABBITHOST}":15672", "--", "sh", "-c", "node worker/index.js"]
+CMD [ "./wait-for.sh", ${RABBITHOST}":5672", "--", "sh", "-c", "node worker/index.js"]
 
