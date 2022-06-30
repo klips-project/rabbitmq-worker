@@ -73,6 +73,7 @@ export async function initialize(
     intervalMilliSeconds = defaultintervalSeconds * 1000;
   }
 
+  // regulary check if we still can accept message from queue
   setInterval(async () => {
     await controlRabbitConnection(workerQueue,
       resultQueue,
@@ -148,9 +149,9 @@ async function connectToQueue(
         const workerJob = job.content.nextTask.task;
         await callBack(workerJob, getInputs(job.content.job, workerJob));
 
-        // TODO: check if this is the right approach
         if (workerJob.missingDependencies) {
           console.log('Depencies of Worker are missing. Job will be requeued');
+          // send job back to queue
           channel.nack(msg);
           return;
         }
@@ -177,6 +178,7 @@ async function connectToQueue(
 }
 /**
  * Check if worker should still be connected to RabbitMQ.
+ * Uses a provided function to check if all dependencies are available.
  *
  * @param {String} workerQueue The name of the worker queue to look for jobs
  * @param {String} resultQueue The name of the result queue to report back to
@@ -188,18 +190,18 @@ async function controlRabbitConnection(workerQueue,
   callBack,
   areDependenciesAvailable) {
 
-  // TODO: there might be a more elegant way
-
   let dependenciesAvailable;
   // check if a function is provided
-  if (areDependenciesAvailable){
+
+  const fn = areDependenciesAvailable;
+  if (fn){
     dependenciesAvailable = await areDependenciesAvailable();
   } else {
     dependenciesAvailable = true;
   }
   if (dependenciesAvailable) {
-    console.log("All dependencies are available");
     if (!rabbitConnectionEstablished) {
+      // we need to ensure that only one connection to RabbitMQ is made
       if (reconnectionInProgress) {
         console.log('Reconnection to RabbitMQ already in progress');
       } else {

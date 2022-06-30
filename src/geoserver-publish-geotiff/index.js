@@ -43,12 +43,11 @@ const geoserverPublishGeoTiff = async (workerJob, inputs) => {
   const layerTitle = inputs[3];
   const geoTiffPath = inputs[4];
 
-  if (! await isGeoServerAvailable()){
+  const geoServerAvailable = await isGeoServerAvailable()
+
+  if (!geoServerAvailable ){
     console.log('Geoserver not available');
     console.log('Job should be requeued!');
-    // TODO: reject job, because dependencies are not available
-    //       job should NOT be nacked but
-    // TODO: check if this is the right approach
     workerJob.missingDependencies = true;
     return;
   }
