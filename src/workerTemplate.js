@@ -38,7 +38,8 @@ export async function initialize(
   workerQueue,
   resultQueue,
   callBack,
-  areDependenciesAvailable
+  areDependenciesAvailable,
+  intervalSeconds
 ) {
   const connection = await amqp.connect({
     hostname: rabbitHost,
@@ -65,7 +66,6 @@ export async function initialize(
     callBack,
     areDependenciesAvailable);
 
-  const intervalSeconds = 5;
   let intervalMilliSeconds;
   if (intervalSeconds) {
     intervalMilliSeconds = intervalSeconds * 1000;
@@ -128,10 +128,9 @@ export function reportError(error, message) {
 /**
  * Initialize the connection to the queue.
  *
- * tododocs
- * @param {*} workerQueue
- * @param {*} resultQueue
- * @param {*} callBack
+ * @param {String} workerQueue The name of the worker queue to look for jobs
+ * @param {String} resultQueue The name of the result queue to report back to
+ * @param {Function} callBack The callback function getting called when a job is received
  */
 async function connectToQueue(
   workerQueue,
@@ -180,11 +179,10 @@ async function connectToQueue(
 /**
  * Check if worker should still be connected to RabbitMQ.
  *
- * // TODO: docs
- * @param {*} workerQueue
- * @param {*} resultQueue
- * @param {*} callBack
- * @param {*} areDependenciesAvailable
+ * @param {String} workerQueue The name of the worker queue to look for jobs
+ * @param {String} resultQueue The name of the result queue to report back to
+ * @param {Function} callBack The callback function getting called when a job is received
+ * @param {Function} areDependenciesAvailable Function to check if depencies of a worker are available
  */
 async function controlRabbitConnection(workerQueue,
   resultQueue,

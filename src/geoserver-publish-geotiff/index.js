@@ -77,4 +77,4 @@ const isGeoServerAvailable = async () => {
 }
 
 // Initialize and start the worker process
-initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geoserverPublishGeoTiff, isGeoServerAvailable);
+initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geoserverPublishGeoTiff, isGeoServerAvailable, 10);
