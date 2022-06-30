@@ -1,10 +1,9 @@
 name: Test
 
 on:
-  push:
+  pull_request:
     branches:
-      - '**'
-      - '!main'
+      - main
 
 jobs:
   test:
@@ -29,7 +28,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v2
-        with: 
+        with:
           path: './'
           persist-credentials: false
       - id: set-matrix
