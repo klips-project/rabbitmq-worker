@@ -11,7 +11,7 @@ const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
-const gs_data_dir = process.env.GEOSERVER_DATADIR;
+// const gs_data_dir = process.env.GEOSERVER_DATADIR;
 
 const grc = new GeoServerRestClient(url, user, pw);
 
@@ -41,6 +41,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
   const workspace = inputs[0];
   const covStore = inputs[1];
   const fileName = path.basename(inputs[2]);
+  const coverageToAdd = inputs[2];
   
   // TODO Maybe move tif to coverage store directory to keep a clean file structure
   // TODO solve Permission problems for geoserver_data
@@ -64,6 +65,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
     }
     
     // check if granule already exist
+    // TODO fix problems to parse resonse json in grc
     const granules = await grc.imagemosaics.getGranules(
       workspace, covStore, covStore
     );
@@ -71,8 +73,15 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
     if (!granules) {
       throw 'Could not get granules for the imagemosaic store.'
     }
-    else {
-      console.log(granules);
+
+    if (granules.features && granules.features.length) {
+      let granuleAlreadyExist;
+      granuleAlreadyExist = granules.features.some(feature => feature.properties.location === fileName);
+
+      if (granuleAlreadyExist) {
+        // TODO add logic, e.g. error handler
+        throw "Granule already exists.";
+      }
     }
 
     await grc.imagemosaics.addGranuleByServerFile(

@@ -1,7 +1,7 @@
 {
-  "name": "geoserver-publish-geotiff",
+  "name": "geoserver-publish-imagemosaic",
   "version": "0.0.1",
-  "description": "Publish layer in GeoServer from GeoTIFF",
+  "description": "Publish layer in GeoServer Imagemosaic store",
   "main": "index.js",
   "type": "module",
   "engines": {
@@ -31,14 +31,14 @@
   "author": "terrestris GmbH & Co. KG <info@terrestris.de>",
   "contributors": [
     {
-      "name": "Michael Holthausen",
-      "email": "holthausen@terrestris.de",
-      "url": "https://github.com/mholthausen"
+      "name": "Hannes Blitza",
+      "email": "blitza@terrestris.de",
+      "url": "https://github.com/hblitza"
     },
     {
-      "name": "Johannes Weskamm",
-      "email": "weskamm@terrestris.de",
-      "url": "https://github.com/weskamm"
+      "name": "Jakob Miksch",
+      "email": "jakob@terrestris.de",
+      "url": "https://github.com/JakobMiksch"
     }
   ],
   "license": "MIT",
