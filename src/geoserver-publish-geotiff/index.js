@@ -48,7 +48,7 @@ const geoserverPublishGeoTiff = async (workerJob, inputs) => {
   if (!geoServerAvailable ){
     console.log('Geoserver not available');
     console.log('Job should be requeued!');
-    workerJob.missingDependencies = true;
+    workerJob.missingPreconditions = true;
     return;
   }
 

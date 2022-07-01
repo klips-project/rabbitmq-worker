@@ -27,8 +27,8 @@ let rabbitConnectionEstablished = false;
  * @param {String} workerQueue The name of the worker queue to look for jobs
  * @param {String} resultQueue The name of the result queue to report back to
  * @param {Function} callBack The callback function getting called when a job is received
- * @param {Function} areDependenciesAvailable Function to check if depencies of a worker are available
- * @param {Number} [intervalSeconds=10] How often, in seconds, the dependencies of the worker should be checked
+ * @param {Function} preconditionsCheck Function to check if preconditions of a worker are available
+ * @param {Number} [intervalSeconds=10] How often, in seconds, the preconditions of the worker should be checked
  */
 export async function initialize(
   rabbitHost,
@@ -37,7 +37,7 @@ export async function initialize(
   workerQueue,
   resultQueue,
   callBack,
-  areDependenciesAvailable,
+  preconditionsCheck,
   intervalSeconds
 ) {
   const connection = await amqp.connect({
@@ -63,7 +63,7 @@ export async function initialize(
   await controlRabbitConnection(workerQueue,
     resultQueue,
     callBack,
-    areDependenciesAvailable);
+    preconditionsCheck);
 
   let intervalMilliSeconds;
   if (intervalSeconds) {
@@ -78,7 +78,7 @@ export async function initialize(
     await controlRabbitConnection(workerQueue,
       resultQueue,
       callBack,
-      areDependenciesAvailable)
+      preconditionsCheck)
   },
     intervalMilliSeconds)
 }
@@ -149,8 +149,8 @@ async function connectToQueue(
         const workerJob = job.content.nextTask.task;
         await callBack(workerJob, getInputs(job.content.job, workerJob));
 
-        if (workerJob.missingDependencies) {
-          console.log('Depencies of Worker are missing. Job will be requeued');
+        if (workerJob.missingPreconditions) {
+          console.log('Preconditions of Worker are missing. Job will be requeued');
           // send job back to queue
           channel.nack(msg);
           return;
@@ -178,28 +178,27 @@ async function connectToQueue(
 }
 /**
  * Check if worker should still be connected to RabbitMQ.
- * Uses a provided function to check if all dependencies are available.
+ * Uses a provided function to check if all preconditions are available.
  *
  * @param {String} workerQueue The name of the worker queue to look for jobs
  * @param {String} resultQueue The name of the result queue to report back to
  * @param {Function} callBack The callback function getting called when a job is received
- * @param {Function} areDependenciesAvailable Function to check if depencies of a worker are available
+ * @param {Function} preconditionsCheck Function to check if preconditions of a worker are available
  */
 async function controlRabbitConnection(workerQueue,
   resultQueue,
   callBack,
-  areDependenciesAvailable) {
+  preconditionsCheck) {
 
-  let dependenciesAvailable;
+  let preconditionsOk;
   // check if a function is provided
-
-  const fn = areDependenciesAvailable;
+  const fn = preconditionsCheck;
   if (fn){
-    dependenciesAvailable = await areDependenciesAvailable();
+    preconditionsOk = await preconditionsCheck();
   } else {
-    dependenciesAvailable = true;
+    preconditionsOk = true;
   }
-  if (dependenciesAvailable) {
+  if (preconditionsOk) {
     if (!rabbitConnectionEstablished) {
       // we need to ensure that only one connection to RabbitMQ is made
       if (reconnecting) {
@@ -216,7 +215,7 @@ async function controlRabbitConnection(workerQueue,
       }
     }
   } else {
-    console.log('ERROR: Dependencies are not available');
+    console.log('ERROR: Preconditions are not available');
     if (rabbitConnectionEstablished) {
       console.log('Deactivated Rabbit connection');
       rabbitConnectionEstablished = false;
