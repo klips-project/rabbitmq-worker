@@ -14,7 +14,7 @@ let globalResultQueue;
 // the tag of the consumer to the queue
 let consumerTag;
 // needed to ensure reconnection only happens once
-let reconnectionInProgress = false;
+let reconnecting = false;
 let rabbitConnectionEstablished = false;
 
 /**
@@ -202,16 +202,16 @@ async function controlRabbitConnection(workerQueue,
   if (dependenciesAvailable) {
     if (!rabbitConnectionEstablished) {
       // we need to ensure that only one connection to RabbitMQ is made
-      if (reconnectionInProgress) {
+      if (reconnecting) {
         console.log('Reconnection to RabbitMQ already in progress');
       } else {
-        reconnectionInProgress = true;
+        reconnecting = true;
         console.log("... Reconnecting to RabbitMQ");
         await connectToQueue(workerQueue,
           resultQueue,
           callBack
         )
-        reconnectionInProgress = false;
+        reconnecting = false;
         console.log('Reestablished rabbit connection');
       }
     }
