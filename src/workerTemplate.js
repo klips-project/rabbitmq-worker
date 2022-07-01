@@ -11,6 +11,11 @@ import { randomUUID } from 'crypto';
 let channel;
 let workerId;
 let globalResultQueue;
+// the tag of the consumer to the queue
+let consumerTag;
+// needed to ensure reconnection only happens once
+let reconnecting = false;
+let rabbitConnectionEstablished = false;
 
 /**
  * Main method used to implement a worker.
@@ -22,6 +27,8 @@ let globalResultQueue;
  * @param {String} workerQueue The name of the worker queue to look for jobs
  * @param {String} resultQueue The name of the result queue to report back to
  * @param {Function} callBack The callback function getting called when a job is received
+ * @param {Function} preconditionsCheck Function to check if preconditions of a worker are available
+ * @param {Number} [intervalSeconds=10] How often, in seconds, the preconditions of the worker should be checked
  */
 export async function initialize(
   rabbitHost,
@@ -29,7 +36,9 @@ export async function initialize(
   rabbitPass,
   workerQueue,
   resultQueue,
-  callBack
+  callBack,
+  preconditionsCheck,
+  intervalSeconds
 ) {
   const connection = await amqp.connect({
     hostname: rabbitHost,
@@ -46,35 +55,32 @@ export async function initialize(
   });
 
   log(`Worker waiting for messages in ${workerQueue}.`);
-  channel.consume(
+  await connectToQueue(
     workerQueue,
-    async function (msg) {
-      try {
-        const job = JSON.parse(msg.content.toString());
-        log(
-          `Received a message in queue ${workerQueue}: ` +
-            JSON.stringify(job.content.nextTask)
-        );
-        const workerJob = job.content.nextTask.task;
-        await callBack(workerJob, getInputs(job.content.job, workerJob));
+    resultQueue,
+    callBack)
 
-        channel.sendToQueue(
-          resultQueue,
-          Buffer.from(JSON.stringify(job.content)),
-          {
-            persistent: true
-          }
-        );
-        log('Worker finished');
-      } catch (e) {
-        reportError(e, msg);
-      }
-      channel.ack(msg);
-    },
-    {
-      noAck: false
-    }
-  );
+  await controlRabbitConnection(workerQueue,
+    resultQueue,
+    callBack,
+    preconditionsCheck);
+
+  let intervalMilliSeconds;
+  if (intervalSeconds) {
+    intervalMilliSeconds = intervalSeconds * 1000;
+  } else {
+    const defaultintervalSeconds = 10;
+    intervalMilliSeconds = defaultintervalSeconds * 1000;
+  }
+
+  // regulary check if we still can accept message from queue
+  setInterval(async () => {
+    await controlRabbitConnection(workerQueue,
+      resultQueue,
+      callBack,
+      preconditionsCheck)
+  },
+    intervalMilliSeconds)
 }
 
 /**
@@ -105,7 +111,7 @@ function getInputs(job, task) {
  * @param {String} error The error message
  * @param {String} message The optional RabbitMQ Message
  */
- export function reportError(error, message) {
+export function reportError(error, message) {
   console.log('Error caught: ', error);
 
   if (channel && message && message.content) {
@@ -116,6 +122,107 @@ function getInputs(job, task) {
     });
   } else {
     throw 'Could not report error to results queue, missing message or channel';
+  }
+}
+
+/**
+ * Initialize the connection to the queue.
+ *
+ * @param {String} workerQueue The name of the worker queue to look for jobs
+ * @param {String} resultQueue The name of the result queue to report back to
+ * @param {Function} callBack The callback function getting called when a job is received
+ */
+async function connectToQueue(
+  workerQueue,
+  resultQueue,
+  callBack) {
+
+  const consumeInfo = await channel.consume(
+    workerQueue,
+    async function (msg) {
+      try {
+        const job = JSON.parse(msg.content.toString());
+        log(
+          `Received a message in queue ${workerQueue}: ` +
+          JSON.stringify(job.content.nextTask)
+        );
+        const workerJob = job.content.nextTask.task;
+        await callBack(workerJob, getInputs(job.content.job, workerJob));
+
+        if (workerJob.missingPreconditions) {
+          console.log('Preconditions of Worker are missing. Job will be requeued');
+          // send job back to queue
+          channel.nack(msg);
+          return;
+        }
+        channel.sendToQueue(
+          resultQueue,
+          Buffer.from(JSON.stringify(job.content)),
+          {
+            persistent: true
+          }
+        );
+        log('Worker finished');
+      } catch (e) {
+        reportError(e, msg);
+      }
+      channel.ack(msg);
+    },
+    {
+      noAck: false
+    }
+  );
+  // unique tag of the consumer, needed for stopping it
+  consumerTag = consumeInfo.consumerTag;
+  rabbitConnectionEstablished = true;
+}
+/**
+ * Check if worker should still be connected to RabbitMQ.
+ * Uses a provided function to check if all preconditions are available.
+ *
+ * @param {String} workerQueue The name of the worker queue to look for jobs
+ * @param {String} resultQueue The name of the result queue to report back to
+ * @param {Function} callBack The callback function getting called when a job is received
+ * @param {Function} preconditionsCheck Function to check if preconditions of a worker are available
+ */
+async function controlRabbitConnection(workerQueue,
+  resultQueue,
+  callBack,
+  preconditionsCheck) {
+
+  let preconditionsOk;
+  // check if a function is provided
+  const fn = preconditionsCheck;
+  if (fn){
+    preconditionsOk = await preconditionsCheck();
+  } else {
+    preconditionsOk = true;
+  }
+  if (preconditionsOk) {
+    if (!rabbitConnectionEstablished) {
+      // we need to ensure that only one connection to RabbitMQ is made
+      if (reconnecting) {
+        console.log('Reconnection to RabbitMQ already in progress');
+      } else {
+        reconnecting = true;
+        console.log("... Reconnecting to RabbitMQ");
+        await connectToQueue(workerQueue,
+          resultQueue,
+          callBack
+        )
+        reconnecting = false;
+        console.log('Reestablished rabbit connection');
+      }
+    }
+  } else {
+    console.log('ERROR: Preconditions are not available');
+    if (rabbitConnectionEstablished) {
+      console.log('Deactivated Rabbit connection');
+      rabbitConnectionEstablished = false;
+      await channel.cancel(consumerTag);
+    } else {
+      console.log('Rabbit connection is already deactivated');
+    }
   }
 }
 
