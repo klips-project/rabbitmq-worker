@@ -1,0 +1,49 @@
+{
+  "name": "geoserver-publish-geotiff",
+  "version": "0.0.1",
+  "description": "Publish layer in GeoServer from GeoTIFF",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=14.17.0",
+    "npm": ">=6.0.0"
+  },
+  "dependencies": {
+    "amqplib": "^0.8.0",
+    "geoserver-node-client": "1.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.29.0"
+  },
+  "scripts": {
+    "lint": "eslint -c ../../.eslintrc.yml .",
+    "test": "npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/klips-project/rabbitmq-worker.git"
+  },
+  "keywords": [
+    "RabbitMQ",
+    "message",
+    "queue"
+  ],
+  "author": "terrestris GmbH & Co. KG <info@terrestris.de>",
+  "contributors": [
+    {
+      "name": "Michael Holthausen",
+      "email": "holthausen@terrestris.de",
+      "url": "https://github.com/mholthausen"
+    },
+    {
+      "name": "Johannes Weskamm",
+      "email": "weskamm@terrestris.de",
+      "url": "https://github.com/weskamm"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/klips-project/rabbitmq-worker/issues"
+  },
+  "homepage": "https://github.com/klips-project/rabbitmq-worker#readme"
+}
