@@ -9,6 +9,7 @@
     "npm": ">=6.0.0"
   },
   "dependencies": {
+    "amqplib": "^0.8.0",
     "geoserver-node-client": "1.1.0"
   },
   "devDependencies": {
