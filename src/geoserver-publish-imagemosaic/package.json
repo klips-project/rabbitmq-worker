@@ -1,0 +1,51 @@
+{
+  "name": "geoserver-publish-imagemosaic",
+  "version": "0.0.1",
+  "description": "Publish layer in GeoServer Imagemosaic store",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=14.17.0",
+    "npm": ">=6.0.0"
+  },
+  "dependencies": {
+    "amqplib": "^0.8.0",
+    "geoserver-node-client": "1.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.29.0"
+  },
+  "scripts": {
+    "lint": "eslint -c ../../.eslintrc.yml .",
+    "test": "npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/klips-project/rabbitmq-worker.git"
+  },
+  "keywords": [
+    "RabbitMQ",
+    "message",
+    "queue",
+    "geoserver",
+    "imagemosaic"
+  ],
+  "author": "terrestris GmbH & Co. KG <info@terrestris.de>",
+  "contributors": [
+    {
+      "name": "Hannes Blitza",
+      "email": "blitza@terrestris.de",
+      "url": "https://github.com/hblitza"
+    },
+    {
+      "name": "Jakob Miksch",
+      "email": "jakob@meggsimum.de",
+      "url": "https://github.com/JakobMiksch"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/klips-project/rabbitmq-worker/issues"
+  },
+  "homepage": "https://github.com/klips-project/rabbitmq-worker#readme"
+}
