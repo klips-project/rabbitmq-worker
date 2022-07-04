@@ -9,8 +9,7 @@
     "npm": ">=6.0.0"
   },
   "dependencies": {
-    "amqplib": "^0.8.0",
-    "request": "^2.88.2"
+    "amqplib": "^0.8.0"
   },
   "devDependencies": {
     "eslint": "^7.29.0"
@@ -39,6 +38,11 @@
       "name": "Johannes Weskamm",
       "email": "weskamm@terrestris.de",
       "url": "https://github.com/weskamm"
+    },
+    {
+      "name": "Jakob Miksch",
+      "email": "jakob@meggsimum.de",
+      "url": "https://github.com/jakobmiksch"
     }
   ],
   "license": "MIT",
