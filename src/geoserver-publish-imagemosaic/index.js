@@ -18,7 +18,7 @@ const grc = new GeoServerRestClient(url, user, pw);
  * @param {Object} workerJob The job object
  * @param {Array} inputs The inputs for this process
  *   First input is the workspace to publish to
- *   Second input is the name of the coverage store
+ *   Second input is the name of the existing coverage store
  *   Third input is the local path where the GeoTIFF is located
  * @example
     {
