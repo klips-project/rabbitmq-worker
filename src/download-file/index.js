@@ -1,6 +1,7 @@
 import fs from 'fs';
-import path from 'path';
-import request from 'request';
+import http from 'http';
+import https from 'https';
+import { URL } from 'url';
 
 import { initialize, log } from '../workerTemplate.js';
 const workerQueue = process.env.WORKERQUEUE;
@@ -14,32 +15,58 @@ const rabbitPass = process.env.RABBITPASS;
  * Modifies the given job object in place with status and results.
  * @param {Object} workerJob The job object
  * @param {Array} inputs The inputs for this process
+ *   First input is the full URL to download from
+ *   Second input is the absolute path, including filename and suffic, to store the download to
+ *   (optional) Third input is the username for basic auth
+ *   (optional) Fourth input is the password for basic auth
  */
-const downloadFile = async(workerJob, inputs) => {
-  const uri = inputs[0];
-  const target = inputs[1];
-  const url = new URL(uri);
-  const basename = path.basename(url.pathname);
-  const pathName = path.join(target, encodeURI(basename));
-  const file = fs.createWriteStream(path.join(target, encodeURI(basename)));
+const downloadFile = async (workerJob, inputs) => {
+    const uri = inputs[0];
+    const downloadPath = inputs[1];
+    const username = inputs[2];
+    const password = inputs[3];
+    const url = new URL(uri);
 
-  log('Downloading ' + url.href + ' …');
+    log('Downloading ' + url.href + ' …');
 
-  return new Promise((resolve, reject) => {
-    request({
-        uri: url.href,
+    // choose correct library depending on protocol
+    let protocol;
+    if (url.protocol === 'http:') {
+        protocol = http;
+    } else if (url.protocol === 'https:') {
+        protocol = https;
+    } else {
+        throw `Url does not start with 'http' or 'https'`
+    }
+
+    // if provided: add basic auth credentials to request option
+    const options = {};
+    if (username && password) {
+        options.auth = `${username}:${password}`
+    }
+
+    return new Promise((resolve, reject) => {
+        protocol.get(url.href,
+            options,
+            response => {
+                if (response.statusCode === 200) {
+                    const fileWriter = fs
+                        .createWriteStream(downloadPath)
+                        .on('finish', () => {
+                            log('The download has finished.');
+                            workerJob.status = 'success';
+                            workerJob.outputs = [downloadPath];
+                            resolve({})
+                        })
+                    response.pipe(fileWriter)
+                } else {
+                    return reject(new Error(response.statusMessage))
+                }
+            }).on('error', error => {
+                console.log('Error');
+                reject(error)
+            })
     })
-    .pipe(file)
-    .on('finish', () => {
-        log('The download has finished.');
-        workerJob.status = 'success';
-        workerJob.outputs = [pathName];
-        resolve();
-    })
-    .on('error', (error) => {
-        reject(error);
-    })
-  });
 };
 
 // Initialize and start the worker process

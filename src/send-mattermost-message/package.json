@@ -1,7 +1,7 @@
 {
-  "name": "download-file",
+  "name": "send-mattermost-message",
   "version": "0.0.1",
-  "description": "Downloads data from given URL",
+  "description": "Send messages to mattermost chat",
   "main": "index.js",
   "type": "module",
   "engines": {
@@ -9,7 +9,8 @@
     "npm": ">=6.0.0"
   },
   "dependencies": {
-    "amqplib": "^0.8.0"
+    "amqplib": "^0.8.0",
+    "node-fetch": "^3.2.6"
   },
   "devDependencies": {
     "eslint": "^7.29.0"
@@ -30,19 +31,9 @@
   "author": "terrestris GmbH & Co. KG <info@terrestris.de>",
   "contributors": [
     {
-      "name": "Michael Holthausen",
-      "email": "holthausen@terrestris.de",
-      "url": "https://github.com/mholthausen"
-    },
-    {
       "name": "Johannes Weskamm",
       "email": "weskamm@terrestris.de",
       "url": "https://github.com/weskamm"
-    },
-    {
-      "name": "Jakob Miksch",
-      "email": "jakob@meggsimum.de",
-      "url": "https://github.com/jakobmiksch"
     }
   ],
   "license": "MIT",
