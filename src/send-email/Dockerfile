@@ -12,8 +12,12 @@ ENV WORKERQUEUE send-email
 ENV RESULTSQUEUE results
 
 COPY src/send-email/package.json src/send-email/package-lock.json /home/
+COPY src/send-email/start-email-worker.sh util/wait-for.sh /home/
+RUN chmod +x /home/start-email-worker.sh /home/wait-for.sh
+
 WORKDIR /home/
 RUN npm install
 COPY src/send-email/index.js worker/
 COPY src/workerTemplate.js .
-CMD ["sh", "-c", "node worker/index.js ${MAILHOST} ${MAILPORT} ${SECURE} ${AUTHUSER} ${AUTHPASS} ${FROMSENDERNAME} ${FROMSENDEREMAIL}"]
+
+CMD ["./start-email-worker.sh"]
