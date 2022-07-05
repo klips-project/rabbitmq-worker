@@ -1,5 +1,7 @@
 import { GeoServerRestClient } from 'geoserver-node-client';
 import { log, initialize } from '../workerTemplate.js';
+import path from "path";
+import fsPromises from 'fs/promises';
 
 const url = process.env.GEOSERVER_REST_URL;
 const user = process.env.GEOSERVER_USER;
@@ -48,9 +50,19 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
       // cf. grc.datastores.createImageMosaicStore
       throw 'Datastore does not exist.'
     }
+
+    // move coverage to coverage store folder to keep file structure clean in data directory
+    const fileName = path.basename(coverageToAdd);
+    const oldPath = coverageToAdd;
+    const coverageStorePath = covStoreObject.coverageStore.url.split(":")[1];
+    const newPath = `/opt/geoserver_data/${coverageStorePath}/${fileName}`;
+
+    // Test if path can be accessed, probably not needed
+    await fsPromises.access(coverageToAdd);
+    await fsPromises.rename(oldPath, newPath);
     
     await grc.imagemosaics.addGranuleByServerFile(
-      workspace, covStore, coverageToAdd
+      workspace, covStore, newPath
     );
     log('Successfully added new granule to coverage store.');
   } catch (error) {
@@ -59,7 +71,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
   }
 
   workerJob.status = 'success';
-  workerJob.outputs = [];
+  workerJob.outputs = [newPath];
 };
 
 // Initialize and start the worker process
