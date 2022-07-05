@@ -54,7 +54,9 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
     // move coverage to coverage store folder to keep file structure clean in data directory
     const fileName = path.basename(coverageToAdd);
     const oldPath = coverageToAdd;
+    // the internal geoserver url always starts with 'file:', so we split it and take the second index
     const coverageStorePath = covStoreObject.coverageStore.url.split(":")[1];
+    // TODO read the geoserver data dir path from rest api
     const newPath = `/opt/geoserver_data/${coverageStorePath}/${fileName}`;
 
     // Test if path can be accessed, probably not needed
