@@ -1,7 +1,7 @@
 import { GeoServerRestClient } from 'geoserver-node-client';
 import { log, initialize } from '../workerTemplate.js';
-import path from "path";
 import fsPromises from 'fs/promises';
+import path from 'path';
 
 const url = process.env.GEOSERVER_REST_URL;
 const user = process.env.GEOSERVER_USER;
@@ -73,7 +73,8 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
   }
 
   workerJob.status = 'success';
-  workerJob.outputs = [newPath];
+  // TODO maybe output the new filepath
+  workerJob.outputs = [];
 };
 
 // Initialize and start the worker process
