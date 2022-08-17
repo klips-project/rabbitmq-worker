@@ -39,9 +39,16 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
   const covStore = inputs[1];
   const coverageToAdd = inputs[2];
 
-  try {
-    await grc.about.exists();
+  const geoServerAvailable = await isGeoServerAvailable();
 
+  if (!geoServerAvailable ){
+    console.log('Geoserver not available');
+    console.log('Job should be requeued!');
+    workerJob.missingPreconditions = true;
+    return;
+  }
+
+  try {
     // check if coverage store exists
     const covStoreObject = await grc.datastores.getCoverageStore(workspace, covStore);
 
@@ -54,7 +61,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
     // move coverage to coverage store folder to keep file structure clean in data directory
     const fileName = path.basename(coverageToAdd);
     const oldPath = coverageToAdd;
-    // the internal geoserver url always starts with 'file:', so we split it and take the second index
+    // the internal geoserver url always starts with 'file:', so we split it and use the second index
     const coverageStorePath = covStoreObject.coverageStore.url.split(":")[1];
     // TODO read the geoserver data dir path from rest api
     const newPath = `/opt/geoserver_data/${coverageStorePath}/${fileName}`;
@@ -76,6 +83,15 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
   // TODO maybe output the new filepath
   workerJob.outputs = [];
 };
+
+/**
+ * Check if the GeoServer is running.
+ *
+ * @returns {Boolean} If the GeoServer is running.
+ */
+ const isGeoServerAvailable = async () => {
+  return await grc.about.exists();
+}
 
 // Initialize and start the worker process
 initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geoserverPublishImageMosaic);
