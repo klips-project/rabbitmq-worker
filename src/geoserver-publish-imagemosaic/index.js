@@ -38,6 +38,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
   const workspace = inputs[0];
   const covStore = inputs[1];
   const coverageToAdd = inputs[2];
+  let newPath;
 
   const geoServerAvailable = await isGeoServerAvailable();
 
@@ -64,10 +65,9 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
     // the internal geoserver url always starts with 'file:', so we split it and use the second index
     const coverageStorePath = covStoreObject.coverageStore.url.split(":")[1];
     // TODO read the geoserver data dir path from rest api
-    const newPath = `/opt/geoserver_data/${coverageStorePath}/${fileName}`;
+    newPath = `/opt/geoserver_data/${coverageStorePath}/${fileName}`;
 
-    // Test if path can be accessed, probably not needed
-    await fsPromises.access(coverageToAdd);
+    // Move geotiff
     await fsPromises.rename(oldPath, newPath);
     
     await grc.imagemosaics.addGranuleByServerFile(
@@ -80,8 +80,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
   }
 
   workerJob.status = 'success';
-  // TODO maybe output the new filepath
-  workerJob.outputs = [];
+  workerJob.outputs = [newPath];
 };
 
 /**
