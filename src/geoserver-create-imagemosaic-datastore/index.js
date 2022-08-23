@@ -31,7 +31,7 @@ const grc = new GeoServerRestClient(url, user, pw);
            "my-coverageStore"
         ]
     }
- */
+    */
 const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
   const ws = inputs[0];
   const covStore = inputs[1];
@@ -51,7 +51,7 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     if (covStoreObject) {
       log("Datastore already exists!")
       workerJob.status = 'success';
-      workerJob.outputs = [covStoreObject.name];
+      workerJob.outputs = [covStoreObject.coverageStore.name];
       return;
     }
     // code originally from Sauber project
@@ -105,7 +105,7 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
   }
 
   workerJob.status = 'success';
-  workerJob.outputs = [];
+  workerJob.outputs = [covStore];
 };
 
 /**
