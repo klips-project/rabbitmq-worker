@@ -38,8 +38,8 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
   const geoServerAvailable = await isGeoServerAvailable();
 
   if (!geoServerAvailable) {
-    console.log('Geoserver not available');
-    console.log('Job should be requeued!');
+    log('Geoserver not available');
+    log('Job should be requeued!');
     workerJob.missingPreconditions = true;
     return;
   }
@@ -50,6 +50,8 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
 
     if (covStoreObject) {
       log("Datastore already exists!")
+      workerJob.status = 'success';
+      workerJob.outputs = [covStoreObject.name];
       return;
     }
     // code originally from Sauber project
