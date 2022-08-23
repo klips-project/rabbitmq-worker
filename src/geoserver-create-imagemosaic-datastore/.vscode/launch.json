@@ -1,0 +1,28 @@
+{
+    // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
+    // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
+    // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Launch Program",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/index.js",
+            "env": {
+                "GEOSERVER_REST_URL": "http://localhost:8080/geoserver/rest",
+                "GEOSERVER_USER": "klips",
+                "GEOSERVER_PASSWORD": "klips",
+                "RABBITHOST": "localhost",
+                "RABBITUSER": "rabbit",
+                "RABBITPASS": "rabbit",
+                "WORKERQUEUE": "geoserver-create-imagemosaic-datastore",
+                "RESULTQUEUE": "results",
+                "POSTGRES_PASSWORD": "postgres"
+            }
+        }
+    ]
+}
