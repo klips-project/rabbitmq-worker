@@ -22,6 +22,7 @@ const grc = new GeoServerRestClient(url, user, pw);
  *   First input is the workspace to publish to
  *   Second input is the name of the existing coverage store
  *   Third input is the local path where the GeoTIFF is located
+ *   Fourth input defines wheter existing granule should be replaced. False by default.
  * @example
     {
        "id": 123,
@@ -29,20 +30,23 @@ const grc = new GeoServerRestClient(url, user, pw);
        "inputs": [
            "klips",
            "my-coverageStore",
-           "/path/to/the/GeoTiff.tif"
+           "/path/to/the/GeoTiff.tif",
+           "true"
         ]
     }
  */
 const geoserverPublishImageMosaic = async (workerJob, inputs) => {
-
-  const workspace = inputs[0];
+  const ws = inputs[0];
   const covStore = inputs[1];
+  const layerName = inputs[1];
   const coverageToAdd = inputs[2];
+  const replaceExistingGranule = inputs[3] ? inputs[3] : false;
+
   let newPath;
 
   const geoServerAvailable = await isGeoServerAvailable();
 
-  if (!geoServerAvailable ){
+  if (!geoServerAvailable) {
     console.log('Geoserver not available');
     console.log('Job should be requeued!');
     workerJob.missingPreconditions = true;
@@ -50,33 +54,58 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
   }
 
   try {
-    // check if coverage store exists
-    const covStoreObject = await grc.datastores.getCoverageStore(workspace, covStore);
+    // Check if coverage store exists
+    const covStoreObject = await grc.datastores.getCoverageStore(ws, covStore);
 
     if (!covStoreObject) {
-      // TODO Add function to create new coverage store
-      // cf. grc.datastores.createImageMosaicStore
-      throw 'Datastore does not exist.'
+      throw `Coverage store ${covStore} does not exist.`;
     }
 
-    // move coverage to coverage store folder to keep file structure clean in data directory
+    // Move coverage to coverage store folder to keep file structure clean in data directory
     const fileName = path.basename(coverageToAdd);
-    const oldPath = coverageToAdd;
-    // the internal geoserver url always starts with 'file:', so we split it and use the second index
+    const dirName = path.dirname(coverageToAdd);
+    // The internal geoserver url always starts with 'file:', so we split it and use the second index
     const coverageStorePath = covStoreObject.coverageStore.url.split(":")[1];
-    // TODO read the geoserver data dir path from rest api
-    newPath = `/opt/geoserver_data/${coverageStorePath}/${fileName}`;
 
-    // Move geotiff
-    await fsPromises.rename(oldPath, newPath);
-    
+    newPath = `${dirName}/${coverageStorePath}/${fileName}`;
+    // Move GeoTiff
+    await fsPromises.rename(coverageToAdd, newPath);
+
+    // Check if granule already exists
+    const granules = await grc.imagemosaics.getGranules(ws, covStore, covStore);
+    const granuleAlreadyExists = granules.features.some(
+      feature => feature.properties.location === newPath
+    );
+
+    if (granuleAlreadyExists && !replaceExistingGranule) {
+      throw 'Granule with this timestamp already exists.';
+    }
+
     await grc.imagemosaics.addGranuleByServerFile(
-      workspace, covStore, newPath
+      ws, covStore, newPath
     );
     log('Successfully added new granule to coverage store.');
+
+    // check if layer has time dimension enabled
+    let hasTime = false;
+    const coverage = await grc.layers.getCoverage(ws, covStore, covStore);
+    if (coverage && coverage.coverage.metadata && coverage.coverage.metadata.entry &&
+      coverage.coverage.metadata.entry['@key'] === 'time' && (typeof coverage.coverage.metadata.entry.dimensionInfo === 'object')) {
+      const dimInfo = coverage.coverage.metadata.entry.dimensionInfo;
+      if (dimInfo.enabled === true && dimInfo.acceptableInterval) {
+        hasTime = true;
+      }
+    }
+
+    if (!hasTime) {
+      log(`Enabling time for layer "${ws}:${layerName}"`);
+      await grc.layers.enableTimeCoverage(ws, covStore, covStore, 'LIST', 3600000, 'MAXIMUM', true, false, 'PT30M');
+      log(`Time dimension  for layer "${ws}:${covStore}" successfully enabled.`);
+    }
+
   } catch (error) {
-      log(error);
-      throw 'Could not add new granule to coverage store.';
+    log(error);
+    throw 'Could not add new granule to coverage store.';
   }
 
   workerJob.status = 'success';
@@ -88,7 +117,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
  *
  * @returns {Boolean} If the GeoServer is running.
  */
- const isGeoServerAvailable = async () => {
+const isGeoServerAvailable = async () => {
   return await grc.about.exists();
 }
 
