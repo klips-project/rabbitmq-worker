@@ -92,14 +92,13 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
     if (coverage && coverage.coverage.metadata && coverage.coverage.metadata.entry &&
       coverage.coverage.metadata.entry['@key'] === 'time' && (typeof coverage.coverage.metadata.entry.dimensionInfo === 'object')) {
       const dimInfo = coverage.coverage.metadata.entry.dimensionInfo;
-      if (dimInfo.enabled === true && dimInfo.nearestMatchEnabled === true &&
-        dimInfo.acceptableInterval) {
+      if (dimInfo.enabled === true && dimInfo.acceptableInterval) {
         hasTime = true;
       }
     }
 
     if (!hasTime) {
-      console.info(`Enabling time for layer "${ws}:${layerName}"`);
+      log(`Enabling time for layer "${ws}:${layerName}"`);
       await grc.layers.enableTimeCoverage(ws, covStore, covStore, 'LIST', 3600000, 'MAXIMUM', true, false, 'PT30M');
       log(`Time dimension  for layer "${ws}:${covStore}" successfully enabled.`);
     }
