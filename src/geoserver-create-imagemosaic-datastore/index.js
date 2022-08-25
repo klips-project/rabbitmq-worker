@@ -11,7 +11,13 @@ const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
+
+const pgHost = process.env.POSTGRES_HOST;
+const pgPort = process.env.POSTGRES_PORT;
+const pgSchema = process.env.POSTGRES_SCHEMA;
+const pgUser = process.env.POSTGRES_USER;
 const pgPassword = process.env.POSTGRES_PASSWORD;
+const pgDb = process.env.POSTGRES_DB;
 
 const grc = new GeoServerRestClient(url, user, pw);
 
@@ -80,8 +86,13 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     log('... replacing dataStore file');
     const readData = await fsPromises.readFile(dataStoreTemplateFile, 'utf8');
 
-    const adaptedContent = readData.replace(/__DATABASE_PASSWORD__/g, pgPassword);
-    log({ adaptedContent })
+    let adaptedContent = readData.replace(/__DATABASE_HOST__/g, pgHost);
+    adaptedContent = readData.replace(/__DATABASE_PORT__/g, pgPort);
+    adaptedContent = readData.replace(/__DATABASE_SCHEMA__/g, pgSchema);
+    adaptedContent = readData.replace(/__DATABASE_NAME__/g, pgDb);
+    adaptedContent = readData.replace(/__DATABASE_USER__/g, pgUser);
+    adaptedContent = readData.replace(/__DATABASE_PASSWORD__/g, pgPassword);
+
     await fsPromises.writeFile(dataStoreFile, adaptedContent);
     log('... DONE Replacing datastore file');
 
