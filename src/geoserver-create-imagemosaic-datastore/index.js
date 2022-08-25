@@ -87,11 +87,11 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     const readData = await fsPromises.readFile(dataStoreTemplateFile, 'utf8');
 
     let adaptedContent = readData.replace(/__DATABASE_HOST__/g, pgHost);
-    adaptedContent = readData.replace(/__DATABASE_PORT__/g, pgPort);
-    adaptedContent = readData.replace(/__DATABASE_SCHEMA__/g, pgSchema);
-    adaptedContent = readData.replace(/__DATABASE_NAME__/g, pgDb);
-    adaptedContent = readData.replace(/__DATABASE_USER__/g, pgUser);
-    adaptedContent = readData.replace(/__DATABASE_PASSWORD__/g, pgPassword);
+    adaptedContent = adaptedContent.replace(/__DATABASE_PORT__/g, pgPort);
+    adaptedContent = adaptedContent.replace(/__DATABASE_SCHEMA__/g, pgSchema);
+    adaptedContent = adaptedContent.replace(/__DATABASE_NAME__/g, pgDb);
+    adaptedContent = adaptedContent.replace(/__DATABASE_USER__/g, pgUser);
+    adaptedContent = adaptedContent.replace(/__DATABASE_PASSWORD__/g, pgPassword);
 
     await fsPromises.writeFile(dataStoreFile, adaptedContent);
     log('... DONE Replacing datastore file');
