@@ -37,7 +37,7 @@ const grc = new GeoServerRestClient(url, user, pw);
            "my-coverageStore"
         ]
     }
-    */
+ */
 const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
   const ws = inputs[0];
   const covStore = inputs[1];
