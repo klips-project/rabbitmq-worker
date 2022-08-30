@@ -28,20 +28,23 @@ const sendMattermostMessage = async (workerJob, inputs) => {
     text
   };
 
-  const response = await fetch(matterMostUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(message)
-  });
+  try {
+    const response = await fetch(matterMostUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(message)
+    });
 
-  if (response.ok) {
-    log('Successfully sent notification to Mattermost');
-  } else {
-    log('Sending notification to Mattermost failed');
+    if (response.ok) {
+      log('Successfully sent notification to Mattermost');
+    } else {
+      log('Sending notification to Mattermost failed');
+    }
+  } catch (e) {
+    log('Sending notification to Mattermost failed with exception: ' + e);
   }
-
   workerJob.status = 'success';
   workerJob.outputs = [];
 };
