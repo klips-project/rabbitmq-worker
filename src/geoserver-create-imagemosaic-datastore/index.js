@@ -2,6 +2,7 @@ import { GeoServerRestClient } from 'geoserver-node-client';
 import { log, initialize } from '../workerTemplate.js';
 import fsPromises from 'fs/promises';
 import { exec } from 'child_process';
+import path from 'path';
 
 const url = process.env.GEOSERVER_REST_URL;
 const user = process.env.GEOSERVER_USER;
@@ -62,7 +63,7 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     }
     // code originally from Sauber project
     // cf. https://github.com/meggsimum/sauber-sdi-docker/blob/master/geoserver_publisher/index.js
-    log('CoverageStore', covStore, 'does not exist. Try to create it ...');
+    log(`CoverageStore  + ${covStore} +  does not exist. Try to create it ...`);
 
     ////////////////////////////////
     ///// indexer.properties ///////
@@ -106,9 +107,28 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
 
     await execShellCommand('zip -j ' + zipPath + ' ' + fileToZip.join(' '));
 
+
+    // workaround to create a mosaic data store programmatically
+    // 1. we create the directory for the mosaic store
+    // 2. we add a dummy image to it
+    // 3. REST call to create image mosaic store
+    // 4. REST call to remove dummy image from GeoServer and database
+    // 5. remove dummy image from filesystem
+    const dummyImageName = '20220902T1352.tif';
+    const geoserverDataDir = path.join('/opt', 'geoserver_data');
+    const mosaicDir = path.join(geoserverDataDir, 'data', ws, covStore);
+    await fsPromises.mkdir(mosaicDir);
+    const mosaicPath = path.join(mosaicDir, dummyImageName);
+    const dummyImagePath = '/home/worker/dummy.tif';
+    await fsPromises.copyFile(dummyImagePath, mosaicPath);
+
     await grc.datastores.createImageMosaicStore(ws, covStore, zipPath);
 
-    log('... CoverageStore', covStore, 'created');
+    // delete dummy granule from database and from disc
+    await grc.imagemosaics.deleteSingleGranule(ws, covStore, covStore, dummyImageName);
+    await fsPromises.rm(mosaicPath);
+
+    log(`... CoverageStore ${covStore} created`);
 
   } catch (error) {
     log(error);
