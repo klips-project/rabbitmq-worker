@@ -63,7 +63,7 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     }
     // code originally from Sauber project
     // cf. https://github.com/meggsimum/sauber-sdi-docker/blob/master/geoserver_publisher/index.js
-    log(`CoverageStore  + ${covStore} +  does not exist. Try to create it ...`);
+    log(`CoverageStore ${covStore}  does not exist. Try to create it ...`);
 
     ////////////////////////////////
     ///// indexer.properties ///////
