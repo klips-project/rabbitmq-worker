@@ -20,6 +20,8 @@ const pgUser = process.env.POSTGRES_USER;
 const pgPassword = process.env.POSTGRES_PASSWORD;
 const pgDb = process.env.POSTGRES_DB;
 
+const geoserverDataDir = process.env.GEOSERVER_DATA_DIR;
+
 const grc = new GeoServerRestClient(url, user, pw);
 
 /**
@@ -115,7 +117,6 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     // 4. REST call to remove dummy image from GeoServer and database
     // 5. remove dummy image from filesystem
     const dummyImageName = '20220902T1352.tif';
-    const geoserverDataDir = path.join('/opt', 'geoserver_data');
     const mosaicDir = path.join(geoserverDataDir, 'data', ws, covStore);
     log('Creating datastore directory');
     await fsPromises.mkdir(mosaicDir, { recursive: true });

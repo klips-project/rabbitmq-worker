@@ -12,6 +12,8 @@ const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
 
+const geoserverDataDir = process.env.GEOSERVER_DATA_DIR;
+
 const grc = new GeoServerRestClient(url, user, pw);
 
 /**
@@ -61,13 +63,10 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
       throw `Coverage store ${covStore} does not exist.`;
     }
 
-    // Move coverage to coverage store folder to keep file structure clean in data directory
     const fileName = path.basename(coverageToAdd);
-    const dirName = path.dirname(coverageToAdd);
-    // The internal geoserver url always starts with 'file:', so we split it and use the second index
-    const coverageStorePath = covStoreObject.coverageStore.url.split(":")[1];
 
-    newPath = `${dirName}/${coverageStorePath}/${fileName}`;
+    newPath =  path.join(geoserverDataDir, 'data', ws, covStore, `${fileName}.tif`);
+
     // Move GeoTiff
     await fsPromises.rename(coverageToAdd, newPath);
 
