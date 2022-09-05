@@ -1,6 +1,7 @@
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
+import path from 'path';
 import { URL } from 'url';
 
 import { initialize, log } from '../workerTemplate.js';
@@ -45,6 +46,13 @@ const downloadFile = async (workerJob, inputs) => {
         options.auth = `${username}:${password}`
     }
 
+    const downloadDir = path.dirname(downloadPath);
+    const downloadDirExist = fs.existsSync(downloadDir);
+
+    if (!downloadDirExist) {
+        throw 'Target directory for download does not exist.'
+    }
+
     return new Promise((resolve, reject) => {
         protocol.get(url.href,
             options,
@@ -58,13 +66,14 @@ const downloadFile = async (workerJob, inputs) => {
                             workerJob.outputs = [downloadPath];
                             resolve({})
                         })
+                        .on('error', (error) => {
+                            log(error);
+                            return reject(new Error(error))
+                        });
                     response.pipe(fileWriter)
                 } else {
                     return reject(new Error(response.statusMessage))
                 }
-            }).on('error', error => {
-                console.log('Error');
-                reject(error)
             })
     })
 };
