@@ -117,17 +117,17 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     const dummyImageName = '20220902T1352.tif';
     const geoserverDataDir = path.join('/opt', 'geoserver_data');
     const mosaicDir = path.join(geoserverDataDir, 'data', ws, covStore);
-    log('Creating datastore directory')
+    log('Creating datastore directory');
     await fsPromises.mkdir(mosaicDir, { recursive: true });
     const mosaicPath = path.join(mosaicDir, dummyImageName);
     const dummyImagePath = '/home/worker/dummy.tif';
-    log('Copy dummy image to datastore directory')
+    log('Copy dummy image to datastore directory');
     await fsPromises.copyFile(dummyImagePath, mosaicPath);
 
-    log('Create image mosiaic store via REST')
+    log('Create image mosiaic store via REST');
     await grc.datastores.createImageMosaicStore(ws, covStore, zipPath);
 
-    log('delete dummy granule from database and from disc')
+    log('delete dummy granule from database and from disc');
     await grc.imagemosaics.deleteSingleGranule(ws, covStore, covStore, dummyImageName);
     await fsPromises.rm(mosaicPath);
 
