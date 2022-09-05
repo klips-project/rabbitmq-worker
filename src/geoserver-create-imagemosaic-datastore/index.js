@@ -118,7 +118,7 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     const geoserverDataDir = path.join('/opt', 'geoserver_data');
     const mosaicDir = path.join(geoserverDataDir, 'data', ws, covStore);
     log('Creating datastore directory')
-    await fsPromises.mkdir(mosaicDir);
+    await fsPromises.mkdir(mosaicDir, { recursive: true });
     const mosaicPath = path.join(mosaicDir, dummyImageName);
     const dummyImagePath = '/home/worker/dummy.tif';
     log('Copy dummy image to datastore directory')
