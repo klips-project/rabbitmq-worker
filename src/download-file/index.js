@@ -1,4 +1,5 @@
 import fs from 'fs';
+import fsPromises from 'fs/promises';
 import http from 'http';
 import https from 'https';
 import path from 'path';
@@ -47,11 +48,7 @@ const downloadFile = async (workerJob, inputs) => {
     }
 
     const downloadDir = path.dirname(downloadPath);
-    const downloadDirExist = fs.existsSync(downloadDir);
-
-    if (!downloadDirExist) {
-        throw 'Target directory for download does not exist.'
-    }
+    await fsPromises.mkdir(downloadDir, { recursive: true });
 
     return new Promise((resolve, reject) => {
         protocol.get(url.href,
