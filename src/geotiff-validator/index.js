@@ -95,17 +95,18 @@ const validateGeoTiff = async (workerJob, inputs) => {
  * Checks if a GeoTIFF has a minimum file size.
  *
  * @param {String} filePath Path to a GeoTIFF file
- * @param {Number} minimumFileSize The minimum file size in bytes
+ * @param {Number} [minimumFileSize=1000] The minimum file size in bytes, default is 1000 (1KB)
+ * @param {Number} [maximumFileSize=10000000] The maximum file size in bytes, default is 10000000 (10MB)
  * @returns {Boolean} True, if GeoTIFF is greater than the minimum file size
  */
-const validateFilesize = (filePath, minimumFileSize = 1000) => {
+const validateFilesize = (filePath, minimumFileSize = 1000, maximumFileSize = 10000000) => {
   let stats = fs.statSync(filePath);
-  const valid = stats.size && stats.size > minimumFileSize;
+  const valid = stats.size && stats.size > minimumFileSize && stats.size < maximumFileSize;
 
   if (valid) {
     return true;
   } else {
-    log(`GeoTIFF file size is below the defined minium file size of ${minimumFileSize}.`);
+    log(`GeoTIFF file size is out allowed range: ${minimumFileSize} - ${maximumFileSize}.`);
     throw 'GeoTIFF has invalid file size.';
   }
 }
