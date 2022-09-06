@@ -72,6 +72,9 @@ const downloadFile = async (workerJob, inputs) => {
                     return reject(new Error(response.statusMessage))
                 }
             })
+            .on('error', (error)=>{
+                return reject(error);
+            });
     })
 };
 
