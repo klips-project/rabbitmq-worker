@@ -13,7 +13,8 @@ const rabbitPass = process.env.RABBITPASS;
 
 const allowedEPSGCodes = [
   "4326",
-  "3857"
+  "25832",
+  "25833"
 ];
 
 const extentGermany = boundingExtent([
