@@ -115,6 +115,27 @@ Make sure to put your responses into the `outputs` of the current worker job.
 
 Furthermore, the name of the new worker must be included in the file `./src/packagesToBuild.json`. The name must not use uppercase letters or spaces and must match the name of the folder.
 
+## Writing tests
+
+Have a look at the existing tests to see how to test a worker. In short:
+
+* name your tests `<file>.spec.js`
+* make sure you export the functions you want to test
+* make sure to wrap your `initialize` like follows:
+
+```javascript
+(async () => {
+  try {
+    // Initialize and start the worker process
+    await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, validateGeoTiff);
+  } catch (e) {
+    log('Error when initializing:', e);
+  }
+})();
+```
+
+Run `npm test` in the root folder to execute the tests.
+
 ## Docker Images
 
 The Docker images are built automatically by a GitHub Action. For local development they can be build individually like this:
