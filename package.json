@@ -9,6 +9,7 @@
     },
     "devDependencies": {
         "eslint": "^7.29.0",
+        "gdal-async": "^3.5.1",
         "geoserver-node-client": "^1.2.2",
         "jest-environment-jsdom": "^29.0.2",
         "nodemailer": "^6.7.8",
