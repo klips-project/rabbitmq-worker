@@ -45,7 +45,7 @@ const allowedDataTypes = [
 const validateGeoTiff = async (workerJob, inputs) => {
   const filePath = inputs[0];
   // define fallback validation step if nothing is defined in input arguments
-  const validationSteps = inputs[1] && inputs[1].validationSteps ? inputs[1].validationSteps : ['filesize', 'projection', 'extent', 'datatype','bands'];
+  const validationSteps = inputs[1] && inputs[1].validationSteps ? inputs[1].validationSteps : ['filesize', 'projection', 'datatype','bands'];
   let dataset;
 
   // check if validationsteps include a GDAL based validator
