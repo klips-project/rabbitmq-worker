@@ -13,7 +13,8 @@ const rabbitPass = process.env.RABBITPASS;
 
 const allowedEPSGCodes = [
   "4326",
-  "3857"
+  "25832",
+  "25833"
 ];
 
 const extentGermany = boundingExtent([
@@ -44,7 +45,7 @@ const allowedDataTypes = [
 const validateGeoTiff = async (workerJob, inputs) => {
   const filePath = inputs[0];
   // define fallback validation step if nothing is defined in input arguments
-  const validationSteps = inputs[1] && inputs[1].validationSteps ? inputs[1].validationSteps : ['filesize'];
+  const validationSteps = inputs[1] && inputs[1].validationSteps ? inputs[1].validationSteps : ['filesize', 'projection', 'datatype','bands'];
   let dataset;
 
   // check if validationsteps include a GDAL based validator
@@ -94,17 +95,18 @@ const validateGeoTiff = async (workerJob, inputs) => {
  * Checks if a GeoTIFF has a minimum file size.
  *
  * @param {String} filePath Path to a GeoTIFF file
- * @param {Number} minimumFileSize The minimum file size in bytes
+ * @param {Number} [minimumFileSize=1000] The minimum file size in bytes, default is 1000 (1KB)
+ * @param {Number} [maximumFileSize=10000000] The maximum file size in bytes, default is 10000000 (10MB)
  * @returns {Boolean} True, if GeoTIFF is greater than the minimum file size
  */
-const validateFilesize = (filePath, minimumFileSize = 1000) => {
+const validateFilesize = (filePath, minimumFileSize = 1000, maximumFileSize = 10000000) => {
   let stats = fs.statSync(filePath);
-  const valid = stats.size && stats.size > minimumFileSize;
+  const valid = stats.size && stats.size > minimumFileSize && stats.size < maximumFileSize;
 
   if (valid) {
     return true;
   } else {
-    log(`GeoTIFF file size is below the defined minium file size of ${minimumFileSize}.`);
+    log(`GeoTIFF file size is out of the allowed range: ${minimumFileSize} - ${maximumFileSize}.`);
     throw 'GeoTIFF has invalid file size.';
   }
 }
@@ -113,7 +115,7 @@ const validateFilesize = (filePath, minimumFileSize = 1000) => {
  * Checks if a GeoTIFF has an allowed projection.
  *
  * @param {Object} dataset GDAL dataset
- * @param {Array} List of allowed EPSG codes
+ * @param {Array} allowedEPSGCodes List of allowed EPSG codes
  * @returns {Boolean} True, if GeoTIFF srs is supported
  */
 const validateProjection = async (dataset, allowedEPSGCodes) => {
@@ -132,7 +134,7 @@ const validateProjection = async (dataset, allowedEPSGCodes) => {
  * Checks if a GeoTIFF has an allowed projection.
  *
  * @param {Object} dataset GDAL dataset
- * @param {Array} List of allowed EPSG codes
+ * @param {Array} allowedExtent List of allowed EPSG codes
  * @returns {Boolean} True, if GeoTIFF srs is supported
  */
 const validateExtent = async (dataset, allowedExtent) => {
@@ -157,7 +159,7 @@ const validateExtent = async (dataset, allowedExtent) => {
  * Checks if a GeoTIFF has an allowed datatype.
  *
  * @param {Object} dataset GDAL dataset
- * @param {Array} Allowed datatypes
+ * @param {Array} allowedDataTypes Allowed datatypes
  * @returns {Boolean} True, if GeoTIFF datatype is supported
  */
 const validateDataType = async (dataset, allowedDataTypes) => {
