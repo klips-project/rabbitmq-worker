@@ -106,7 +106,7 @@ const validateFilesize = (filePath, minimumFileSize = 1000, maximumFileSize = 10
   if (valid) {
     return true;
   } else {
-    log(`GeoTIFF file size is out allowed range: ${minimumFileSize} - ${maximumFileSize}.`);
+    log(`GeoTIFF file size is out of the allowed range: ${minimumFileSize} - ${maximumFileSize}.`);
     throw 'GeoTIFF has invalid file size.';
   }
 }
