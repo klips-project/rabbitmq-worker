@@ -43,4 +43,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/mqm-worker/${{ matrix.workers }}:latest
-            ghcr.io/${{ github.repository_owner }}/mqm-worker/${{ matrix.workers }}:${{ steps.timestamp.outputs.timestamp }}
+            ghcr.io/${{ github.repository_owner }}/mqm-worker/${{ matrix.workers }}:${{ steps.set-matrix.outputs.timestamp }}
