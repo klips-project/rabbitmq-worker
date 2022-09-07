@@ -80,3 +80,4 @@ const downloadFile = async (workerJob, inputs) => {
 
 // Initialize and start the worker process
 initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, downloadFile);
+export default downloadFile;

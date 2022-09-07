@@ -1,0 +1,86 @@
+version: '3'
+
+services:
+  dispatcher:
+    image: ghcr.io/klips-project/mqm-worker/dispatcher:latest
+    build:
+      context: ./
+      dockerfile: ./src/dispatcher/Dockerfile
+
+  send-mattermost-message:
+    image: ghcr.io/klips-project/mqm-worker/send-mattermost-message:latest
+    build:
+      context: ./
+      dockerfile: ./src/send-mattermost-message/Dockerfile
+
+  send-email:
+    image: ghcr.io/klips-project/mqm-worker/send-email:latest
+    build:
+      context: ./
+      dockerfile: ./src/send-email/Dockerfile
+
+  geoserver-publish-geotiff:
+    image: ghcr.io/klips-project/mqm-worker/geoserver-publish-geotiff:latest
+    build:
+      context: ./
+      dockerfile: ./src/geoserver-publish-geotiff/Dockerfile
+
+  geoserver-publish-imagemosaic:
+    image: ghcr.io/klips-project/mqm-worker/geoserver-publish-imagemosaic:latest
+    build:
+      context: ./
+      dockerfile: ./src/geoserver-publish-imagemosaic/Dockerfile
+
+  geoserver-create-imagemosaic-datastore:
+    image: ghcr.io/klips-project/mqm-worker/geoserver-create-imagemosaic-datastore:latest
+    build:
+      context: ./
+      dockerfile: ./src/geoserver-create-imagemosaic-datastore/Dockerfile
+
+  download-file:
+    image: ghcr.io/klips-project/mqm-worker/download-file:latest
+    build:
+      context: ./
+      dockerfile: ./src/download-file/Dockerfile
+
+  geotiff-validator:
+    image: ghcr.io/klips-project/mqm-worker/geotiff-validator:latest
+    build:
+      context: ./
+      dockerfile: ./src/geotiff-validator/Dockerfile
+
+  geonetwork-publish-metadata:
+    image: ghcr.io/klips-project/mqm-worker/geonetwork-publish-metadata:latest
+    build:
+      context: ./
+      dockerfile: ./src/geonetwork-publish-metadata/Dockerfile
+
+  geoserver-publish-layer-from-db:
+    image: ghcr.io/klips-project/mqm-worker/geoserver-publish-layer-from-db:latest
+    build:
+      context: ./
+      dockerfile: ./src/geoserver-publish-layer-from-db/Dockerfile
+
+  geoserver-publish-sld:
+    image: ghcr.io/klips-project/mqm-worker/geoserver-publish-sld:latest
+    build:
+      context: ./
+      dockerfile: ./src/geoserver-publish-sld/Dockerfile
+
+  gunzip-file:
+    image: ghcr.io/klips-project/mqm-worker/gunzip-file:latest
+    build:
+      context: ./
+      dockerfile: ./src/gunzip-file/Dockerfile
+
+  upload-file:
+    image: ghcr.io/klips-project/mqm-worker/upload-file:latest
+    build:
+      context: ./
+      dockerfile: ./src/upload-file/Dockerfile
+
+  zip-handler:
+    image: ghcr.io/klips-project/mqm-worker/zip-handler:latest
+    build:
+      context: ./
+      dockerfile: ./src/zip-handler/Dockerfile

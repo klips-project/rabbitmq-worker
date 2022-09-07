@@ -67,3 +67,4 @@ const sendEmail = async (workerJob, inputs) => {
 
 // Initialize and start the worker process
 initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, sendEmail);
+export default sendEmail;
