@@ -65,11 +65,13 @@ const sendEmail = async (workerJob, inputs) => {
   workerJob.outputs = [];
 };
 
-try {
-  // Initialize and start the worker process
-  initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, sendEmail);
-} catch (e) {
-  log('Problem when initializing:', e);
-}
+(async () => {
+  try {
+    // Initialize and start the worker process
+    await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, sendEmail);
+  } catch (e) {
+    log('Problem when initializing:', e);
+  }
+})();
 
 export default sendEmail;
