@@ -75,7 +75,11 @@ const isGeoServerAvailable = async () => {
   return await grc.about.exists();
 }
 
-// Initialize and start the worker process
-initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geoserverPublishGeoTiff, isGeoServerAvailable, 10);
+try {
+  // Initialize and start the worker process
+  initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geoserverPublishGeoTiff, isGeoServerAvailable, 10);
+} catch (e) {
+  log('Problem when initializing:', e);
+}
 
 export default geoserverPublishGeoTiff;
