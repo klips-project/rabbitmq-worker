@@ -38,6 +38,8 @@ jobs:
       - name: Get current timestamp
         uses: actions/checkout@v2
         id: timestamp
+        with:
+          path: './'
         run: echo "::set-output name=timestamp::$(git log -1 --format="%aI" -- ./src/${{ matrix.workers }}|sed 's;-;;g'|sed 's;:;;g'|awk -F + '{print $1}')"
 
       - name: Build and push ${{ matrix.workers_names }} 🚀
