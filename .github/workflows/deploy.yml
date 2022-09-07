@@ -26,6 +26,14 @@ jobs:
         workers: ${{fromJson(needs.prepare_matrix.outputs.matrix)}}
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+        with:
+          path: './'
+
+      - id: set-timestamp
+        run: |
+          echo "::set-output name=timestamp::$(git log -1 --format="%aI" -- ./src/${{ matrix.workers }}|sed 's;-;;g'|sed 's;:;;g'|awk -F + '{print $1}')"
+
       - name: Set up Docker Buildx 🔧
         uses: docker/setup-buildx-action@v1
 
@@ -43,4 +51,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/mqm-worker/${{ matrix.workers }}:latest
-            ghcr.io/${{ github.repository_owner }}/mqm-worker/${{ matrix.workers }}:${{ steps.set-matrix.outputs.timestamp }}
+            ghcr.io/${{ github.repository_owner }}/mqm-worker/${{ matrix.workers }}:${{ steps.set-timestamp.outputs.timestamp }}
