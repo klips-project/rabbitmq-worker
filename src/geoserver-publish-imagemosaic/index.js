@@ -64,8 +64,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
     }
 
     const fileName = path.basename(coverageToAdd);
-
-    newPath =  path.join(geoserverDataDir, 'data', ws, covStore, `${fileName}.tif`);
+    newPath =  path.join(geoserverDataDir, 'data', ws, covStore, fileName);
 
     // Move GeoTiff
     await fsPromises.rename(coverageToAdd, newPath);

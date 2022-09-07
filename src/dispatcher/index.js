@@ -138,7 +138,7 @@ const handleNextTask = (msg) => {
     } else {
       // overall job success
       job.status = 'success';
-      log('Job finished successfully: ' + JSON.stringify(job));
+      log('Job finished successfully: \n' + JSON.stringify(job, null, 2));
     }
     channel.ack(msg);
   } catch (e) {
