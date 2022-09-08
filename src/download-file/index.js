@@ -78,5 +78,13 @@ const downloadFile = async (workerJob, inputs) => {
     })
 };
 
-// Initialize and start the worker process
-initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, downloadFile);
+(async () => {
+    try {
+        // Initialize and start the worker process
+        await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, downloadFile);
+    } catch (e) {
+        log('Problem when initializing:', e);
+    }
+})();
+
+export default downloadFile;

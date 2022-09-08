@@ -4,44 +4,50 @@
     "description": "Collection of different workers for a RabbitMQ workflow",
     "type": "module",
     "engines": {
-      "node": ">=14.17.0",
-      "npm": ">=6.0.0"
+        "node": ">=14.17.0",
+        "npm": ">=6.0.0"
     },
     "devDependencies": {
-      "eslint": "^7.29.0"
+        "eslint": "^7.29.0",
+        "gdal-async": "^3.5.1",
+        "geoserver-node-client": "^1.2.2",
+        "jest-environment-jsdom": "^29.0.2",
+        "nodemailer": "^6.7.8",
+        "ol": "^7.1.0",
+        "ts-jest": "^28.0.8"
     },
     "dependencies": {
-      "amqplib": "^0.8.0"
+        "amqplib": "^0.8.0"
     },
     "scripts": {
-      "lint": "eslint -c .eslintrc.yml src",
-      "test": "npm run lint"
+        "lint": "eslint -c .eslintrc.yml src",
+        "test": "npm run lint && jest --silent"
     },
     "repository": {
-      "type": "git",
-      "url": "git+https://github.com/klips-project/rabbitmq-worker.git"
+        "type": "git",
+        "url": "git+https://github.com/klips-project/rabbitmq-worker.git"
     },
     "keywords": [
-      "RabbitMQ",
-      "message",
-      "queue"
+        "RabbitMQ",
+        "message",
+        "queue"
     ],
     "author": "terrestris GmbH & Co. KG <info@terrestris.de>",
     "contributors": [
-      {
-        "name": "Michael Holthausen",
-        "email": "holthausen@terrestris.de",
-        "url": "https://github.com/mholthausen"
-      },
-      {
-        "name": "Johannes Weskamm",
-        "email": "weskamm@terrestris.de",
-        "url": "https://github.com/weskamm"
-      }
+        {
+            "name": "Michael Holthausen",
+            "email": "holthausen@terrestris.de",
+            "url": "https://github.com/mholthausen"
+        },
+        {
+            "name": "Johannes Weskamm",
+            "email": "weskamm@terrestris.de",
+            "url": "https://github.com/weskamm"
+        }
     ],
     "license": "MIT",
     "bugs": {
-      "url": "https://github.com/klips-project/rabbitmq-worker/issues"
+        "url": "https://github.com/klips-project/rabbitmq-worker/issues"
     },
     "homepage": "https://github.com/klips-project/rabbitmq-worker#readme"
-  }
+}

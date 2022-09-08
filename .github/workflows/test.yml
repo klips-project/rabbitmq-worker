@@ -17,7 +17,7 @@ jobs:
       - name: Install and test 🔧
         uses: actions/setup-node@v2.1.5
         with:
-          node-version: '14'
+          node-version: '16'
       - run: npm ci
       - run: npm run test
 

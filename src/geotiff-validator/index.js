@@ -196,5 +196,13 @@ const validateBands = async (dataset) => {
   }
 }
 
-// Initialize and start the worker process
-initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, validateGeoTiff);
+(async () => {
+  try {
+    // Initialize and start the worker process
+    await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, validateGeoTiff);
+  } catch (e) {
+    log('Error when initializing:', e);
+  }
+})();
+
+export default validateGeoTiff;

@@ -6,3 +6,4 @@ parserOptions:
   sourceType: "module"
 extends: "eslint:recommended"
 rules: {}
+ignorePatterns: ['*.spec.js']
