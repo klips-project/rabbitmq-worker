@@ -147,3 +147,5 @@ docker image build \
   --tag dispatcher:my-custom-tag \
   .
 ```
+
+Alternatively, you can just run `docker compose build` to build all of them.
