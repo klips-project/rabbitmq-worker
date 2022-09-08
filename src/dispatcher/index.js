@@ -1,4 +1,4 @@
-import dispatcher from './dispatcher';
+import dispatcher from './dispatcher.js';
 
 // Initialize and start the dispatcher
 dispatcher();

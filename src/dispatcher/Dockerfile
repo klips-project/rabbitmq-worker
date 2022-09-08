@@ -8,6 +8,7 @@ RUN chmod +x /home/start-worker.sh /home/wait-for.sh
 WORKDIR /home/
 RUN npm install
 COPY src/dispatcher/index.js worker/
+COPY src/dispatcher/dispatcher.js worker/
 COPY src/workerTemplate.js .
 
 CMD ["./start-worker.sh"]
