@@ -14,7 +14,8 @@ const rabbitPass = process.env.RABBITPASS;
 const allowedEPSGCodes = [
   "4326",
   "25832",
-  "25833"
+  "25833",
+  "3035"
 ];
 
 const extentGermany = boundingExtent([
@@ -126,7 +127,7 @@ const validateProjection = async (dataset, allowedEPSGCodes) => {
     return true;
   }
   else {
-    throw `Projection code EPSG:${projectionCode} currently not supported.`;
+    throw `Projection code EPSG:${projectionCode} is not supported.`;
   }
 }
 
