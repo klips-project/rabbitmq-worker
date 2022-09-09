@@ -11,7 +11,6 @@ test('test if download-file can be called', async () => {
         'https://raw.githubusercontent.com/klips-project/rabbitmq-worker/main/README.md',
         '/tmp/test'
     ]);
-    console.log(job);
     expect(job.outputs).toBeDefined();
     expect(job.outputs.length).toBe(1);
 });
