@@ -10,7 +10,6 @@ RUN chmod +x /home/start-worker.sh /home/wait-for.sh
 WORKDIR /home/
 RUN npm install
 COPY src/geoserver-create-imagemosaic-datastore/index.js worker/
-COPY src/geoserver-create-imagemosaic-datastore/dummy.tif worker/
 COPY src/workerTemplate.js .
 COPY src/geoserver-create-imagemosaic-datastore/gs-img-mosaic-tpl ./gs-img-mosaic-tpl
 CMD ["./start-worker.sh"]

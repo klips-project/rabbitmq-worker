@@ -31,19 +31,22 @@ const grc = new GeoServerRestClient(url, user, pw);
  * @param {Array} inputs The inputs for this process
  *   First input is the workspace to publish to
  *   Second input is the name of the coverage store to be created
+ *   Third input is the path to prototype dataset for the coverage to be supported
  * @example
     {
        "id": 123,
        "type": "geoserver-create-imagemosaic-datastore",
        "inputs": [
            "klips",
-           "my-coverageStore"
+           "my-coverageStore",
+           "/path/to/tif/20220909T1400.tif"
         ]
     }
  */
 const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
   const ws = inputs[0];
   const covStore = inputs[1];
+  const prototypeGranule = inputs[2];
   const geoServerAvailable = await isGeoServerAvailable();
 
   if (!geoServerAvailable) {
@@ -78,6 +81,10 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     // copy indexer template so we can modify
     await fsPromises.copyFile(indexerFile, indexerFileCopy);
     log(`${indexerFile} was copied to ${indexerFileCopy}`);
+    // set name of imagemosaic store
+    const nameText = '\nName=' + covStore;
+    await fsPromises.appendFile(indexerFileCopy, nameText);
+    log('... DONE extending indexer file');
 
     ////////////////////////////////
     ///// datastore.properties /////
@@ -110,29 +117,28 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     await execShellCommand('zip -j ' + zipPath + ' ' + fileToZip.join(' '));
 
 
-    // workaround to create a mosaic data store programmatically
-    // 1. we create the directory for the mosaic store
-    // 2. we add a dummy image to it
-    // 3. REST call to create image mosaic store
-    // 4. REST call to remove dummy image from GeoServer and database
-    // 5. remove dummy image from filesystem
-    const dummyImageName = '20220902T1352.tif';
-    const mosaicDir = path.join(geoserverDataDir, 'data', ws, covStore);
     log('Creating datastore directory');
+    const mosaicDir = path.join(geoserverDataDir, 'data', ws, covStore);
     await fsPromises.mkdir(mosaicDir, { recursive: true });
-    const mosaicPath = path.join(mosaicDir, dummyImageName);
-    const dummyImagePath = '/home/worker/dummy.tif';
-    log('Copy dummy image to datastore directory');
-    await fsPromises.copyFile(dummyImagePath, mosaicPath);
 
-    log('Create image mosiaic store via REST');
-    await grc.datastores.createImageMosaicStore(ws, covStore, zipPath);
+    log('Copy prototype granule to datastore directory');
+    const prototypeGranuleName = path.basename(prototypeGranule);
+    const mosaicPath = path.join(mosaicDir, prototypeGranuleName);
+    await fsPromises.copyFile(prototypeGranule, mosaicPath);
 
-    log('delete dummy granule from database and from disc');
-    await grc.imagemosaics.deleteSingleGranule(ws, covStore, covStore, dummyImageName);
-    await fsPromises.rm(mosaicPath);
+    log('Create image mosaic store via REST');
+    await grc.datastores.createImageMosaicStore(ws, covStore, zipPath, false);
 
     log(`... CoverageStore ${covStore} created`);
+
+    log('Initialize the store');
+    // Once a prototype has been provided we need to initialize the store by querying it for the available coverages.
+    // TODO check if really is neccessary
+    // http://localhost:8080/geoserver/rest/workspaces/{ws}/coveragestores/{covname}/coverages.json?list=all
+
+    log(`Enabling time for layer "${ws}:${covStore}"`);
+    await grc.layers.enableTimeCoverage(ws, covStore, covStore, 'LIST', 3600000, 'MAXIMUM', true, false, 'PT30M');
+    log(`Time dimension  for layer "${ws}:${covStore}" successfully enabled.`);
 
   } catch (error) {
     log(error);
