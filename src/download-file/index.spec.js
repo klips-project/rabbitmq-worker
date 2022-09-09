@@ -9,8 +9,9 @@ test('test if download-file can be called', async () => {
     const job = {};
     await download(job, [
         'https://raw.githubusercontent.com/klips-project/rabbitmq-worker/main/README.md',
-        'test'
+        '/tmp/test'
     ]);
+    console.log(job);
     expect(job.outputs).toBeDefined();
     expect(job.outputs.length).toBe(1);
 });
