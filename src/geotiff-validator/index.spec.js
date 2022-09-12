@@ -8,12 +8,13 @@ test('test if geotiff-validate can be loaded', () => {
 
 test('test if geotiff-validate can be called', async () => {
     let job = {};
+    const downloadPath = '/tmp/test';
     await download(job, [
         'https://raw.githubusercontent.com/klips-project/klips-sdi/main/mocked-webspace/sample_germany_small.tif',
-        'test'
+        downloadPath
     ]);
     job = {};
-    await validate(job, ['test']);
+    await validate(job, [downloadPath]);
     expect(job.outputs).toBeDefined();
     expect(job.outputs.length).toBe(1);
 });
