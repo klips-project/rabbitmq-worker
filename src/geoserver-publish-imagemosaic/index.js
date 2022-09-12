@@ -40,7 +40,6 @@ const grc = new GeoServerRestClient(url, user, pw);
 const geoserverPublishImageMosaic = async (workerJob, inputs) => {
   const ws = inputs[0];
   const covStore = inputs[1];
-  const layerName = inputs[1];
   const coverageToAdd = inputs[2];
   const replaceExistingGranule = inputs[3] ? inputs[3] : false;
 
@@ -83,23 +82,6 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
       ws, covStore, newPath
     );
     log('Successfully added new granule to coverage store.');
-
-    // check if layer has time dimension enabled
-    let hasTime = false;
-    const coverage = await grc.layers.getCoverage(ws, covStore, covStore);
-    if (coverage && coverage.coverage.metadata && coverage.coverage.metadata.entry &&
-      coverage.coverage.metadata.entry['@key'] === 'time' && (typeof coverage.coverage.metadata.entry.dimensionInfo === 'object')) {
-      const dimInfo = coverage.coverage.metadata.entry.dimensionInfo;
-      if (dimInfo.enabled === true && dimInfo.acceptableInterval) {
-        hasTime = true;
-      }
-    }
-
-    if (!hasTime) {
-      log(`Enabling time for layer "${ws}:${layerName}"`);
-      await grc.layers.enableTimeCoverage(ws, covStore, covStore, 'LIST', 3600000, 'MAXIMUM', true, false, 'PT30M');
-      log(`Time dimension  for layer "${ws}:${covStore}" successfully enabled.`);
-    }
 
   } catch (error) {
     log(error);
