@@ -137,7 +137,7 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     // http://localhost:8080/geoserver/rest/workspaces/{ws}/coveragestores/{covname}/coverages.json?list=all
 
     log(`Enabling time for layer "${ws}:${covStore}"`);
-    await grc.layers.enableTimeCoverage(ws, covStore, covStore, 'LIST', 3600000, 'MAXIMUM', true, false, 'PT30M');
+    await grc.layers.enableTimeCoverage(ws, covStore, covStore, 'LIST', 3600000, 'MAXIMUM', true, false, 'PT1H');
     log(`Time dimension  for layer "${ws}:${covStore}" successfully enabled.`);
 
   } catch (error) {
