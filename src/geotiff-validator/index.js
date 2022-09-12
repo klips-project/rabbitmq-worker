@@ -2,6 +2,8 @@ import fs from 'fs';
 
 import gdal from 'gdal-async';
 
+import yaml from 'js-yaml';
+
 import { boundingExtent, containsExtent } from 'ol/extent.js';
 
 import { initialize, log } from '../workerTemplate.js';
@@ -11,31 +13,17 @@ const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
 
-const allowedEPSGCodes = [
-  "4326",
-  "25832",
-  "25833",
-  "3035"
-];
+let config;
 
-const extentGermany = boundingExtent([
-  [
-    5.85,
-    47.27,
-  ],
-  [
-    15.02,
-    55.07
-  ]
-]);
-const allowedExtent = extentGermany;
+// Load config
+try {
+  config = yaml.load(fs.readFileSync(process.cwd() + '/config.yml', 'utf8'));
+} catch (e) {
+  log(e);
+  log(`Cannot load worker config.`, e);
+  process.exit();
+}
 
-// TODO define allowed datatypes, cf. https://gdal.org/user/raster_data_model.html
-const allowedDataTypes = [
-  'Byte',
-  'Int16',
-  'Float32'
-]
 
 /**
  * Checks if a GeoTIFF is valid.
@@ -68,13 +56,13 @@ const validateGeoTiff = async (workerJob, inputs) => {
   const validationResults = await Promise.all(validationSteps.map(async (step) => {
     switch (step) {
       case "filesize":
-        return validateFilesize(filePath);
+        return validateFilesize(filePath, config.minFilesize, config.maxFilesize);
       case "projection":
-        return await validateProjection(dataset, allowedEPSGCodes);
+        return await validateProjection(dataset, config.allowedEPSGCodes);
       case "extent":
-        return await validateExtent(dataset, allowedExtent);
+        return await validateExtent(dataset, boundingExtent(config.allowedExtent));
       case "datatype":
-        return await validateDataType(dataset, allowedDataTypes);
+        return await validateDataType(dataset, config.allowedDataTypes);
       case "bands":
         return await validateBands(dataset);
       default:
