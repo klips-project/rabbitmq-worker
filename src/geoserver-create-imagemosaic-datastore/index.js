@@ -31,7 +31,7 @@ const grc = new GeoServerRestClient(url, user, pw);
  * @param {Array} inputs The inputs for this process
  *   First input is the workspace to publish to
  *   Second input is the name of the coverage store to be created
- *   Third input is the path to prototype dataset for the coverage to be supported
+ *   Third input is the path to the first coverage that also serves as prototype for the store
  * @example
     {
        "id": 123,
