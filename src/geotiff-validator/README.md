@@ -1,18 +1,18 @@
 # GeoTIFF Validator
 
-## Configuration
+## Worker Configuration
 
-Provide a `config.yaml` with the follwing keys and adapt it to your needs.
+Provide a `config.yaml` with the follwing keys and adapt it to your needs. If no configuration file is provided, the default values will be applied.
 
-| key                 | mandatory | type     | default                          |
-|---------------------|-----------|----------|----------------------------------|
-| allowedEPSGCodes: [ | y         | Int[]    | [3035,3857,4326]                 |
-| allowedExtent       | y         | OlExtent | [[5.85, 47.27],[15.02, 55.07]]   |
-| allowedDataTypes    | n         | String[] | ['Byte','Int16','Float32']       |
-| minFilesize         | n         | bytes    | 1000                             |
-| maxFilesize         | n         | bytes    | 10000000                         |
+| key                 | type     | default                          |
+|---------------------|----------|----------------------------------|
+| allowedEPSGCodes    | Int[]    | [3035,3857,4326]                 |
+| allowedExtent       | OlExtent | [[5.85, 47.27],[15.02, 55.07]]   |
+| allowedDataTypes    | String[] | ['Byte','Int16','Float32']       |
+| minFilesize         | bytes    | 1000                             |
+| maxFilesize         | bytes    | 10000000                         |
 
-Example:
+Example for `config.yaml`
 
 ```
 allowedEPSGCodes: [
@@ -38,4 +38,36 @@ allowedDataTypes: [
 minFilesize: 1000
 maxFilesize: 10000000
 
+```
+
+**Please note:** The values within the `config.yaml` can be overwritten by a job input. This enables the worker to validate different use cases (e.g. different datasets within a project).
+
+Example job input:
+
+```
+{
+    "job": [
+        {
+            "id": 2,
+            "type": "geotiff-validator",
+            "inputs": [
+                "/opt/geoserver_data/sample.tif",
+                {
+                    "validationSteps": [
+                        "projection"
+                    ],
+                    "config": {
+                        "allowedEPSGCodes": [
+                            3035,
+                            25833
+                          ],
+                        "allowedDataTypes" :  [
+                            "float"
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}
 ```

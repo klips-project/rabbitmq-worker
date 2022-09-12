@@ -14,3 +14,7 @@ test('test if download-file can be called', async () => {
     expect(job.outputs).toBeDefined();
     expect(job.outputs.length).toBe(1);
 });
+
+test('peter', async () => {
+    expect((1 + 1)).toBe(2);
+})

@@ -7,23 +7,45 @@ import yaml from 'js-yaml';
 import { boundingExtent, containsExtent } from 'ol/extent.js';
 
 import { initialize, log } from '../workerTemplate.js';
+
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
 
+const defaultConfig = {
+  "allowedEPSGCodes": [
+      "4326"
+  ],
+  "allowedExtent": [
+      [
+          5.85,
+          47.27
+      ],
+      [
+          15.02,
+          55.07
+      ]
+  ],
+  "allowedDataTypes": [
+      "Byte",
+      "Int16",
+      "Float32"
+  ],
+  "minFilesize": 1000,
+  "maxFilesize": 10000000
+};
+
 let config;
 
-// Load config
+// Load config from config.yml
 try {
   config = yaml.load(fs.readFileSync(process.cwd() + '/config.yml', 'utf8'));
 } catch (e) {
-  log(e);
-  log(`Cannot load worker config.`, e);
-  process.exit();
+  log(`Could not load configuration file. Defaults will be used.`, e);
+  config = {...defaultConfig}
 }
-
 
 /**
  * Checks if a GeoTIFF is valid.
@@ -35,6 +57,13 @@ const validateGeoTiff = async (workerJob, inputs) => {
   const filePath = inputs[0];
   // define fallback validation step if nothing is defined in input arguments
   const validationSteps = inputs[1] && inputs[1].validationSteps ? inputs[1].validationSteps : ['filesize', 'projection', 'datatype','bands'];
+  const jobConfig = inputs[1] && inputs[1].config ? inputs[1].config : false;
+
+  // overwrite worker configuration
+  if (jobConfig) {
+    config = {...config, ...jobConfig};
+  }
+
   let dataset;
 
   // check if validationsteps include a GDAL based validator
@@ -107,7 +136,7 @@ const validateFilesize = (filePath, minimumFileSize = 1000, maximumFileSize = 10
  * @param {Array} allowedEPSGCodes List of allowed EPSG codes
  * @returns {Boolean} True, if GeoTIFF srs is supported
  */
-const validateProjection = async (dataset, allowedEPSGCodes) => {
+const validateProjection = async (dataset, allowedEPSGCodes = ["4326"]) => {
   const projectionCode = dataset?.srs?.getAuthorityCode();
   log(`Projection Code of GeoTiff: ${projectionCode}`);
 

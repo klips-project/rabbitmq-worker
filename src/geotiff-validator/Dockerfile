@@ -11,7 +11,6 @@ RUN chmod +x /home/start-worker.sh /home/wait-for.sh
 WORKDIR /home/
 RUN npm install
 COPY src/geotiff-validator/index.js worker/
-COPY src/geotiff-validator/config.yml .
 COPY src/workerTemplate.js .
 
 CMD ["./start-worker.sh"]
