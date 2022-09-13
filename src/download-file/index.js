@@ -55,4 +55,4 @@ const callbackWorker = async (workerJob, inputs) => {
     }
 })();
 
-export {callbackWorker};
+export default callbackWorker;
