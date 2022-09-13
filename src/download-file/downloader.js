@@ -4,7 +4,7 @@ import fs from 'fs';
 import { log } from '../workerTemplate.js';
 
 /**
- * Downloads a file from the the internet to the local filesystem.
+ * Downloads a file from the internet to the local filesystem.
  *
  * @param {URL} url The url to download, starting with either 'http' or 'https'
  * @param {String} downloadPath The path on the system to download the file to (must exist)
