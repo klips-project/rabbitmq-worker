@@ -2,7 +2,7 @@
 
 ## Worker Configuration
 
-Provide a `config.yaml` with the follwing keys and adapt it to your needs. If no configuration file is provided, the default values will be applied.
+Initially, the worker reads the default configuration file in `./config/config.default.yml`. This can be adapted to your needs - see the following list:
 
 | key                 | type     | default                          |
 |---------------------|----------|----------------------------------|
@@ -12,35 +12,7 @@ Provide a `config.yaml` with the follwing keys and adapt it to your needs. If no
 | minFilesize         | bytes    | 1000                             |
 | maxFilesize         | bytes    | 10000000                         |
 
-Example for `config.yaml`
-
-```
-allowedEPSGCodes: [
-  '3857',
-  '4326',
-  '3035'
-]
-allowedExtent: [
-  [
-    5.85,
-    47.27,
-  ],
-  [
-    15.02,
-    55.07
-  ]
-]
-allowedDataTypes: [
-  'Byte',
-  'Int16',
-  'Float32'
-]
-minFilesize: 1000
-maxFilesize: 10000000
-
-```
-
-**Please note:** The values within the `config.yaml` can be overwritten by a job input. This enables the worker to validate different use cases (e.g. different datasets within a project).
+**Please note:** The defaults will be overwritten by a job input. This enables the worker to validate different use cases (e.g. different datasets within a project).
 
 Example job input:
 

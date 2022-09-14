@@ -16,7 +16,7 @@
   },
   "scripts": {
     "lint": "eslint -c ../../.eslintrc.yml .",
-    "test": "jest"
+    "test": "npm run lint"
   },
   "repository": {
     "type": "git",

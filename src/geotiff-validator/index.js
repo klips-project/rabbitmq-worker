@@ -1,12 +1,14 @@
 import fs from 'fs';
-
 import gdal from 'gdal-async';
-
 import yaml from 'js-yaml';
+import Ajv from 'ajv';
 
 import { boundingExtent, containsExtent } from 'ol/extent.js';
 
 import { initialize, log } from '../workerTemplate.js';
+
+const rawdataSchema = fs.readFileSync("./config/schema-config.json");
+const schemaInput = JSON.parse(rawdataSchema);
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -14,37 +16,13 @@ const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
 
-const defaultConfig = {
-  "allowedEPSGCodes": [
-      "4326"
-  ],
-  "allowedExtent": [
-      [
-          5.85,
-          47.27
-      ],
-      [
-          15.02,
-          55.07
-      ]
-  ],
-  "allowedDataTypes": [
-      "Byte",
-      "Int16",
-      "Float32"
-  ],
-  "minFilesize": 1000,
-  "maxFilesize": 10000000
-};
-
 let config;
 
 // Load config from config.yml
 try {
-  config = yaml.load(fs.readFileSync(process.cwd() + '/config.yml', 'utf8'));
+  config = yaml.load(fs.readFileSync(process.cwd() + '/config/config.default.yml', 'utf8'));
 } catch (e) {
   log(`Could not load configuration file. Defaults will be used.`, e);
-  config = {...defaultConfig}
 }
 
 /**
@@ -62,6 +40,14 @@ const validateGeoTiff = async (workerJob, inputs) => {
   // overwrite worker configuration
   if (jobConfig) {
     config = {...config, ...jobConfig};
+  }
+
+  // validate config
+  const ajv = new Ajv();
+  const validate = ajv.compile(schemaInput);
+  
+  if (!validate(config)) {
+    throw "Worker configuration not valid.";
   }
 
   let dataset;
@@ -113,11 +99,11 @@ const validateGeoTiff = async (workerJob, inputs) => {
  * Checks if a GeoTIFF has a minimum file size.
  *
  * @param {String} filePath Path to a GeoTIFF file
- * @param {Number} [minimumFileSize=1000] The minimum file size in bytes, default is 1000 (1KB)
- * @param {Number} [maximumFileSize=10000000] The maximum file size in bytes, default is 10000000 (10MB)
+ * @param {Number} [minimumFileSize=1000] The minimum file size in bytes
+ * @param {Number} [maximumFileSize=10000000] The maximum file size in bytes
  * @returns {Boolean} True, if GeoTIFF is greater than the minimum file size
  */
-const validateFilesize = (filePath, minimumFileSize = 1000, maximumFileSize = 10000000) => {
+const validateFilesize = (filePath, minimumFileSize, maximumFileSize) => {
   let stats = fs.statSync(filePath);
   const valid = stats.size && stats.size > minimumFileSize && stats.size < maximumFileSize;
 

@@ -21,7 +21,7 @@
     },
     "scripts": {
         "lint": "eslint -c .eslintrc.yml src",
-        "test": "jest"
+        "test": "npm run lint && jest --silent"
     },
     "repository": {
         "type": "git",

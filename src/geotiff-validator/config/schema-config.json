@@ -1,0 +1,30 @@
+{
+  "$id": "json",
+  "type": "object",
+  "properties": {
+    "allowedEPSGCodes": {
+      "type": "array"
+    },
+    "allowedExtent": {
+      "type": "array",
+      "maxItems": 2
+    },
+    "allowedDataTypes": {
+      "type": "array"
+    },
+    "maxFilesize": {
+      "type": "number"
+    },
+    "minFilesize": {
+      "type": "number"
+    }
+  },
+  "required": [
+      "allowedEPSGCodes",
+      "allowedExtent",
+      "allowedDataTypes",
+      "maxFilesize",
+      "minFilesize"
+  ],
+  "additionalProperties": false
+}
