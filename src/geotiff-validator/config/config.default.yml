@@ -1,22 +1,17 @@
-allowedEPSGCodes: [
-  '3857',
-  '4326',
-  '3035'
-]
-allowedExtent: [
-  [
-    5.85,
-    47.27,
-  ],
-  [
-    15.02,
-    55.07
-  ]
-]
-allowedDataTypes: [
-  'Byte',
-  'Int16',
-  'Float32'
-]
-minFilesize: 1000
-maxFilesize: 10000000
+extent:
+  allowedExtent:
+      - [5.85, 47.27]
+      - [15.02, 55.07]
+projection:
+  allowedEPSGCodes:
+      - 3857
+      - 4326
+      - 3035
+dataType:
+    allowedDataTypes:
+      - Byte
+      - Int16
+      - Float32
+fileSize:
+  minFileSize: 1000
+  maxFileSize: 10000000

@@ -33,12 +33,12 @@ try {
  */
 const validateGeoTiff = async (workerJob, inputs) => {
   const filePath = inputs[0];
-  // define fallback validation step if nothing is defined in input arguments
-  const validationSteps = inputs[1] && inputs[1].validationSteps ? inputs[1].validationSteps : ['filesize', 'projection', 'datatype','bands'];
-  const jobConfig = inputs[1] && inputs[1].config ? inputs[1].config : false;
+  // handle configuration from job
+  const validationSteps = inputs[1] ? Object.keys(inputs[1]) : Object.keys(config);
+  let jobConfig = inputs[1] ? inputs[1] : false;
 
   // overwrite worker configuration
-  if (jobConfig) {
+  if (jobConfig) {  
     config = {...config, ...jobConfig};
   }
 
