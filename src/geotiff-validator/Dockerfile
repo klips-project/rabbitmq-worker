@@ -1,4 +1,4 @@
-FROM node:bullseye
+FROM node:16-bullseye
 
 # netcat needed for 'wait-for' script
 RUN apt update \
