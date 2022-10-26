@@ -1,16 +1,18 @@
 process.env.RABBITHOST = '46.4.8.29';
-import download from './index';
+import callbackWorker from './index';
 
-test('test if download-file can be loaded', () => {
-    expect(download).toBeDefined();
+test('if function exists', () => {
+    expect(callbackWorker).toBeDefined();
 });
 
-test('test if download-file can be called', async () => {
+test('if worker provides correct outputs', async () => {
     const job = {};
-    await download(job, [
+    const outputPath = '/tmp/test';
+    await callbackWorker(job, [
         'https://raw.githubusercontent.com/klips-project/rabbitmq-worker/main/README.md',
-        '/tmp/test'
+        outputPath
     ]);
     expect(job.outputs).toBeDefined();
     expect(job.outputs.length).toBe(1);
+    expect(job.outputs[0]).toBe(outputPath);
 });
