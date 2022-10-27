@@ -18,7 +18,8 @@
         "ts-jest": "^28.0.8"
     },
     "dependencies": {
-        "amqplib": "^0.8.0"
+        "amqplib": "^0.8.0",
+        "gdal-async": "3.5.1"
     },
     "scripts": {
         "lint": "eslint -c .eslintrc.yml src",
