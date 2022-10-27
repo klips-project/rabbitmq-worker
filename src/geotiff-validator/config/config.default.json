@@ -20,7 +20,6 @@
     },
     "dataType": {
         "allowedDataTypes": [
-            "Byte",
             "Int16",
             "Float32",
             "Float64"

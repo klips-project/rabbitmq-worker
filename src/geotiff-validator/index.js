@@ -4,7 +4,10 @@ import Ajv from 'ajv';
 import schemaInput from './config/schema-config.json' assert { type: "json" };
 import defaultConfig from './config/config.default.json' assert { type: "json" };
 
+import { transformExtent } from 'ol/proj.js';
 import { boundingExtent, containsExtent } from 'ol/extent.js';
+import {register} from 'ol/proj/proj4.js';
+import proj4 from 'proj4';
 
 import { initialize, log, debugLog } from '../workerTemplate.js';
 
@@ -60,6 +63,18 @@ const validateGeoTiff = async (workerJob, inputs) => {
     } catch (error) {
       throw `Could not open dataset: ${error}`;
     }
+  }
+
+  // TODO Register custom pro4 definitions dynamically: Maybe use ol-util ProjectionUtil
+  // Check if allowedEPSGCodes contains EPSG:3035
+  if (!config.projection.allowedEPSGCodes.some(code => code === 3035)) {
+    proj4.defs('EPSG:3035', 
+    '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
+    register(proj4);
+  }
+  // Check if there are other EPSG codes allowed than 4326 or 3857 or 3035
+  if (!config.projection.allowedEPSGCodes.every(code => (code === 4326 || code === 3857 || code === 3035))) {
+    throw 'Other CRS than EPSG:4326, EPSG:3857, EPSG:3035 are not currently.';
   }
 
   const validationResults = await Promise.all(validationSteps.map(async (step) => {
@@ -120,7 +135,7 @@ const validateFilesize = (filePath, minimumFileSize, maximumFileSize) => {
 const validateProjection = async (dataset, allowedEPSGCodes = ["4326"]) => {
   const projectionCode = dataset?.srs?.getAuthorityCode();
 
-  if (allowedEPSGCodes.includes(projectionCode)) {
+  if (allowedEPSGCodes.includes(parseInt(projectionCode))) {
     debugLog(`Projection code of GeoTiff EPSG:${projectionCode} is valid.`);
     return true;
   }
@@ -138,10 +153,15 @@ const validateProjection = async (dataset, allowedEPSGCodes = ["4326"]) => {
  */
 const validateExtent = async (dataset, allowedExtent) => {
   const envenlope = dataset?.bands?.getEnvelope();
-  const olExtent = boundingExtent([
+  let olExtent = boundingExtent([
     [envenlope.minX, envenlope.minY],
     [envenlope.maxX, envenlope.maxY]
   ]);
+  const projectionCode = dataset?.srs?.getAuthorityCode();
+
+  if (projectionCode !== "4326") {
+    olExtent = transformExtent(olExtent, `EPSG:${projectionCode}`, "EPSG:4326");
+  }
 
   if (containsExtent(allowedExtent, olExtent)) {
     debugLog(`Extent of GeoTiff: ${olExtent} is valid.`);
