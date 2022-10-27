@@ -1,8 +1,6 @@
-import fs from 'fs';
+import fs from 'fs-extra';
 import gdal from 'gdal-async';
 import Ajv from 'ajv';
-import schemaInput from './config/schema-config.json' assert { type: "json" };
-import defaultConfig from './config/config.default.json' assert { type: "json" };
 
 import { transformExtent } from 'ol/proj.js';
 import { boundingExtent, containsExtent } from 'ol/extent.js';
@@ -17,8 +15,6 @@ const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
 
-let config = defaultConfig;
-
 /**
  * Checks if a GeoTIFF is valid.
  *
@@ -26,6 +22,8 @@ let config = defaultConfig;
  * @param {Array} inputs The inputs for this process
  */
 const validateGeoTiff = async (workerJob, inputs) => {
+  const schemaInput = fs.readJSONSync('./config/schema-config.json');
+  let config = fs.readJSONSync('./config/config.default.json');
   const filePath = inputs[0];
   // handle configuration from job
   let validationSteps;
