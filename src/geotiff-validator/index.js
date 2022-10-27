@@ -23,7 +23,6 @@ const rabbitPass = process.env.RABBITPASS;
  * @param {Array} inputs The inputs for this process
  */
 const validateGeoTiff = async (workerJob, inputs) => {
-  console.log(path.join(process.cwd(), 'config/schema-config.json'));
   const schemaInput = fs.readJSONSync(path.join(process.cwd(), 'config/schema-config.json'));
   let config = fs.readJSONSync(path.join(process.cwd(), 'config/config.default.json'));
   const filePath = inputs[0];
