@@ -2,7 +2,7 @@
 
 ## Worker Configuration
 
-Initially, the worker reads the default configuration file in `./config/config.default.yml`. This can be adapted to your needs - see the following list:
+Initially, the worker reads the default configuration file in `./config/config.default.json`. This can be adapted to your needs - see the following list:
 
 **Validation steps:**
 
