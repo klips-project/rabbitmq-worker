@@ -4,8 +4,8 @@
     "description": "Collection of different workers for a RabbitMQ workflow",
     "type": "module",
     "engines": {
-        "node": ">=14.17.0",
-        "npm": ">=6.0.0"
+        "node": ">=18.10.0",
+        "npm": ">=8.19.2"
     },
     "devDependencies": {
         "@babel/eslint-parser": "^7.19.1",
@@ -22,7 +22,7 @@
     },
     "scripts": {
         "lint": "eslint -c .eslintrc.yml src",
-        "test": "npm run lint && jest --silent"
+        "test": "npm run lint && jest"
     },
     "repository": {
         "type": "git",
