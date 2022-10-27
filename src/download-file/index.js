@@ -1,10 +1,7 @@
-import fs from 'fs';
 import fsPromises from 'fs/promises';
-import http from 'http';
-import https from 'https';
 import path from 'path';
 import { URL } from 'url';
-
+import downloadFile from './downloader.js';
 import { initialize, log } from '../workerTemplate.js';
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -22,7 +19,7 @@ const rabbitPass = process.env.RABBITPASS;
  *   (optional) Third input is the username for basic auth
  *   (optional) Fourth input is the password for basic auth
  */
-const downloadFile = async (workerJob, inputs) => {
+const callbackWorker = async (workerJob, inputs) => {
     const uri = inputs[0];
     const downloadPath = inputs[1];
     const username = inputs[2];
@@ -30,16 +27,6 @@ const downloadFile = async (workerJob, inputs) => {
     const url = new URL(uri);
 
     log('Downloading ' + url.href + ' …');
-
-    // choose correct library depending on protocol
-    let protocol;
-    if (url.protocol === 'http:') {
-        protocol = http;
-    } else if (url.protocol === 'https:') {
-        protocol = https;
-    } else {
-        throw `Url does not start with 'http' or 'https'`
-    }
 
     // if provided: add basic auth credentials to request option
     const options = {};
@@ -50,41 +37,22 @@ const downloadFile = async (workerJob, inputs) => {
     const downloadDir = path.dirname(downloadPath);
     await fsPromises.mkdir(downloadDir, { recursive: true });
 
-    return new Promise((resolve, reject) => {
-        protocol.get(url.href,
-            options,
-            response => {
-                if (response.statusCode === 200) {
-                    const fileWriter = fs
-                        .createWriteStream(downloadPath)
-                        .on('finish', () => {
-                            log('The download has finished.');
-                            workerJob.status = 'success';
-                            workerJob.outputs = [downloadPath];
-                            resolve({})
-                        })
-                        .on('error', (error) => {
-                            log(error);
-                            return reject(new Error(error))
-                        });
-                    response.pipe(fileWriter)
-                } else {
-                    return reject(new Error(response.statusMessage))
-                }
-            })
-            .on('error', (error)=>{
-                return reject(error);
-            });
-    })
+    return downloadFile(url, downloadPath, options)
+        .then((downloadPath) => {
+            log('The download has finished.');
+            workerJob.status = 'success';
+            workerJob.outputs = [downloadPath];
+        });
+
 };
 
 (async () => {
     try {
         // Initialize and start the worker process
-        await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, downloadFile);
+        await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callbackWorker);
     } catch (e) {
         log('Problem when initializing:', e);
     }
 })();
 
-export default downloadFile;
+export default callbackWorker;

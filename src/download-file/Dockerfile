@@ -7,5 +7,6 @@ RUN chmod +x /home/start-worker.sh /home/wait-for.sh
 WORKDIR /home/
 RUN npm install
 COPY src/download-file/index.js worker/
+COPY src/download-file/downloader.js worker/
 COPY src/workerTemplate.js .
 CMD ["./start-worker.sh"]

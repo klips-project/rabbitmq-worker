@@ -136,6 +136,12 @@ Have a look at the existing tests to see how to test a worker. In short:
 
 Run `npm test` in the root folder to execute the tests.
 
+Run single test files:
+
+```shell
+npx jest -- src/download-file/downloader.spec.js
+```
+
 ## Docker Images
 
 The Docker images are built automatically by a GitHub Action. For local development they can be build individually like this:
