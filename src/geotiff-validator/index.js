@@ -1,6 +1,7 @@
-import fs from 'fs-extra';
 import gdal from 'gdal-async';
+import fs from 'fs-extra';
 import Ajv from 'ajv';
+import path from 'path';
 
 import { transformExtent } from 'ol/proj.js';
 import { boundingExtent, containsExtent } from 'ol/extent.js';
@@ -22,8 +23,9 @@ const rabbitPass = process.env.RABBITPASS;
  * @param {Array} inputs The inputs for this process
  */
 const validateGeoTiff = async (workerJob, inputs) => {
-  const schemaInput = fs.readJSONSync('./config/schema-config.json');
-  let config = fs.readJSONSync('./config/config.default.json');
+  console.log(path.join(process.cwd(), 'config/schema-config.json'));
+  const schemaInput = fs.readJSONSync(path.join(process.cwd(), 'config/schema-config.json'));
+  let config = fs.readJSONSync(path.join(process.cwd(), 'config/config.default.json'));
   const filePath = inputs[0];
   // handle configuration from job
   let validationSteps;
@@ -65,7 +67,7 @@ const validateGeoTiff = async (workerJob, inputs) => {
 
   // TODO Register custom pro4 definitions dynamically: Maybe use ol-util ProjectionUtil
   // Check if allowedEPSGCodes contains EPSG:3035
-  if (!config.projection.allowedEPSGCodes.some(code => code === 3035)) {
+  if (config.projection.allowedEPSGCodes.some(code => code === 3035)) {
     proj4.defs('EPSG:3035', 
     '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
     register(proj4);
