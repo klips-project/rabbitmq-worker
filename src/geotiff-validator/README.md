@@ -29,7 +29,7 @@ Initially, the worker reads the default configuration file in `./config/config.d
 
 Example job input:
 
-```
+```json
 {
     "extent": {
         "allowedExtent": [
