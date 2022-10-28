@@ -4,12 +4,13 @@
     "description": "Collection of different workers for a RabbitMQ workflow",
     "type": "module",
     "engines": {
-        "node": ">=14.17.0",
-        "npm": ">=6.0.0"
+        "node": ">=16.14.0",
+        "npm": ">=8.3.1"
     },
     "devDependencies": {
+        "@babel/eslint-parser": "^7.19.1",
+        "@babel/plugin-syntax-import-assertions": "^7.18.6",
         "eslint": "^7.29.0",
-        "gdal-async": "^3.5.1",
         "geoserver-node-client": "^1.2.2",
         "jest-environment-jsdom": "^29.0.2",
         "nodemailer": "^6.7.8",

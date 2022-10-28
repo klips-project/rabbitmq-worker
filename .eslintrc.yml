@@ -1,9 +1,14 @@
 env:
   es2021: true
   node: true
+parser: "@babel/eslint-parser"
 parserOptions:
+  requireConfigFile: false
   ecmaVersion: 12
   sourceType: "module"
+  babelOptions:
+    plugins:
+      - "@babel/plugin-syntax-import-assertions"
 extends: "eslint:recommended"
 rules: {}
 ignorePatterns: ['*.spec.js']

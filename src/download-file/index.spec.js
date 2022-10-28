@@ -7,7 +7,7 @@ test('if function exists', () => {
 
 test('if worker provides correct outputs', async () => {
     const job = {};
-    const outputPath = '/tmp/test';
+    const outputPath = '/tmp/README.md';
     await callbackWorker(job, [
         'https://raw.githubusercontent.com/klips-project/rabbitmq-worker/main/README.md',
         outputPath

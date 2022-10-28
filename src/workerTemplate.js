@@ -238,3 +238,19 @@ export function log(msg) {
     ' [*] ' + new Date().toISOString() + ' ID:' + workerId + ': ' + msg
   );
 }
+
+/**
+ * Log a message with current timestamp and worker ID
+ * @param {String} msg The log message
+ */
+ export function debugLog(msg) {
+  if (process.env.NODE_ENV != 'development') {
+    return;
+  }
+  if (!workerId) {
+    workerId = randomUUID();
+  }
+  console.log(
+    ' [*] ' + new Date().toISOString() + ' ID:' + workerId + ': ' + msg
+  );
+}
