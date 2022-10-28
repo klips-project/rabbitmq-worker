@@ -241,7 +241,7 @@ export function log(msg) {
 
 /**
  * Log a message with current timestamp and worker ID
- * @param {String} msg
+ * @param {String} msg The log message
  */
  export function debugLog(msg) {
   if (process.env.NODE_ENV != 'development') {
