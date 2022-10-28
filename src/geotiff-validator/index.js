@@ -23,8 +23,8 @@ const rabbitPass = process.env.RABBITPASS;
  * @param {Array} inputs The inputs for this process
  */
 const validateGeoTiff = async (workerJob, inputs) => {
-  const schemaInput = fs.readJSONSync(path.join(process.cwd(), 'config/schema-config.json'));
-  let config = fs.readJSONSync(path.join(process.cwd(), 'config/config.default.json'));
+  const schemaInput = fs.readJSONSync(path.join(process.cwd(), 'config', 'schema-config.json'));
+  let config = fs.readJSONSync(path.join(process.cwd(), 'config', 'config.default.json'));
   const filePath = inputs[0];
   // handle configuration from job
   let validationSteps;
@@ -64,7 +64,7 @@ const validateGeoTiff = async (workerJob, inputs) => {
     }
   }
 
-  // TODO Register custom pro4 definitions dynamically: Maybe use ol-util ProjectionUtil
+  // TODO: Register custom pro4 definitions dynamically: Maybe use ol-util ProjectionUtil
   // Check if allowedEPSGCodes contains EPSG:3035
   if (config.projection.allowedEPSGCodes.some(code => code === 3035)) {
     proj4.defs('EPSG:3035',
@@ -73,7 +73,7 @@ const validateGeoTiff = async (workerJob, inputs) => {
   }
   // Check if there are other EPSG codes allowed than 4326 or 3857 or 3035
   if (!config.projection.allowedEPSGCodes.every(code => (code === 4326 || code === 3857 || code === 3035))) {
-    throw 'Other CRS than EPSG:4326, EPSG:3857, EPSG:3035 are not currently.';
+    throw 'Other CRS than EPSG:4326, EPSG:3857, EPSG:3035 are currently not allowed.';
   }
 
   const validationResults = await Promise.all(validationSteps.map(async (step) => {
@@ -108,7 +108,7 @@ const validateGeoTiff = async (workerJob, inputs) => {
  * Checks if a GeoTIFF has a minimum file size.
  *
  * @param {String} filePath Path to a GeoTIFF file
- * @param {Number} [minimumFileSize=1000] The minimum file size in bytes
+ * @param {Number} [minimumFileSize] The minimum file size in bytes
  * @returns {Boolean} True, if GeoTIFF is greater than the minimum file size
  */
 const validateFilesize = (filePath, minimumFileSize, maximumFileSize) => {
@@ -131,7 +131,7 @@ const validateFilesize = (filePath, minimumFileSize, maximumFileSize) => {
  * @param {Array} allowedEPSGCodes List of allowed EPSG codes
  * @returns {Boolean} True, if GeoTIFF srs is supported
  */
-const validateProjection = async (dataset, allowedEPSGCodes = ["4326"]) => {
+const validateProjection = async (dataset, allowedEPSGCodes) => {
   const projectionCode = dataset?.srs?.getAuthorityCode();
 
   if (allowedEPSGCodes.includes(parseInt(projectionCode))) {
@@ -158,6 +158,11 @@ const validateExtent = async (dataset, allowedExtent) => {
   ]);
   const projectionCode = dataset?.srs?.getAuthorityCode();
 
+  // TODO: make allowed projection codes a global constant
+  if (!["4326", "3857", "3035"].includes(projectionCode)){
+    throw `Projection code '${projectionCode}' is not allowed`;
+  }
+
   if (projectionCode !== "4326") {
     olExtent = transformExtent(olExtent, `EPSG:${projectionCode}`, "EPSG:4326");
   }
@@ -167,7 +172,7 @@ const validateExtent = async (dataset, allowedExtent) => {
     return true;
   }
   else {
-    throw `Invalid extent: ${olExtent.toString()}.`;
+    throw `Invalid extent: [${olExtent.toString()}]. Should be in [${allowedExtent.toString()}]`;
   }
 }
 
@@ -186,13 +191,13 @@ const validateDataType = async (dataset, allowedDataTypes) => {
     return true;
   }
   else {
-    throw `Datatype :${dataType} currently not supported.`;
+    throw `Datatype: '${dataType}' is not supported.`;
   }
 }
 
 /**
  * Checks if a GeoTIFF has a minimum number of bands.
- * TODO Enhance this test or check if it is necessary.
+ * TODO: Enhance this test or check if it is necessary.
  *
  * @param {Object} dataset GDAL dataset
  * @returns {Boolean} True, if GeoTIFF has minimum number of bands
