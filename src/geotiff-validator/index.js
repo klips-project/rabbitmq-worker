@@ -5,7 +5,7 @@ import path from 'path';
 
 import { transformExtent } from 'ol/proj.js';
 import { boundingExtent, containsExtent } from 'ol/extent.js';
-import {register} from 'ol/proj/proj4.js';
+import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
 
 import { initialize, log, debugLog } from '../workerTemplate.js';
@@ -35,13 +35,13 @@ const validateGeoTiff = async (workerJob, inputs) => {
 
   // overwrite worker configuration
   if (jobConfig) {
-    config = {...config, ...jobConfig};
+    config = { ...config, ...jobConfig };
   }
 
   // validate config
   const ajv = new Ajv();
   const validate = ajv.compile(schemaInput);
-  
+
   if (!validate(config)) {
     throw "Worker configuration not valid.";
   }
@@ -67,8 +67,8 @@ const validateGeoTiff = async (workerJob, inputs) => {
   // TODO Register custom pro4 definitions dynamically: Maybe use ol-util ProjectionUtil
   // Check if allowedEPSGCodes contains EPSG:3035
   if (config.projection.allowedEPSGCodes.some(code => code === 3035)) {
-    proj4.defs('EPSG:3035', 
-    '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
+    proj4.defs('EPSG:3035',
+      '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
     register(proj4);
   }
   // Check if there are other EPSG codes allowed than 4326 or 3857 or 3035
