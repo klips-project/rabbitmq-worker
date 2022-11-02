@@ -9,58 +9,65 @@ import { boundingExtent, containsExtent } from 'ol/extent.js';
 // TODO: remove/replace
 import { debugLog } from '../workerTemplate.js';
 
-const performValidation = async (filePath, config, validationSteps) => {
+class GeotiffValidator {
+    constructor(config) {
+        this.config = config;
+    }
 
-    let dataset;
+    async performValidation(filePath, validationSteps) {
 
-    // check if validationsteps include a GDAL based validator
-    const requiresGdalvalidation = validationSteps.filter(step => [
-        'projection',
-        'extent',
-        'datatype',
-        'bands'
-    ].includes(step)).length;
+        let dataset;
 
-    if (requiresGdalvalidation) {
-        try {
-            dataset = await gdal.openAsync(filePath);
-        } catch (error) {
-            throw `Could not open dataset: ${error}`;
+        // check if validationsteps include a GDAL based validator
+        const requiresGdalvalidation = validationSteps.filter(step => [
+            'projection',
+            'extent',
+            'datatype',
+            'bands'
+        ].includes(step)).length;
+
+        if (requiresGdalvalidation) {
+            try {
+                dataset = await gdal.openAsync(filePath);
+            } catch (error) {
+                throw `Could not open dataset: ${error}`;
+            }
         }
-    }
 
-    // TODO: Register custom pro4 definitions dynamically: Maybe use ol-util ProjectionUtil
-    // Check if allowedEPSGCodes contains EPSG:3035
-    if (config.projection.allowedEPSGCodes.some(code => code === 3035)) {
-        proj4.defs('EPSG:3035',
-            '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
-        register(proj4);
-    }
-    // Check if there are other EPSG codes allowed than 4326 or 3857 or 3035
-    if (!config.projection.allowedEPSGCodes.every(code => (code === 4326 || code === 3857 || code === 3035))) {
-        throw 'Other CRS than EPSG:4326, EPSG:3857, EPSG:3035 are currently not allowed.';
-    }
-
-    const validationResults = await Promise.all(validationSteps.map(async (step) => {
-        switch (step) {
-            case "fileSize":
-                return validateFilesize(
-                    filePath, config.fileSize.minFileSize, config.fileSize.maxFileSize);
-            case "projection":
-                return await validateProjection(dataset, config.projection.allowedEPSGCodes);
-            case "extent":
-                return await validateExtent(dataset, boundingExtent(config.extent.allowedExtent));
-            case "dataType":
-                return await validateDataType(dataset, config.dataType.allowedDataTypes);
-            case "bands":
-                return await validateBands(dataset);
-            default:
-                break;
+        // TODO: Register custom pro4 definitions dynamically: Maybe use ol-util ProjectionUtil
+        // Check if allowedEPSGCodes contains EPSG:3035
+        if (this.config.projection.allowedEPSGCodes.some(code => code === 3035)) {
+            proj4.defs('EPSG:3035',
+                '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs');
+            register(proj4);
         }
-    }));
+        // Check if there are other EPSG codes allowed than 4326 or 3857 or 3035
+        if (!this.config.projection.allowedEPSGCodes.every(code => (code === 4326 || code === 3857 || code === 3035))) {
+            throw 'Other CRS than EPSG:4326, EPSG:3857, EPSG:3035 are currently not allowed.';
+        }
 
-    return validationResults;
+        const validationResults = await Promise.all(validationSteps.map(async (step) => {
+            switch (step) {
+                case "fileSize":
+                    return validateFilesize(
+                        filePath, this.config.fileSize.minFileSize, this.config.fileSize.maxFileSize);
+                case "projection":
+                    return await validateProjection(dataset, this.config.projection.allowedEPSGCodes);
+                case "extent":
+                    return await validateExtent(dataset, boundingExtent(this.config.extent.allowedExtent));
+                case "dataType":
+                    return await validateDataType(dataset, this.config.dataType.allowedDataTypes);
+                case "bands":
+                    return await validateBands(dataset);
+                default:
+                    break;
+            }
+        }));
+
+        return validationResults;
+    }
 }
+
 
 /**
  * Checks if the size of a GeoTIFF is in a defined range.
@@ -175,4 +182,4 @@ const validateBands = async (dataset) => {
     }
 }
 
-export { performValidation, validateFilesize, validateBands, validateDataType, validateExtent, validateProjection };
+export { GeotiffValidator, validateFilesize, validateBands, validateDataType, validateExtent, validateProjection };
