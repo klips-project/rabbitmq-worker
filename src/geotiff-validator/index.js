@@ -3,7 +3,7 @@ import Ajv from 'ajv';
 import path from 'path';
 
 import { initialize, log } from '../workerTemplate.js';
-import { GeotiffValidator} from './validator.js';
+import { GeotiffValidator } from './validator.js';
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -43,12 +43,21 @@ const validateGeoTiff = async (workerJob, inputs) => {
 
   const geotiffValidator = new GeotiffValidator(config);
   const validationResults = await geotiffValidator.performValidation(filePath, validationSteps);
-  if (validationResults.every(result => result)) {
+
+  const validationErrors = validationResults.filter(result => {
+    return !result.valid;
+  })
+
+  if (validationErrors.length === 0) {
     log('GeoTiff is valid.');
     workerJob.status = 'success';
     workerJob.outputs = [filePath];
   } else {
-    throw 'GeoTIFF is invalid.';
+    let errorMessage = 'GeoTIFF is invalid:';
+    validationErrors.forEach(validationError => {
+      errorMessage = errorMessage + '\n' + validationError.info;
+    });
+    throw errorMessage;
   }
 }
 
