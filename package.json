@@ -18,7 +18,8 @@
         "ts-jest": "^28.0.8",
         "fs-extra": "^10.1.0",
         "gdal-async": "3.5.1",
-        "ajv": "^8.11.0"
+        "ajv": "^8.11.0",
+        "proj4": "^2.8.0"
     },
     "dependencies": {
         "amqplib": "^0.8.0"
