@@ -84,3 +84,9 @@ services:
     build:
       context: ./
       dockerfile: ./src/zip-handler/Dockerfile
+
+  create-file:
+    image: ghcr.io/klips-project/mqm-worker/create-file:latest
+    build:
+      context: ./
+      dockerfile: ./src/create-file/Dockerfile
