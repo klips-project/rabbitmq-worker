@@ -290,4 +290,4 @@ const validateBands = async (dataset) => {
     return result;
 }
 
-export { GeotiffValidator };
+export { GeotiffValidator, validateFilesize, validateBands, validateDataType, validateExtent, validateProjection };
