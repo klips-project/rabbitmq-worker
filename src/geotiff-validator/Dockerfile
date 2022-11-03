@@ -12,6 +12,7 @@ WORKDIR /home/
 RUN npm install
 COPY src/geotiff-validator/index.js worker/
 COPY src/geotiff-validator/validator.js worker/
+COPY src/geotiff-validator/worker.js worker/
 COPY src/workerTemplate.js .
 ADD src/geotiff-validator/config config
 

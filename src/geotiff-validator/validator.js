@@ -8,7 +8,7 @@ import { boundingExtent, containsExtent } from 'ol/extent.js';
 
 const projectionName = 'projection';
 const extentName = 'extent';
-const datatypeName = 'datatype';
+const datatypeName = 'dataType';
 const bandName = 'bands';
 const fileSizeName = 'fileSize';
 
