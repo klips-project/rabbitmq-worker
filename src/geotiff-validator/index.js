@@ -55,7 +55,7 @@ const validateGeoTiff = async (workerJob, inputs) => {
   } else {
     let errorMessage = 'GeoTIFF is invalid:';
     validationErrors.forEach(validationError => {
-      errorMessage = errorMessage + '\n' + validationError.info;
+      errorMessage = `${errorMessage}\n${validationError.type}: ${validationError.info}`;
     });
     throw errorMessage;
   }

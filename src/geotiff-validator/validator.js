@@ -6,27 +6,80 @@ import { register } from 'ol/proj/proj4.js';
 import { transformExtent } from 'ol/proj.js';
 import { boundingExtent, containsExtent } from 'ol/extent.js';
 
-// TODO: remove/replace
-import { debugLog } from '../workerTemplate.js';
+const projectionName = 'projection';
+const extentName = 'extent';
+const datatypeName = 'datatype';
+const bandName = 'bands';
+const fileSizeName = 'fileSize';
 
-// TODO: docs
+const allowedProjections = ["4326", "3857", "3035"];
+
+/** Class for a GeoTIFF validator */
 class GeotiffValidator {
-    // TODO: docs
+    /**
+     * Create a GeotTIFF validator
+     *
+     * @param {Object} config The configuration object
+     *
+     * Example config object:
+        {
+            "extent": {
+               "allowedExtent": [
+                    [
+                       5.85,
+                       47.27
+                    ],
+                    [
+                        15.02,
+                        55.07
+                    ]
+                ]
+            },
+            "projection": {
+                "allowedEPSGCodes": [
+                    3857,
+                    4326,
+                    3035
+                ]
+            },
+            "dataType": {
+                "allowedDataTypes": [
+                    "Byte",
+                    "Int16",
+                    "Float32",
+                    "Float64"
+                ]
+            },
+            "fileSize": {
+                "minFileSize": 1000,
+                "maxFileSize": 10000000
+            }
+        }
+     *
+     * NOTE: the projection for "allowedExtent" is always "EPSG:4326"
+     */
     constructor(config) {
         this.config = config;
     }
 
-    // TODO: docs
+    /**
+     * Validates a GeoTIFF.
+     *
+     * @param {String} filePath The path of the GeoTIFF to validate
+     * @param {String[]} validationSteps The names of the validation steps to perform
+     *
+     * @returns {Object[]} An array with result objects
+     */
     async performValidation(filePath, validationSteps) {
 
         let dataset;
 
         // check if validationsteps include a GDAL based validator
         const requiresGdalvalidation = validationSteps.filter(step => [
-            'projection',
-            'extent',
-            'datatype',
-            'bands'
+            projectionName,
+            extentName,
+            datatypeName,
+            bandName
         ].includes(step)).length;
 
         if (requiresGdalvalidation) {
@@ -45,22 +98,24 @@ class GeotiffValidator {
             register(proj4);
         }
         // Check if there are other EPSG codes allowed than 4326 or 3857 or 3035
-        if (!this.config.projection.allowedEPSGCodes.every(code => (code === 4326 || code === 3857 || code === 3035))) {
-            throw 'Other CRS than EPSG:4326, EPSG:3857, EPSG:3035 are currently not allowed.';
+        if (this.config.projection.allowedEPSGCodes.every(
+            epsgCode => allowedProjections.includes(epsgCode)
+        )) {
+            throw 'Some of the provided projections are not supported.'
         }
 
         const validationResults = await Promise.all(validationSteps.map(async (step) => {
             switch (step) {
-                case "fileSize":
+                case fileSizeName:
                     return validateFilesize(
                         filePath, this.config.fileSize.minFileSize, this.config.fileSize.maxFileSize);
-                case "projection":
+                case projectionName:
                     return await validateProjection(dataset, this.config.projection.allowedEPSGCodes);
-                case "extent":
+                case extentName:
                     return await validateExtent(dataset, boundingExtent(this.config.extent.allowedExtent));
-                case "dataType":
+                case datatypeName:
                     return await validateDataType(dataset, this.config.dataType.allowedDataTypes);
-                case "bands":
+                case bandName:
                     return await validateBands(dataset);
                 default:
                     break;
@@ -82,10 +137,16 @@ class GeotiffValidator {
  * @returns {Boolean} True, if GeoTIFF is greater than the minimum file size
  */
 const validateFilesize = (filePath, minimumFileSize, maximumFileSize) => {
+    const configValid = Number.isInteger(minimumFileSize) && Number.isInteger(maximumFileSize);
+    if (!configValid) {
+        throw 'Both values for minimum and maximum filesize must be integer';
+    }
+
     let stats = fs.statSync(filePath);
     const valid = stats.size && stats.size > minimumFileSize && stats.size < maximumFileSize;
 
     const result = {
+        type: fileSizeName,
         valid: false
     };
 
@@ -107,9 +168,15 @@ const validateFilesize = (filePath, minimumFileSize, maximumFileSize) => {
  * @returns {Boolean} True, if GeoTIFF srs is supported
  */
 const validateProjection = async (dataset, allowedEPSGCodes) => {
+    const configValid = !!allowedEPSGCodes && Array.isArray(allowedEPSGCodes) && allowedEPSGCodes.length !== 0;
+    if (!configValid) {
+        throw 'Value for allowed EPSG codes must be a Array with strings';
+    }
+
     const projectionCode = dataset?.srs?.getAuthorityCode();
 
     const result = {
+        type: projectionName,
         valid: false
     };
 
@@ -131,6 +198,12 @@ const validateProjection = async (dataset, allowedEPSGCodes) => {
  * @returns {Boolean} True, if GeoTIFF srs is supported
  */
 const validateExtent = async (dataset, allowedExtent) => {
+    const configValid = Array.isArray(allowedExtent) && allowedExtent.length === 4;
+
+    if (!configValid) {
+        throw 'Provided BBOX for checking extent is not valid';
+    }
+
     const envenlope = dataset?.bands?.getEnvelope();
     let olExtent = boundingExtent([
         [envenlope.minX, envenlope.minY],
@@ -139,11 +212,12 @@ const validateExtent = async (dataset, allowedExtent) => {
     const projectionCode = dataset?.srs?.getAuthorityCode();
 
     const result = {
+        type: extentName,
         valid: false
     };
 
     // TODO: make allowed projection codes a global constant
-    if (!["4326", "3857", "3035"].includes(projectionCode)) {
+    if (!allowedProjections.includes(projectionCode)) {
         result.info(`Projection code '${projectionCode}' is not allowed`);
         return result;
     }
@@ -170,9 +244,15 @@ const validateExtent = async (dataset, allowedExtent) => {
  * @returns {Boolean} True, if GeoTIFF datatype is supported
  */
 const validateDataType = async (dataset, allowedDataTypes) => {
+    const configValid = Array.isArray(allowedDataTypes) && allowedDataTypes.length > 0;
+    if (!configValid) {
+        throw 'Value for the provided datatypes is not valid.'
+    }
+
     const dataType = dataset?.bands?.get(1)?.dataType;
 
     const result = {
+        type: datatypeName,
         valid: false
     };
 
@@ -196,9 +276,8 @@ const validateDataType = async (dataset, allowedDataTypes) => {
 const validateBands = async (dataset) => {
     const countBands = dataset?.bands?.count();
 
-    debugLog(`GeoTiff has ${countBands} band(s).`);
-
     const result = {
+        type: bandName,
         valid: false
     };
 
