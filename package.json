@@ -17,7 +17,7 @@
         "ol": "^7.1.0",
         "ts-jest": "^28.0.8",
         "fs-extra": "^10.1.0",
-        "gdal-async": "3.2.2",
+        "gdal-async": "3.5.1",
         "proj4": "^2.8.0"
     },
     "dependencies": {
