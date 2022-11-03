@@ -1,5 +1,4 @@
 import fs from 'fs-extra';
-import Ajv from 'ajv';
 import path from 'path';
 
 import { initialize, log } from '../workerTemplate.js';
@@ -14,12 +13,7 @@ const rabbitPass = process.env.RABBITPASS;
 // read default config
 let config = fs.readJSONSync(path.join(process.cwd(), 'config', 'config.default.json'));
 
-// create validation function
-const ajv = new Ajv();
-const schemaInput = fs.readJSONSync(path.join(process.cwd(), 'config', 'schema-config.json'));
-const validate = ajv.compile(schemaInput);
-
-const callback = createGeotiffValidationFun(config, validate);
+const callback = createGeotiffValidationFun(config);
 (async () => {
   try {
     // Initialize and start the worker process

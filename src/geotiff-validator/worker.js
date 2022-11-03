@@ -4,11 +4,10 @@ import { GeotiffValidator } from './validator.js';
  * Creates the callback function that validates a GeoTIFF.
  *
  * @param {Object} config The config object for the GeoTIFF validator
- * @param {Function} validate The ajv validation fucntion
  *
  * @returns {Function} The callback function
  */
-const createGeotiffValidationFun = (config, validate) => {
+const createGeotiffValidationFun = (config) => {
 
     /**
      * Checks if a GeoTIFF is valid.
@@ -27,9 +26,6 @@ const createGeotiffValidationFun = (config, validate) => {
         // overwrite worker configuration
         if (jobConfig) {
             config = { ...config, ...jobConfig };
-        }
-        if (!validate(config)) {
-            throw "Worker configuration not valid.";
         }
 
         const geotiffValidator = new GeotiffValidator(config);
