@@ -46,7 +46,6 @@ const createGeotiffValidationFun = (config) => {
             throw errorMessage;
         }
     }
-
 }
 
 export { createGeotiffValidationFun };

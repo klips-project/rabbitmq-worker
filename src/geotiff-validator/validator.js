@@ -90,7 +90,7 @@ class GeotiffValidator {
             }
         }
 
-        // TODO: Register custom pro4 definitions dynamically: Maybe use ol-util ProjectionUtil
+        // TODO: Register custom proj4 definitions dynamically: Maybe use ol-util ProjectionUtil
         // Check if allowedEPSGCodes contains EPSG:3035
         if (this.config.projection.allowedEPSGCodes.some(code => code === 3035)) {
             proj4.defs('EPSG:3035',
@@ -290,4 +290,4 @@ const validateBands = async (dataset) => {
     return result;
 }
 
-export { GeotiffValidator, validateFilesize, validateBands, validateDataType, validateExtent, validateProjection };
+export { GeotiffValidator };
