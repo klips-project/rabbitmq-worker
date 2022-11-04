@@ -9,7 +9,7 @@ test('if worker provides correct outputs', async () => {
     const job = {};
     const outputPath = '/tmp/README.md';
     await callbackWorker(job, [
-        'https://raw.githubusercontent.com/klips-project/rabbitmq-worker/main/README.md',
+        'The content',
         outputPath
     ]);
     expect(job.outputs).toBeDefined();

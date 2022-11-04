@@ -1,4 +1,5 @@
 import fsPromises from 'fs/promises';
+import path from 'path';
 import { initialize, log } from '../workerTemplate.js';
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -17,26 +18,22 @@ const rabbitPass = process.env.RABBITPASS;
 const callbackWorker = async (workerJob, inputs) => {
     const content = inputs[0];
     const destinationFileName = inputs[1];
-    const hasSuffix = destinationFileName.includes(".") &&
-      destinationFileName.lastIndexOf(".") < destinationFileName.length - 1;
+    const hasSuffix = path.extname(destinationFileName).length > 1;
     let finalDestinationFileName = destinationFileName;
 
     if (!content) {
         throw "No content given to create-file worker";
     }
 
-    if (!finalDestinationFileName) {
+    if (!destinationFileName) {
         throw "No destination file path given to create-file worker";
     }
 
     if (!hasSuffix) {
         try {
+            // just check if the path exists, will throw if not
             await fsPromises.opendir(finalDestinationFileName);
-            if (destinationFileName.endsWith("/")) {
-                finalDestinationFileName = destinationFileName + "file.txt";
-            } else {
-                finalDestinationFileName = destinationFileName + "/file.txt";
-            }
+            finalDestinationFileName = path.join(destinationFileName, "file.txt")
         } catch (err) {
             throw "Could not open folder " + finalDestinationFileName;
         }
@@ -55,7 +52,7 @@ const callbackWorker = async (workerJob, inputs) => {
         // Initialize and start the worker process
         await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callbackWorker);
     } catch (e) {
-        log('Problem when initializing:', e);
+        log('Problem when initializing: ' + e);
     }
 })();
 
