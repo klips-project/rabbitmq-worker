@@ -14,6 +14,8 @@ const rabbitPass = process.env.RABBITPASS;
  * @param {Array} inputs The inputs for the process
  *   First input is the path of the GeoTIFF to convert
  *   Second input is the path where the output COG shall be stored
+ *
+ * On success it assigns the output path to the results array
  */
 const callbackWorker = async (workerJob, inputs) => {
     const inputPath = inputs[0];
