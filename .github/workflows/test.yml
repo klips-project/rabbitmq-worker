@@ -18,6 +18,7 @@ jobs:
         uses: actions/setup-node@v2.1.5
         with:
           node-version: '16'
+      - run: sudo apt update && sudo apt install gdal-bin
       - run: npm ci
       - run: npm run test
 
