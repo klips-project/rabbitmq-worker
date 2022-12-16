@@ -134,7 +134,7 @@ class GeotiffValidator {
  * @param {Number} minimumFileSize The minimum file size in bytes
  * @param {Number} maximumFileSize The maximum file size in bytes
  *
- * @returns {Boolean} True, if GeoTIFF is greater than the minimum file size
+ * @returns {Boolean} True, if GeoTIFF is bigger than the minimum file size
  */
 const validateFilesize = (filePath, minimumFileSize, maximumFileSize) => {
     const configValid = Number.isInteger(minimumFileSize) && Number.isInteger(maximumFileSize);
@@ -165,7 +165,7 @@ const validateFilesize = (filePath, minimumFileSize, maximumFileSize) => {
  * @param {Object} dataset GDAL dataset
  * @param {Array} allowedEPSGCodes List of allowed EPSG codes
  *
- * @returns {Boolean} True, if GeoTIFF srs is supported
+ * @returns {Boolean} True, if GeoTIFF projection is supported
  */
 const validateProjection = async (dataset, allowedEPSGCodes) => {
     const configValid = !!allowedEPSGCodes && Array.isArray(allowedEPSGCodes) && allowedEPSGCodes.length !== 0;
