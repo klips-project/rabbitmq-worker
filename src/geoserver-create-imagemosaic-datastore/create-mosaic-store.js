@@ -5,13 +5,26 @@ import { classicConfigFiles, cogConfigFiles } from './geoserver-config-templates
 import AdmZip from 'adm-zip';
 
 
-export const createClassicMosaicStore = async (grc, ws, covStore, prototypeGranule, geoserverDataDir, pgConf) => {
-  // TODO: check pgConf or add defaults
+/**
+ * Create a classic image mosaic store with time support.
+ *
+ * @param {Object} grc An instance of the GeoServer REST client
+ * @param {Object} pgConf The Postgres credentials with these properties: host, port, schema, database, user, password
+ * @param {string} ws The name of the workspace
+ * @param {string} covStore The name of the coverage store
+ * @param {string} prototypeGranule The path of the prototype granule
+ * @param {string} geoserverDataDir The path of the GeoServer data directory
+ */
+export const createClassicMosaicStore = async (grc, pgConf, ws, covStore, prototypeGranule, geoserverDataDir) => {
+
+  const { host, port, schema, database, user, password } = pgConf;
+  if (!host || !port || !schema || !database || !user || !password) {
+    throw 'PostgreSQL credentials are not complete.'
+  }
 
   // code originally from Sauber project
   // cf. https://github.com/meggsimum/sauber-sdi-docker/blob/master/geoserver_publisher/index.js
   log(`CoverageStore ${covStore}  does not exist. Try to create it ...`);
-
 
   ////////////////////////////////
   ///// indexer.properties ///////
@@ -26,29 +39,18 @@ export const createClassicMosaicStore = async (grc, ws, covStore, prototypeGranu
 
   let dataStoreContent = classicConfigFiles.datastore;
 
-  dataStoreContent = dataStoreContent.replace(/__DATABASE_HOST__/g, pgConf.host);
-  dataStoreContent = dataStoreContent.replace(/__DATABASE_PORT__/g, pgConf.port);
-  dataStoreContent = dataStoreContent.replace(/__DATABASE_SCHEMA__/g, pgConf.schema);
-  dataStoreContent = dataStoreContent.replace(/__DATABASE_NAME__/g, pgConf.database);
-  dataStoreContent = dataStoreContent.replace(/__DATABASE_USER__/g, pgConf.user);
-  dataStoreContent = dataStoreContent.replace(/__DATABASE_PASSWORD__/g, pgConf.password);
-
-  const zipPath = '/tmp/init.zip';
+  dataStoreContent = dataStoreContent.replace(/__DATABASE_HOST__/g, host);
+  dataStoreContent = dataStoreContent.replace(/__DATABASE_PORT__/g, port);
+  dataStoreContent = dataStoreContent.replace(/__DATABASE_SCHEMA__/g, schema);
+  dataStoreContent = dataStoreContent.replace(/__DATABASE_NAME__/g, database);
+  dataStoreContent = dataStoreContent.replace(/__DATABASE_USER__/g, user);
+  dataStoreContent = dataStoreContent.replace(/__DATABASE_PASSWORD__/g, password);
 
   const zip = new AdmZip();
-  zip.addFile(
-    'gs-img-mosaic-tpl/datastore.properties',
-    Buffer.from(dataStoreContent, "utf8")
-  );
-  zip.addFile(
-    'gs-img-mosaic-tpl/indexer.properties',
-    Buffer.from(indexerContent, "utf8")
-  );
-  zip.addFile(
-    'gs-img-mosaic-tpl/timeregex.properties',
-    Buffer.from(classicConfigFiles.timeregex, "utf8")
-  );
-
+  zip.addFile('datastore.properties', Buffer.from(dataStoreContent));
+  zip.addFile('indexer.properties', Buffer.from(indexerContent));
+  zip.addFile('timeregex.properties', Buffer.from(classicConfigFiles.timeregex));
+  const zipPath = '/tmp/init.zip';
   zip.writeZip(zipPath)
 
   log('Creating datastore directory');
@@ -70,16 +72,29 @@ export const createClassicMosaicStore = async (grc, ws, covStore, prototypeGranu
   // TODO check if really is neccessary
   // http://localhost:8080/geoserver/rest/workspaces/{ws}/coveragestores/{covname}/coverages.json?list=all
 
+  log('Initialize the store');
+  await grc.datastores.initCoverageStore(ws, covStore);
+
   log(`Enabling time for layer "${ws}:${covStore}"`);
   await grc.layers.enableTimeCoverage(ws, covStore, covStore, 'LIST', 3600000, 'MAXIMUM', true, false, 'PT1H');
   log(`Time dimension  for layer "${ws}:${covStore}" successfully enabled.`);
-
 };
 
-// TODO: docs
+/**
+ * Create a COG-based image mosaic store with time support.
+ *
+ * @param {Object} grc An instance of the GeoServer REST client
+ * @param {Object} pgConf The Postgres credentials with these properties: host, port, schema, database, user, password
+ * @param {string} ws The name of the workspace
+ * @param {string} covStore The name of the coverage store
+ * @param {string} prototypeGranule The url of the prototype granule
+ */
 export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeGranule) => {
 
-  // TODO: check pgConf or add defaults
+  const { host, port, schema, database, user, password } = pgConf;
+  if (!host || !port || !schema || !database || !user || !password) {
+    throw 'PostgreSQL credentials are not complete.'
+  }
 
   // code originally from Sauber project
   // cf. https://github.com/meggsimum/sauber-sdi-docker/blob/master/geoserver_publisher/index.js
@@ -105,25 +120,12 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
   dataStoreContent = dataStoreContent.replace(/__DATABASE_USER__/g, pgConf.user);
   dataStoreContent = dataStoreContent.replace(/__DATABASE_PASSWORD__/g, pgConf.password);
 
-  const zipPath = '/tmp/init_cog.zip';
 
   const zip = new AdmZip();
-  zip.addFile(
-    'datastore.properties',
-    Buffer.from(dataStoreContent, "utf8")
-  );
-  zip.addFile(
-    'indexer.properties',
-    Buffer.from(indexerContent, "utf8")
-  );
-  zip.addFile(
-    'timeregex.properties',
-    Buffer.from(cogConfigFiles.timeregex, "utf8")
-  );
-
-  console.log(dataStoreContent);
-  console.log(indexerContent);
-
+  zip.addFile('datastore.properties', Buffer.from(dataStoreContent));
+  zip.addFile('indexer.properties', Buffer.from(indexerContent));
+  zip.addFile('timeregex.properties', Buffer.from(cogConfigFiles.timeregex));
+  const zipPath = '/tmp/init_cog.zip';
   zip.writeZip(zipPath)
 
   log('Create image mosaic store via REST');
@@ -138,7 +140,6 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
   log('Initialize the store');
   await grc.datastores.initCoverageStore(ws, covStore);
 
-  // TODO: does not work yet
   log(`Enabling time for layer "${ws}:${covStore}"`);
   const presentation = 'LIST';
   const resolution = 3600000;
@@ -147,7 +148,7 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
   const rawNearestMatchEnabled = false;
   const acceptableInterval = 'PT1H';
 
-  await grc.layers.enableTimeCoverage(ws, covStore, covStore, presentation, resolution, defaultValue, nearestMatchEnabled, rawNearestMatchEnabled, acceptableInterval );
+  await grc.layers.enableTimeCoverageForCogLayer(ws, covStore, covStore, presentation, resolution, defaultValue, nearestMatchEnabled, rawNearestMatchEnabled, acceptableInterval);
   log(`Time dimension  for layer "${ws}:${covStore}" successfully enabled.`);
 
 };

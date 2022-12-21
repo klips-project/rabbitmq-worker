@@ -70,13 +70,10 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     }
 
     if (prototypeGranule.startsWith('http')){
-      const tmpPrototypeGranule = 'http://nginx/ecostress/20220214T1146Z.tif';
-      await createCogMosaicStore(grc, pgConf, ws, covStore, tmpPrototypeGranule);
+      await createCogMosaicStore(grc, pgConf, ws, covStore, prototypeGranule);
     } else {
-      await createClassicMosaicStore(grc, ws, covStore, prototypeGranule, geoserverDataDir, pgConf);
+      await createClassicMosaicStore(grc, pgConf, ws, covStore, prototypeGranule, geoserverDataDir);
     }
-
-
 
   } catch (error) {
     log(error);
