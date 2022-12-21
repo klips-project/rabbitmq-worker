@@ -21,7 +21,7 @@ export const createClassicMosaicStore = async (grc, pgConf, ws, covStore, protot
     throw 'PostgreSQL credentials are not complete.'
   }
 
-  log(`CoverageStore ${covStore}  does not exist. Try to create it ...`);
+  log(`CoverageStore ${covStore} does not exist. Try to create it ...`);
 
   ////////////////////////////////
   ///// indexer.properties ///////
