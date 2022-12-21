@@ -1,3 +1,7 @@
+/**
+ * Config file templates to create image mosaic stores.
+ */
+
 const classicIndexer = `
 Schema=*the_geom:Polygon,location:String,ts:java.util.Date
 PropertyCollectors=TimestampFileNameExtractorSPI[timeregex](ts)
