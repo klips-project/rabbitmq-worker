@@ -73,7 +73,7 @@ export const createClassicMosaicStore = async (grc, pgConf, ws, covStore, protot
   const nearestMatchEnabled = true;
   const rawNearestMatchEnabled = false;
   const acceptableInterval = 'PT1H';
-  await grc.layers.enableTimeCoverageFor(ws, covStore, covStore, presentation, resolution, defaultValue, nearestMatchEnabled, rawNearestMatchEnabled, acceptableInterval);
+  await grc.layers.enableTimeCoverage(ws, covStore, covStore, presentation, resolution, defaultValue, nearestMatchEnabled, rawNearestMatchEnabled, acceptableInterval);
   log(`Time dimension  for layer "${ws}:${covStore}" successfully enabled.`);
 };
 
@@ -120,7 +120,7 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
   zip.addFile('indexer.properties', Buffer.from(indexerContent));
   zip.addFile('timeregex.properties', Buffer.from(cogConfigFiles.timeregex));
   const zipPath = '/tmp/init_cog.zip';
-  zip.writeZip(zipPath)
+  zip.writeZip(zipPath);
 
   log('Create image mosaic store via REST');
   const autoconfigure = false;
