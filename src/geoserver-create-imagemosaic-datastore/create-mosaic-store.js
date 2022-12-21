@@ -4,7 +4,6 @@ import { log } from '../workerTemplate.js';
 import { classicConfigFiles, cogConfigFiles } from './geoserver-config-templates.js';
 import AdmZip from 'adm-zip';
 
-
 /**
  * Create a classic image mosaic store with time support.
  *
@@ -62,13 +61,7 @@ export const createClassicMosaicStore = async (grc, pgConf, ws, covStore, protot
 
   log('Create image mosaic store via REST');
   await grc.datastores.createImageMosaicStore(ws, covStore, zipPath);
-
   log(`... CoverageStore ${covStore} created`);
-
-  log('Initialize the store');
-  // Once a prototype has been provided we need to initialize the store by querying it for the available coverages.
-  // TODO check if really is neccessary
-  // http://localhost:8080/geoserver/rest/workspaces/{ws}/coveragestores/{covname}/coverages.json?list=all
 
   log('Initialize the store');
   await grc.datastores.initCoverageStore(ws, covStore);
@@ -80,7 +73,6 @@ export const createClassicMosaicStore = async (grc, pgConf, ws, covStore, protot
   const nearestMatchEnabled = true;
   const rawNearestMatchEnabled = false;
   const acceptableInterval = 'PT1H';
-
   await grc.layers.enableTimeCoverageFor(ws, covStore, covStore, presentation, resolution, defaultValue, nearestMatchEnabled, rawNearestMatchEnabled, acceptableInterval);
   log(`Time dimension  for layer "${ws}:${covStore}" successfully enabled.`);
 };
@@ -133,7 +125,6 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
   log('Create image mosaic store via REST');
   const autoconfigure = false;
   await grc.datastores.createImageMosaicStore(ws, covStore, zipPath, autoconfigure);
-
   log(`... CoverageStore ${covStore} created`);
 
   log('Add sample granule');
@@ -149,8 +140,6 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
   const nearestMatchEnabled = true;
   const rawNearestMatchEnabled = false;
   const acceptableInterval = 'PT1H';
-
   await grc.layers.enableTimeCoverageForCogLayer(ws, covStore, covStore, presentation, resolution, defaultValue, nearestMatchEnabled, rawNearestMatchEnabled, acceptableInterval);
   log(`Time dimension  for layer "${ws}:${covStore}" successfully enabled.`);
-
 };
