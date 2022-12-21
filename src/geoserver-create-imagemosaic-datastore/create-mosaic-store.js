@@ -22,8 +22,6 @@ export const createClassicMosaicStore = async (grc, pgConf, ws, covStore, protot
     throw 'PostgreSQL credentials are not complete.'
   }
 
-  // code originally from Sauber project
-  // cf. https://github.com/meggsimum/sauber-sdi-docker/blob/master/geoserver_publisher/index.js
   log(`CoverageStore ${covStore}  does not exist. Try to create it ...`);
 
   ////////////////////////////////
@@ -76,7 +74,14 @@ export const createClassicMosaicStore = async (grc, pgConf, ws, covStore, protot
   await grc.datastores.initCoverageStore(ws, covStore);
 
   log(`Enabling time for layer "${ws}:${covStore}"`);
-  await grc.layers.enableTimeCoverage(ws, covStore, covStore, 'LIST', 3600000, 'MAXIMUM', true, false, 'PT1H');
+  const presentation = 'LIST';
+  const resolution = 3600000;
+  const defaultValue = 'MAXIMUM';
+  const nearestMatchEnabled = true;
+  const rawNearestMatchEnabled = false;
+  const acceptableInterval = 'PT1H';
+
+  await grc.layers.enableTimeCoverageFor(ws, covStore, covStore, presentation, resolution, defaultValue, nearestMatchEnabled, rawNearestMatchEnabled, acceptableInterval);
   log(`Time dimension  for layer "${ws}:${covStore}" successfully enabled.`);
 };
 
@@ -96,8 +101,6 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
     throw 'PostgreSQL credentials are not complete.'
   }
 
-  // code originally from Sauber project
-  // cf. https://github.com/meggsimum/sauber-sdi-docker/blob/master/geoserver_publisher/index.js
   log(`CoverageStore ${covStore}  does not exist. Try to create it ...`);
 
   ////////////////////////////////
@@ -119,7 +122,6 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
   dataStoreContent = dataStoreContent.replace(/__DATABASE_NAME__/g, pgConf.database);
   dataStoreContent = dataStoreContent.replace(/__DATABASE_USER__/g, pgConf.user);
   dataStoreContent = dataStoreContent.replace(/__DATABASE_PASSWORD__/g, pgConf.password);
-
 
   const zip = new AdmZip();
   zip.addFile('datastore.properties', Buffer.from(dataStoreContent));
