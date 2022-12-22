@@ -1,5 +1,5 @@
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
 import { initialize, log } from '../workerTemplate.js';
 import optimizeGeoTiff from './optimize-geotiff.js';
 
@@ -30,6 +30,13 @@ const callbackWorker = async (workerJob, inputs) => {
     fs.mkdirSync(parentDirectory, { recursive: true });
 
     log(`Start converting to COG: ${inputPath}`)
+
+    // ensure target directory exists
+    const outputDir = path.dirname(outputPath);
+    fs.mkdirSync(outputDir, {
+        recursive: true
+    });
+
     const cliOut = await optimizeGeoTiff(inputPath, outputPath);
     log(cliOut);
     log(`Conversion Finshed. Stored COG to: ${outputPath}`)
