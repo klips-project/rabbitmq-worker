@@ -48,5 +48,4 @@ export const publishCogGranule = async (grc, ws, covStore, coverageToAdd, replac
 
   log(`exits ${granuleRecognisedByGeoServer}`)
   log('Successfully added new granule to coverage store.');
-
 }

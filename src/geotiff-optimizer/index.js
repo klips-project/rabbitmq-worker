@@ -21,6 +21,8 @@ const callbackWorker = async (workerJob, inputs) => {
     const inputPath = inputs[0];
     const outputPath = inputs[1];
 
+    // TODO: check if GeoTIFF is already optimized
+
     log(`Start converting to COG: ${inputPath}`)
     const cliOut = await optimizeGeoTiff(inputPath, outputPath);
     log(cliOut);

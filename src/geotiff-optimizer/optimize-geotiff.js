@@ -48,6 +48,8 @@ const optimizeGeoTiff = async (inputPath, outputPath) => {
 
     const makeCogCmd = `gdal_translate ${inputPath} ${outputPath} -co COMPRESS=LZW`;
 
+    // TODO: consider adding overviews as well
+
     return await execShellCommand(makeCogCmd);
 }
 
