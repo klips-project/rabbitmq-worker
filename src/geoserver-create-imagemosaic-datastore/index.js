@@ -1,6 +1,5 @@
 import { GeoServerRestClient } from 'geoserver-node-client';
 import { log, initialize } from '../workerTemplate.js';
-import { isGeoServerAvailable } from './util.js';
 import { createClassicMosaicStore, createCogMosaicStore } from './create-mosaic-store.js';
 
 const url = process.env.GEOSERVER_REST_URL;
@@ -49,7 +48,7 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
   const ws = inputs[0];
   const covStore = inputs[1];
   const prototypeGranule = inputs[2];
-  const geoServerAvailable = await isGeoServerAvailable(grc);
+  const geoServerAvailable = await grc.about.exists();
 
   if (!geoServerAvailable) {
     log('Geoserver not available');

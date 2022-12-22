@@ -1,16 +1,5 @@
 import { exec } from 'child_process';
 
-// TODO: really needed(?)
-/**
- * Check if the GeoServer is running.
- *
- * @param {Object} grc The GeoServer rest client
- * @returns {Boolean} If the GeoServer is running.
- */
-export const isGeoServerAvailable = async (grc) => {
-  return await grc.about.exists();
-}
-
 /**
  * Executes a shell command and return it as a Promise.
  * Kudos to https://ali-dev.medium.com/how-to-use-promise-with-exec-in-node-js-a39c4d7bbf77
