@@ -23,8 +23,6 @@ export const publishCogGranule = async (grc, ws, covStore, coverageToAdd, replac
   );
 
   const granuleRecognisedByGeoServer = await grc.imagemosaics.doesGranuleExist(ws, covStore, covStore, coverageToAdd);
-
-
   if (!granuleRecognisedByGeoServer) {
     throw `GeoServer could not locate provided COG granule URL: ${coverageToAdd}`
   }
