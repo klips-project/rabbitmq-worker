@@ -25,7 +25,6 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
 
   // datastore.properties
   const readData = cogConfigFiles.datastore;
-
   let dataStoreContent = readData.replace(/__DATABASE_HOST__/g, host);
   dataStoreContent = dataStoreContent.replace(/__DATABASE_PORT__/g, port);
   dataStoreContent = dataStoreContent.replace(/__DATABASE_SCHEMA__/g, schema);
@@ -82,7 +81,6 @@ export const createClassicMosaicStore = async (grc, pgConf, ws, covStore, protot
 
   // datastore.properties
   let dataStoreContent = classicConfigFiles.datastore;
-
   dataStoreContent = dataStoreContent.replace(/__DATABASE_HOST__/g, host);
   dataStoreContent = dataStoreContent.replace(/__DATABASE_PORT__/g, port);
   dataStoreContent = dataStoreContent.replace(/__DATABASE_SCHEMA__/g, schema);
