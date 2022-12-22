@@ -1,7 +1,7 @@
+import path from 'path';
+import fs from 'fs';
 import { initialize, log } from '../workerTemplate.js';
 import optimizeGeoTiff from './optimize-geotiff.js';
-import fs from 'fs';
-import path from 'path';
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
