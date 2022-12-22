@@ -1,8 +1,19 @@
 import fsPromises from 'fs/promises';
 import path from 'path';
-import { log } from '../workerTemplate.js';
 
-// TODO
+
+/**
+ * Add a GeoTIFF to the image mosaic store by using its filepath.
+ *
+ * @param {Object} grc An instance of the GeoServer REST client
+ * @param {string} ws The name of the workspace
+ * @param {string} covStore The name of the coverage store
+ * @param {string} coverageToAdd The path of the coverage to add
+ * @param {string} replaceExistingGranule If the existing granule shall be replaced
+ * @param {string} geoserverDataDir The path of the GeoServer data directory
+ *
+ * @returns {string} newPath The new path of the GeoTIFF
+ */
 export const publishClassicGranule = async (grc, ws, covStore, coverageToAdd, replaceExistingGranule, geoserverDataDir) => {
 
   const fileName = path.basename(coverageToAdd);
@@ -21,11 +32,18 @@ export const publishClassicGranule = async (grc, ws, covStore, coverageToAdd, re
   await grc.imagemosaics.addGranuleByServerFile(
     ws, covStore, newPath
   );
-  log('Successfully added new granule to coverage store.');
   return newPath;
 };
 
-// TODO
+/**
+ * Add a COG to the image mosaic store by using its URL.
+ *
+ * @param {Object} grc An instance of the GeoServer REST client
+ * @param {string} ws The name of the workspace
+ * @param {string} covStore The name of the coverage store
+ * @param {string} coverageToAdd The URL of the coverage to add
+ * @param {string} replaceExistingGranule If the existing granule shall be replaced
+ */
 export const publishCogGranule = async (grc, ws, covStore, coverageToAdd, replaceExistingGranule) => {
 
   const granuleAlreadyExists = await grc.imagemosaics.doesGranuleExist(ws, covStore, covStore, coverageToAdd);
@@ -34,7 +52,6 @@ export const publishCogGranule = async (grc, ws, covStore, coverageToAdd, replac
     throw 'Granule with this timestamp already exists.';
   }
 
-  log('Debug')
   await grc.imagemosaics.addGranuleByRemoteFile(
     ws, covStore, coverageToAdd
   );
@@ -45,7 +62,4 @@ export const publishCogGranule = async (grc, ws, covStore, coverageToAdd, replac
   if (!granuleRecognisedByGeoServer) {
     throw `GeoServer could not locate provided COG granule URL: ${coverageToAdd}`
   }
-
-  log(`exits ${granuleRecognisedByGeoServer}`)
-  log('Successfully added new granule to coverage store.');
 }

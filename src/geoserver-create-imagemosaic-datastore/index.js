@@ -69,6 +69,8 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
       return;
     }
 
+    log(`CoverageStore ${covStore} does not exist. Try to create it ...`);
+
     if (prototypeGranule.startsWith('http')){
       await createCogMosaicStore(grc, pgConf, ws, covStore, prototypeGranule);
     } else {

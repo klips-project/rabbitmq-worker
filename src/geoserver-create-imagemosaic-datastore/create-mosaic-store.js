@@ -1,6 +1,5 @@
 import fsPromises from 'fs/promises';
 import path from 'path';
-import { log } from '../workerTemplate.js';
 import { classicConfigFiles, cogConfigFiles } from './geoserver-config-templates.js';
 import AdmZip from 'adm-zip';
 
@@ -21,19 +20,11 @@ export const createClassicMosaicStore = async (grc, pgConf, ws, covStore, protot
     throw 'PostgreSQL credentials are not complete.'
   }
 
-  log(`CoverageStore ${covStore} does not exist. Try to create it ...`);
-
-  ////////////////////////////////
-  ///// indexer.properties ///////
-  ////////////////////////////////
-
+  // indexer.properties
   let indexerContent = classicConfigFiles.indexer;
   indexerContent = indexerContent.replace(/__NAME__/, covStore);
 
-  ////////////////////////////////
-  ///// datastore.properties /////
-  ////////////////////////////////
-
+  // datastore.properties
   let dataStoreContent = classicConfigFiles.datastore;
 
   dataStoreContent = dataStoreContent.replace(/__DATABASE_HOST__/g, host);
@@ -50,23 +41,17 @@ export const createClassicMosaicStore = async (grc, pgConf, ws, covStore, protot
   const zipPath = '/tmp/init.zip';
   zip.writeZip(zipPath)
 
-  log('Creating datastore directory');
   const mosaicDir = path.join(geoserverDataDir, 'data', ws, covStore);
   await fsPromises.mkdir(mosaicDir, { recursive: true });
 
-  log('Copy prototype granule to datastore directory');
   const prototypeGranuleName = path.basename(prototypeGranule);
   const mosaicPath = path.join(mosaicDir, prototypeGranuleName);
   await fsPromises.copyFile(prototypeGranule, mosaicPath);
 
-  log('Create image mosaic store via REST');
   await grc.datastores.createImageMosaicStore(ws, covStore, zipPath);
-  log(`... CoverageStore ${covStore} created`);
 
-  log('Initialize the store');
   await grc.datastores.initCoverageStore(ws, covStore);
 
-  log(`Enabling time for layer "${ws}:${covStore}"`);
   const presentation = 'LIST';
   const resolution = 3600000;
   const defaultValue = 'MAXIMUM';
@@ -74,7 +59,6 @@ export const createClassicMosaicStore = async (grc, pgConf, ws, covStore, protot
   const rawNearestMatchEnabled = false;
   const acceptableInterval = 'PT1H';
   await grc.layers.enableTimeCoverage(ws, covStore, covStore, presentation, resolution, defaultValue, nearestMatchEnabled, rawNearestMatchEnabled, acceptableInterval);
-  log(`Time dimension  for layer "${ws}:${covStore}" successfully enabled.`);
 };
 
 /**
@@ -93,27 +77,19 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
     throw 'PostgreSQL credentials are not complete.'
   }
 
-  log(`CoverageStore ${covStore}  does not exist. Try to create it ...`);
-
-  ////////////////////////////////
-  ///// indexer.properties ///////
-  ////////////////////////////////
-
+  // indexer.properties
   let indexerContent = cogConfigFiles.indexer;
   indexerContent = indexerContent.replace(/__NAME__/, covStore);
 
-  ////////////////////////////////
-  ///// datastore.properties /////
-  ////////////////////////////////
-
+  // datastore.properties
   const readData = cogConfigFiles.datastore;
 
-  let dataStoreContent = readData.replace(/__DATABASE_HOST__/g, pgConf.host);
-  dataStoreContent = dataStoreContent.replace(/__DATABASE_PORT__/g, pgConf.port);
-  dataStoreContent = dataStoreContent.replace(/__DATABASE_SCHEMA__/g, pgConf.schema);
-  dataStoreContent = dataStoreContent.replace(/__DATABASE_NAME__/g, pgConf.database);
-  dataStoreContent = dataStoreContent.replace(/__DATABASE_USER__/g, pgConf.user);
-  dataStoreContent = dataStoreContent.replace(/__DATABASE_PASSWORD__/g, pgConf.password);
+  let dataStoreContent = readData.replace(/__DATABASE_HOST__/g, host);
+  dataStoreContent = dataStoreContent.replace(/__DATABASE_PORT__/g, port);
+  dataStoreContent = dataStoreContent.replace(/__DATABASE_SCHEMA__/g, schema);
+  dataStoreContent = dataStoreContent.replace(/__DATABASE_NAME__/g, database);
+  dataStoreContent = dataStoreContent.replace(/__DATABASE_USER__/g, user);
+  dataStoreContent = dataStoreContent.replace(/__DATABASE_PASSWORD__/g, password);
 
   const zip = new AdmZip();
   zip.addFile('datastore.properties', Buffer.from(dataStoreContent));
@@ -122,18 +98,13 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
   const zipPath = '/tmp/init_cog.zip';
   zip.writeZip(zipPath);
 
-  log('Create image mosaic store via REST');
   const autoconfigure = false;
   await grc.datastores.createImageMosaicStore(ws, covStore, zipPath, autoconfigure);
-  log(`... CoverageStore ${covStore} created`);
 
-  log('Add sample granule');
   await grc.imagemosaics.addGranuleByRemoteFile(ws, covStore, prototypeGranule);
 
-  log('Initialize the store');
   await grc.datastores.initCoverageStore(ws, covStore);
 
-  log(`Enabling time for layer "${ws}:${covStore}"`);
   const presentation = 'LIST';
   const resolution = 3600000;
   const defaultValue = 'MAXIMUM';
@@ -141,5 +112,4 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
   const rawNearestMatchEnabled = false;
   const acceptableInterval = 'PT1H';
   await grc.layers.enableTimeCoverageForCogLayer(ws, covStore, covStore, presentation, resolution, defaultValue, nearestMatchEnabled, rawNearestMatchEnabled, acceptableInterval);
-  log(`Time dimension  for layer "${ws}:${covStore}" successfully enabled.`);
 };
