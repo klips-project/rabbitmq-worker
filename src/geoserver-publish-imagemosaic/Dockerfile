@@ -8,5 +8,6 @@ RUN chmod +x /home/start-worker.sh /home/wait-for.sh
 WORKDIR /home/
 RUN npm install
 COPY src/geoserver-publish-imagemosaic/index.js worker/
+COPY src/geoserver-publish-imagemosaic/publish-granule.js worker/
 COPY src/workerTemplate.js .
 CMD ["./start-worker.sh"]

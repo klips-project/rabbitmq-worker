@@ -11,7 +11,8 @@
   "dependencies": {
     "amqplib": "^0.8.0",
     "fs.promises": "^0.1.2",
-    "geoserver-node-client": "1.2.2"
+    "geoserver-node-client": "github:JakobMiksch/geoserver-node-client#6983e586e4b637b85bccd04af931d3d80593482b"
+
   },
   "devDependencies": {
     "eslint": "^7.29.0"
