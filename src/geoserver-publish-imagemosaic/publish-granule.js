@@ -12,7 +12,7 @@ export const publishClassicGranule = async (grc, ws, covStore, coverageToAdd, re
   await fsPromises.rename(coverageToAdd, newPath);
 
   // Check if granule already exists
-  const granuleAlreadyExists = grc.imagemosaics.doesGranuleExist(ws, covStore, covStore, newPath);
+  const granuleAlreadyExists = await grc.imagemosaics.doesGranuleExist(ws, covStore, covStore, newPath);
 
   if (granuleAlreadyExists && !replaceExistingGranule) {
     throw 'Granule with this timestamp already exists.';
@@ -28,7 +28,7 @@ export const publishClassicGranule = async (grc, ws, covStore, coverageToAdd, re
 // TODO
 export const publishCogGranule = async (grc, ws, covStore, coverageToAdd, replaceExistingGranule) => {
 
-  const granuleAlreadyExists = grc.imagemosaics.doesGranuleExist(ws, covStore, covStore, coverageToAdd);
+  const granuleAlreadyExists = await grc.imagemosaics.doesGranuleExist(ws, covStore, covStore, coverageToAdd);
 
   if (granuleAlreadyExists && !replaceExistingGranule) {
     throw 'Granule with this timestamp already exists.';
@@ -39,7 +39,7 @@ export const publishCogGranule = async (grc, ws, covStore, coverageToAdd, replac
     ws, covStore, coverageToAdd
   );
 
-  const granuleRecognisedByGeoServer = grc.imagemosaics.doesGranuleExist(ws, covStore, covStore, coverageToAdd);
+  const granuleRecognisedByGeoServer = await grc.imagemosaics.doesGranuleExist(ws, covStore, covStore, coverageToAdd);
 
 
   if (!granuleRecognisedByGeoServer) {

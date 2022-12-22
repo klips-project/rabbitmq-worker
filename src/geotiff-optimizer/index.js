@@ -1,5 +1,7 @@
 import { initialize, log } from '../workerTemplate.js';
 import optimizeGeoTiff from './optimize-geotiff.js';
+import fs from 'fs';
+import path from 'path';
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -22,6 +24,10 @@ const callbackWorker = async (workerJob, inputs) => {
     const outputPath = inputs[1];
 
     // TODO: check if GeoTIFF is already optimized
+
+    // ensure directory exists
+    const parentDirectory = path.dirname(outputPath);
+    fs.mkdirSync(parentDirectory, { recursive: true });
 
     log(`Start converting to COG: ${inputPath}`)
     const cliOut = await optimizeGeoTiff(inputPath, outputPath);
