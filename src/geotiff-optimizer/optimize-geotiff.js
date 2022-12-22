@@ -46,9 +46,7 @@ const optimizeGeoTiff = async (inputPath, outputPath) => {
         throw `Output directory does not exist: ${outputDir}`;
     }
 
-    const makeCogCmd = `gdal_translate ${inputPath} ${outputPath} -co COMPRESS=LZW`;
-
-    // TODO: consider adding overviews as well
+    const makeCogCmd = `gdal_translate ${inputPath} ${outputPath} -of COG -co COMPRESS=LZW`;
 
     return await execShellCommand(makeCogCmd);
 }
