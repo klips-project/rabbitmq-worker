@@ -3,6 +3,8 @@ import path from 'path';
 import { classicConfigFiles, cogConfigFiles } from './geoserver-config-templates.js';
 import AdmZip from 'adm-zip';
 
+const debug = false;
+
 /**
  * Create a COG-based image mosaic store with time support.
  *
@@ -40,10 +42,13 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
   zip.writeZip(zipPath);
 
   const autoconfigure = false;
+  if(debug) console.log('create mosaic store');
   await grc.datastores.createImageMosaicStore(ws, covStore, zipPath, autoconfigure);
 
+  if(debug) console.log('add granule');
   await grc.imagemosaics.addGranuleByRemoteFile(ws, covStore, prototypeGranule);
 
+  if(debug) console.log('init store');
   await grc.datastores.initCoverageStore(ws, covStore);
 
   const presentation = 'LIST';
@@ -52,6 +57,8 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
   const nearestMatchEnabled = true;
   const rawNearestMatchEnabled = false;
   const acceptableInterval = 'PT1H';
+
+  if(debug) console.log('enable time');
   await grc.layers.enableTimeCoverageForCogLayer(ws, covStore, covStore, presentation, resolution, defaultValue, nearestMatchEnabled, rawNearestMatchEnabled, acceptableInterval);
 };
 
