@@ -41,6 +41,9 @@ const callbackWorker = async (workerJob, inputs) => {
     log(cliOut);
     log(`Conversion Finshed. Stored COG to: ${outputPath}`)
 
+    // delete original file
+    fs.rmSync(inputPath);
+
     workerJob.status = 'success';
     workerJob.outputs = [outputPath];
 };
