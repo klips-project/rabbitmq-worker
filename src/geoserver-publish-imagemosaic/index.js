@@ -63,7 +63,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
     }
 
     if (coverageToAdd.startsWith('http')) {
-      await publishCogGranule(grc, ws, covStore, coverageToAdd, replaceExistingGranule);
+      await publishCogGranule(grc, ws, covStore, coverageToAdd);
     } else {
       newPath = await publishClassicGranule(grc, ws, covStore, coverageToAdd, replaceExistingGranule, newPath, geoserverDataDir);
     }

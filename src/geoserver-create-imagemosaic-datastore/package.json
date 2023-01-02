@@ -12,7 +12,7 @@
     "adm-zip": "^0.5.9",
     "amqplib": "^0.8.0",
     "fs.promises": "^0.1.2",
-    "geoserver-node-client": "github:JakobMiksch/geoserver-node-client#ed985c55679f576f98fb7a73a27884f0fa4d86b2",
+    "geoserver-node-client": "github:JakobMiksch/geoserver-node-client#f42ad2073cd9509316d53eeaa837110e6bfd9ccc",
     "jszip": "^3.10.1"
   },
   "devDependencies": {

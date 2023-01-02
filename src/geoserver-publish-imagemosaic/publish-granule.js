@@ -8,24 +8,18 @@ import path from 'path';
  * @param {string} ws The name of the workspace
  * @param {string} covStore The name of the coverage store
  * @param {string} coverageToAdd The URL of the coverage to add
- * @param {string} replaceExistingGranule If the existing granule shall be replaced
  */
-export const publishCogGranule = async (grc, ws, covStore, coverageToAdd, replaceExistingGranule) => {
+export const publishCogGranule = async (grc, ws, covStore, coverageToAdd) => {
 
   const granuleAlreadyExists = await grc.imagemosaics.doesGranuleExist(ws, covStore, covStore, coverageToAdd);
 
-  if (granuleAlreadyExists && !replaceExistingGranule) {
+  if (granuleAlreadyExists) {
     throw 'Granule with this timestamp already exists.';
   }
 
   await grc.imagemosaics.addGranuleByRemoteFile(
     ws, covStore, coverageToAdd
   );
-
-  const granuleRecognisedByGeoServer = await grc.imagemosaics.doesGranuleExist(ws, covStore, covStore, coverageToAdd);
-  if (!granuleRecognisedByGeoServer) {
-    throw `GeoServer could not locate provided COG granule URL: ${coverageToAdd}`
-  }
 }
 
 /**
