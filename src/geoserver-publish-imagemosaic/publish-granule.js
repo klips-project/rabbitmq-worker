@@ -10,13 +10,6 @@ import path from 'path';
  * @param {string} coverageToAdd The URL of the coverage to add
  */
 export const publishCogGranule = async (grc, ws, covStore, coverageToAdd) => {
-
-  const granuleAlreadyExists = await grc.imagemosaics.doesGranuleExist(ws, covStore, covStore, coverageToAdd);
-
-  if (granuleAlreadyExists) {
-    throw 'Granule with this timestamp already exists.';
-  }
-
   await grc.imagemosaics.addGranuleByRemoteFile(
     ws, covStore, coverageToAdd
   );
