@@ -23,7 +23,6 @@ const callbackWorker = async (workerJob, inputs) => {
     const inputPath = inputs[0];
     const outputPath = inputs[1];
 
-    // TODO: check if GeoTIFF is already optimized
 
     // ensure directory exists
     const parentDirectory = path.dirname(outputPath);
