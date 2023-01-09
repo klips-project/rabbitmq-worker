@@ -35,7 +35,7 @@
         "message",
         "queue"
     ],
-    "author": "terrestris GmbH & Co. KG <info@terrestris.de>",
+    "author": "terrestris GmbH & Co. KG <info@terrestris.de>, meggsimum <info@meggsimum.de>",
     "contributors": [
         {
             "name": "Michael Holthausen",
@@ -46,9 +46,19 @@
             "name": "Johannes Weskamm",
             "email": "weskamm@terrestris.de",
             "url": "https://github.com/weskamm"
+        },
+        {
+            "name": "Hannes Blitza",
+            "email": "blitza@terrestris.de",
+            "url": "https://github.com/hblitza"
+        },
+        {
+            "name": "Jakob Miksch",
+            "email": "jakob@meggsimum.de",
+            "url": "https://github.com/JakobMiksch"
         }
     ],
-    "license": "MIT",
+    "license": "BSD 2-Clause",
     "bugs": {
         "url": "https://github.com/klips-project/rabbitmq-worker/issues"
     },
