@@ -21,41 +21,6 @@ class GeotiffValidator {
      *
      * @param {Object} config The configuration object
      *
-     * Example config object:
-        {
-            "extent": {
-               "allowedExtent": [
-                    [
-                       5.85,
-                       47.27
-                    ],
-                    [
-                        15.02,
-                        55.07
-                    ]
-                ]
-            },
-            "projection": {
-                "allowedEPSGCodes": [
-                    3857,
-                    4326,
-                    3035
-                ]
-            },
-            "dataType": {
-                "allowedDataTypes": [
-                    "Byte",
-                    "Int16",
-                    "Float32",
-                    "Float64"
-                ]
-            },
-            "fileSize": {
-                "minFileSize": 1000,
-                "maxFileSize": 10000000
-            }
-        }
-     *
      * NOTE: the projection for "allowedExtent" is always "EPSG:4326"
      */
     constructor(config) {
