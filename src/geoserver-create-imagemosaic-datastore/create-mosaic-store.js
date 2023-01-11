@@ -46,7 +46,7 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
   await grc.datastores.createImageMosaicStore(ws, covStore, zipPath, autoconfigure);
 
   if(debug) console.log('add granule');
-  await grc.imagemosaics.addGranuleByRemoteFile(ws, covStore, prototypeGranule);
+  await grc.imagemosaics.addGranuleByRemoteFile(ws, covStore, prototypeGranule, false);
 
   if(debug) console.log('init store');
   await grc.datastores.initCoverageStore(ws, covStore);
