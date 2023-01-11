@@ -57,19 +57,14 @@ passwd=__DATABASE_PASSWORD__
 Loose\\ bbox=true
 Estimated\\ extends=false
 validate\\ connections=true
-Connection\\ timeout=10
 preparedStatements=true
 url=jdbc\\:postgresql\\:__DATABASE_NAME__
 driver=org.postgresql.Driver
 fetch\\ size=1000
 max\\ connections=20
 min\\ connections=5
-validate\\ connections=true
-Loose\\ bbox=true
 Expose\\ primary\\ key=false
 Max\\ open\\ prepared\\ statements=50
-preparedStatements=false
-Estimated\\ extends=false
 Connection\\ timeout=20
 `;
 
