@@ -16,17 +16,19 @@ Development: NodeJS v14 and up is needed
 
 Production: Docker needs to be installed in order to work with the docker images. Workers require environment variables to be set, which can be given e.g. by a docker-compose file or via commandline.
 
-### Example for invoking the dispatcher from commandline:
+### Invoking dispatcher from commandline
 
 First do a `npm i` to install dependencies inside a specific worker directory, then issue from the root folder (or adjust the path to the js file)
-```
+
+```shell
 RABBITHOST=localhost RABBITUSER=user RABBITPASS=user WORKERQUEUE=jobs RESULTSQUEUE=results node src/dispatcher/index.js
 ```
+
 An example for docker can be seen in the next section
 
 ## How it works
 
-Consider a job definition given as JSON as described in [job example](#jobexample)
+Consider a job definition given as JSON as described in below.
 
 The dispatcher cares about this job by sending messages to several workers which handle individual tasks, reporting errors and determining when a job has completely finished.
 
@@ -47,7 +49,7 @@ _Note_: For each additional worker, the file `./src/packagesToBuild.json` file m
 
 The desired workers can then be included within a project via Docker Compose as follows:
 
-```text
+```yml
 download-file:
     image: ghcr.io/klips-project/download-file
     volumes:
@@ -64,7 +66,6 @@ download-file:
 
 Via the mounted directory (`data`) the downloaded files are stored and processed if necessary.
 
-[](#jobexample)
 ## Job example
 
 An example job used with these workers might look like
