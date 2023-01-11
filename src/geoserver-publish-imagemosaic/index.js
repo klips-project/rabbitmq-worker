@@ -45,7 +45,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
 
   let newPath;
 
-  const geoServerAvailable = await isGeoServerAvailable();
+  const geoServerAvailable = await grc.about.exists();
 
   if (!geoServerAvailable) {
     log('Geoserver not available');
@@ -75,15 +75,6 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
   workerJob.status = 'success';
   workerJob.outputs = [newPath];
 };
-
-/**
- * Check if the GeoServer is running.
- *
- * @returns {Boolean} If the GeoServer is running.
- */
-const isGeoServerAvailable = async () => {
-  return await grc.about.exists();
-}
 
 // Initialize and start the worker process
 initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geoserverPublishImageMosaic);
