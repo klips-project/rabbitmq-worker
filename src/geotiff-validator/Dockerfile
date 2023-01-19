@@ -1,8 +1,10 @@
-FROM node:16-bullseye
+FROM osgeo/gdal:ubuntu-small-3.6.2
 
 # netcat needed for 'wait-for' script
-RUN apt update \
-    && apt install -y gdal-bin netcat
+RUN apt-get update && apt-get install -y netcat
+
+# install node
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && apt install -y nodejs
 
 COPY src/geotiff-validator/package.json src/geotiff-validator/package-lock.json /home/
 COPY util/start-worker.sh util/wait-for.sh /home/
