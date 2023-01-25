@@ -1,18 +1,22 @@
 process.env.RABBITHOST = '46.4.8.29';
 import callbackWorker from './index';
 import fs from 'fs';
+import path from 'path';
 
-const inputPath = 'src/geotiff-optimizer/sample_data/sample.tif';
-const outputPath = 'src/geotiff-optimizer/sample_data/sample-cog.tif';
+const baseDir = 'src/geotiff-optimizer/sample_data/'
+const originalFilePath = path.join(baseDir, 'sample.tif');
+const workingDir = path.join(baseDir, 'tmp/');
+const inputPath = path.join(workingDir, 'sample.tif');
+const outputPath = path.join(workingDir, 'sample-cog.tif');
 
 beforeAll(() => {
-    // remove output COG (if exists)
-    fs.rmSync(outputPath, { force: true });
+    fs.mkdirSync(workingDir, {recursive: true})
+    fs.copyFileSync(originalFilePath, inputPath);
 });
 
 afterAll(() => {
     // remove output COG
-    fs.rmSync(outputPath, { force: true });
+    fs.rmSync(workingDir, { force: true, recursive: true });
 });
 
 test('if function exists', () => {

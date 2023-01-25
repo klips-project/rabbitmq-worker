@@ -1,7 +1,7 @@
 import { GeoServerRestClient } from 'geoserver-node-client';
 import { log, initialize } from '../workerTemplate.js';
-import fsPromises from 'fs/promises';
-import path from 'path';
+import { publishClassicGranule, publishCogGranule } from './publish-granule.js';
+
 
 const url = process.env.GEOSERVER_REST_URL;
 const user = process.env.GEOSERVER_USER;
@@ -45,7 +45,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
 
   let newPath;
 
-  const geoServerAvailable = await isGeoServerAvailable();
+  const geoServerAvailable = await grc.about.exists();
 
   if (!geoServerAvailable) {
     log('Geoserver not available');
@@ -62,27 +62,11 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
       throw `Coverage store ${covStore} does not exist.`;
     }
 
-    const fileName = path.basename(coverageToAdd);
-    newPath =  path.join(geoserverDataDir, 'data', ws, covStore, fileName);
-
-    // Move GeoTiff
-    await fsPromises.rename(coverageToAdd, newPath);
-
-    // Check if granule already exists
-    const granules = await grc.imagemosaics.getGranules(ws, covStore, covStore);
-    const granuleAlreadyExists = granules.features.some(
-      feature => feature.properties.location === newPath
-    );
-
-    if (granuleAlreadyExists && !replaceExistingGranule) {
-      throw 'Granule with this timestamp already exists.';
+    if (coverageToAdd.startsWith('http')) {
+      await publishCogGranule(grc, ws, covStore, coverageToAdd);
+    } else {
+      newPath = await publishClassicGranule(grc, ws, covStore, coverageToAdd, replaceExistingGranule, newPath, geoserverDataDir);
     }
-
-    await grc.imagemosaics.addGranuleByServerFile(
-      ws, covStore, newPath
-    );
-    log('Successfully added new granule to coverage store.');
-
   } catch (error) {
     log(error);
     throw 'Could not add new granule to coverage store.';
@@ -91,15 +75,6 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
   workerJob.status = 'success';
   workerJob.outputs = [newPath];
 };
-
-/**
- * Check if the GeoServer is running.
- *
- * @returns {Boolean} If the GeoServer is running.
- */
-const isGeoServerAvailable = async () => {
-  return await grc.about.exists();
-}
 
 // Initialize and start the worker process
 initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geoserverPublishImageMosaic);

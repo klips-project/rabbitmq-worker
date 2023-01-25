@@ -23,6 +23,10 @@ const callbackWorker = async (workerJob, inputs) => {
     const inputPath = inputs[0];
     const outputPath = inputs[1];
 
+    // ensure directory exists
+    const parentDirectory = path.dirname(outputPath);
+    fs.mkdirSync(parentDirectory, { recursive: true });
+
     log(`Start converting to COG: ${inputPath}`)
 
     // ensure target directory exists
@@ -34,6 +38,9 @@ const callbackWorker = async (workerJob, inputs) => {
     const cliOut = await optimizeGeoTiff(inputPath, outputPath);
     log(cliOut);
     log(`Conversion Finshed. Stored COG to: ${outputPath}`)
+
+    // delete original file
+    fs.rmSync(inputPath);
 
     workerJob.status = 'success';
     workerJob.outputs = [outputPath];
