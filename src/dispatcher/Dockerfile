@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:16-alpine
 
 COPY src/dispatcher/package.json src/dispatcher/package-lock.json /home/
 
@@ -9,6 +9,7 @@ WORKDIR /home/
 RUN npm install
 COPY src/dispatcher/index.js worker/
 COPY src/dispatcher/dispatcher.js worker/
+COPY src/dispatcher/logger.js worker/
 COPY src/workerTemplate.js .
 
 CMD ["./start-worker.sh"]
