@@ -10,4 +10,5 @@ RUN npm install
 COPY src/geoserver-publish-imagemosaic/index.js worker/
 COPY src/geoserver-publish-imagemosaic/publish-granule.js worker/
 COPY src/workerTemplate.js .
+COPY src/logger.js .
 CMD ["./start-worker.sh"]

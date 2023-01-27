@@ -1,5 +1,7 @@
 import GeoServerRestClient from 'geoserver-node-client/geoserver-rest-client.js';
-import { log, initialize } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
+import { logger } from '../logger.js';
+
 
 const url = process.env.GSHOST;
 const user = process.env.GSUSER;
@@ -30,24 +32,24 @@ const grc = new GeoServerRestClient(url, user, pw);
        ]
      }
  */
-const geoserverPublishSLD = async(workerJob, inputs) => {
+const geoserverPublishSLD = async (workerJob, inputs) => {
   const sldBody = inputs[0];
   const sldName = inputs[1];
   const sldWorkspace = inputs[2];
 
-  log('Checking GeoServer connectivity …')
+  logger.debug('Checking GeoServer connectivity …')
   const gsExists = await grc.exists();
   if (!gsExists) {
     throw 'GeoServer not found';
   }
   const workspaceExists = await grc.workspaces.get(sldWorkspace);
   if (!workspaceExists) {
-    log('Workspace does not exist, creating …');
+    logger.debug('Workspace does not exist, creating …');
     const workspaceCreated = grc.workspaces.create(sldWorkspace);
     if (!workspaceCreated) {
       throw 'Could not create workspace';
     } else {
-      log('Workspace created');
+      logger.debug('Workspace created');
     }
   }
 
@@ -58,12 +60,12 @@ const geoserverPublishSLD = async(workerJob, inputs) => {
 
   const created = await grc.styles.publish(sldWorkspace, sldName, sldBody);
   if (created) {
-    log('Succesfully published SLD');
+    logger.debug('Succesfully published SLD');
   } else {
     throw 'Could not publish SLD';
   }
-  
-  log('GeoServer worker finished');
+
+  logger.debug('GeoServer worker finished');
 
   workerJob.status = 'success';
   workerJob.outputs = [];

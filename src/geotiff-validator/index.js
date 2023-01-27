@@ -1,8 +1,10 @@
 import fs from 'fs-extra';
 import path from 'path';
 
-import { initialize, log } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
 import { createGeotiffValidationFun } from './worker.js';
+import { logger } from '../logger.js';
+
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -19,7 +21,7 @@ const callback = createGeotiffValidationFun(config);
     // Initialize and start the worker process
     await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callback);
   } catch (e) {
-    log('Error when initializing:', e);
+    logger.error(`Error when initializing: ${e}`);
   }
 })();
 

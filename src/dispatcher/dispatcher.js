@@ -1,6 +1,6 @@
 import amqp from 'amqplib';
 import { randomUUID } from 'crypto';
-import { log } from '../workerTemplate.js';
+import { logger } from '../logger.js';
 
 /**
  * Dispatcher that handles communication between all workers via RabbitMQ.
@@ -83,7 +83,7 @@ export class Dispatcher {
       durable: true
     });
 
-    log(
+    logger.debug(
       `Dispatcher waiting for messages in ${this.workerQueue} and ${this.resultQueue}.`
     );
 
@@ -120,7 +120,7 @@ export class Dispatcher {
       try {
         const job = JSON.parse(msg.content.toString());
         const chain = job.job;
-        log('Received a job configuration ...');
+        logger.debug('Received a job configuration ...');
 
         if (job.error) {
           throw job.error;
@@ -146,7 +146,7 @@ export class Dispatcher {
             task: nextTaskEntry,
             idx: chain.findIndex((el) => el.id === nextTaskEntry.id)
           };
-          log(`Sending the next task to queue ${nextTaskEntry.type} ...`);
+          logger.debug(`Sending the next task to queue ${nextTaskEntry.type} ...`);
           this.channel.sendToQueue(
             nextTaskEntry.type,
             Buffer.from(JSON.stringify({ content: job })),
@@ -160,15 +160,15 @@ export class Dispatcher {
           const isRollBackJob = job?.job?.[0].type === 'rollback-handler';
 
           if (isRollBackJob) {
-            log('Rollback job finished successfully: \n' + JSON.stringify(job, null, 2));
+            logger.warn({ job_id: job.id, job: job, isRollBackJob: isRollBackJob }, 'Rollback job finished successfully');
           } else {
-            log('Job finished successfully: \n' + JSON.stringify(job, null, 2));
+            logger.info({ job_id: job.id, job: job }, 'Job finished successfully:');
           }
         }
 
         this.channel.ack(msg);
       } catch (taskError) {
-        log('Processing failed for task. ' + taskError);
+        logger.error({error: taskError}, 'Processing failed');
         // send to dead letter exchange
         this.channel.nack(msg, false, false);
       }
@@ -195,20 +195,20 @@ export class Dispatcher {
     return async (msg) => {
       try {
         const job = JSON.parse(msg.content.toString());
-        log('Got a new task result...');
+        logger.debug('Got a new task result...');
         if (job?.nextTask?.task?.status === 'success') {
           // write back outputs to original job config
           job.job[job.nextTask.idx] = job.nextTask.task;
           // remove the succeeded job from the `nextTask` queue
           delete job.nextTask;
         }
-        log(`Sending job back to main worker queue ${this.workerQueue} ...`);
+        logger.debug(`Sending job back to main worker queue ${this.workerQueue} ...`);
         this.channel.sendToQueue(this.workerQueue, Buffer.from(JSON.stringify(job)), {
           persistent: true
         });
         this.channel.ack(msg);
       } catch (taskError) {
-        log('Processing failed for result. ' + taskError);
+        logger.error({error: taskError}, 'Handling result failed');
         // send to dead letter exchange
         this.channel.nack(msg, false, false);
       }

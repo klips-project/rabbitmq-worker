@@ -12,4 +12,5 @@ WORKDIR /home/
 RUN npm install
 COPY src/geoserver-publish-sld/index.js worker/
 COPY src/workerTemplate.js .
+COPY src/logger.js .
 CMD ["sh", "-c", "node worker/index.js ${GSHOST} ${GSUSER} ${GSPASS}"]

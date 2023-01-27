@@ -1,7 +1,7 @@
 import { GeoServerRestClient } from 'geoserver-node-client';
-import { log, initialize } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
 import { publishClassicGranule, publishCogGranule } from './publish-granule.js';
-
+import { logger } from '../logger.js';
 
 const url = process.env.GEOSERVER_REST_URL;
 const user = process.env.GEOSERVER_USER;
@@ -48,8 +48,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
   const geoServerAvailable = await grc.about.exists();
 
   if (!geoServerAvailable) {
-    log('Geoserver not available');
-    log('Job should be requeued!');
+    logger.debug('Geoserver not available');
     workerJob.missingPreconditions = true;
     return;
   }
@@ -68,7 +67,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
       newPath = await publishClassicGranule(grc, ws, covStore, coverageToAdd, replaceExistingGranule, newPath, geoserverDataDir);
     }
   } catch (error) {
-    log(error);
+    logger.error(error);
     throw 'Could not add new granule to coverage store.';
   }
 

@@ -1,5 +1,7 @@
 import GeoServerRestClient from 'geoserver-node-client/geoserver-rest-client.js';
-import { log, initialize } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
+import { logger } from '../logger.js';
+
 
 const url = process.env.GSHOST;
 const user = process.env.GSUSER;
@@ -35,7 +37,7 @@ const grc = new GeoServerRestClient(url, user, pw);
        ]
      }
  */
-const geoserverPublishLayerFromDb = async(workerJob, inputs) => {
+const geoserverPublishLayerFromDb = async (workerJob, inputs) => {
   const workspace = inputs[0];
   const dataStore = inputs[1];
   const nativeName = inputs[2];
@@ -43,12 +45,12 @@ const geoserverPublishLayerFromDb = async(workerJob, inputs) => {
   const title = inputs[4];
   const srs = inputs[5];
 
-  log('Checking GeoServer connectivity …')
+  logger.debug('Checking GeoServer connectivity …')
   const gsExists = await grc.exists();
   if (!gsExists) {
     throw 'GeoServer not found';
   }
-  
+
   const workspaceExists = await grc.workspaces.get(workspace);
   if (!workspaceExists) {
     throw 'Workspace does not exist, exiting …';
@@ -63,12 +65,12 @@ const geoserverPublishLayerFromDb = async(workerJob, inputs) => {
     workspace, dataStore, nativeName, name, title, srs, true);
 
   if (created) {
-    log('Succesfully published Layer');
+    logger.debug('Succesfully published Layer');
   } else {
     throw 'Could not publish Layer';
   }
-  
-  log('GeoServer worker finished');
+
+  logger.debug('GeoServer worker finished');
 
   workerJob.status = 'success';
   workerJob.outputs = [];
