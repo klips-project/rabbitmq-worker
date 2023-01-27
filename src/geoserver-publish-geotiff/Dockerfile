@@ -8,4 +8,5 @@ WORKDIR /home/
 RUN npm install
 COPY src/geoserver-publish-geotiff/index.js worker/
 COPY src/workerTemplate.js .
+COPY src/logger.js .
 CMD ["./start-worker.sh"]

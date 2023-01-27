@@ -1,6 +1,5 @@
 import amqp from 'amqplib';
-import { randomUUID } from 'crypto';
-import {logger} from './logger.js';
+import { logger } from './logger.js';
 
 /*
  * This is a template RabbitMQ worker.
@@ -10,7 +9,6 @@ import {logger} from './logger.js';
  * See the different workers for implementation examples
  */
 let channel;
-let workerId;
 let globalResultQueue;
 // the tag of the consumer to the queue
 let consumerTag;
@@ -48,14 +46,13 @@ export async function initialize(
     heartbeat: 60
   });
   channel = await connection.createChannel();
-  workerId = randomUUID();
   globalResultQueue = resultQueue;
 
   channel.assertQueue(workerQueue, {
     durable: true
   });
 
-  log(`Worker waiting for messages in ${workerQueue}.`);
+  logger.debug(`Worker waiting for messages in ${workerQueue}.`);
   await connectToQueue(
     workerQueue,
     resultQueue,
@@ -113,7 +110,7 @@ function getInputs(job, task) {
  * @param {String} message The optional RabbitMQ Message
  */
 export function reportError(error, message) {
-  console.log('Error caught: ', error);
+  logger.error('Error caught: ' + error);
 
   if (channel && message && message.content) {
     const job = JSON.parse(message.content.toString());
@@ -151,7 +148,7 @@ async function connectToQueue(
         await callBack(workerJob, getInputs(job.content.job, workerJob));
 
         if (workerJob.missingPreconditions) {
-          console.log('Preconditions of Worker are missing. Job will be requeued');
+          logger.error('Preconditions of Worker are missing. Job will be requeued');
           // send job back to queue
           channel.nack(msg);
           return;
@@ -194,7 +191,7 @@ async function controlRabbitConnection(workerQueue,
   let preconditionsOk;
   // check if a function is provided
   const fn = preconditionsCheck;
-  if (fn){
+  if (fn) {
     preconditionsOk = await preconditionsCheck();
   } else {
     preconditionsOk = true;
@@ -203,55 +200,26 @@ async function controlRabbitConnection(workerQueue,
     if (!rabbitConnectionEstablished) {
       // we need to ensure that only one connection to RabbitMQ is made
       if (reconnecting) {
-        console.log('Reconnection to RabbitMQ already in progress');
+        logger.debug('Reconnection to RabbitMQ already in progress');
       } else {
         reconnecting = true;
-        console.log("... Reconnecting to RabbitMQ");
+        logger.debug("... Reconnecting to RabbitMQ");
         await connectToQueue(workerQueue,
           resultQueue,
           callBack
         )
         reconnecting = false;
-        console.log('Reestablished rabbit connection');
+        logger.debug('Reestablished rabbit connection');
       }
     }
   } else {
-    console.log('ERROR: Preconditions are not available');
+    logger.error('ERROR: Preconditions are not available');
     if (rabbitConnectionEstablished) {
-      console.log('Deactivated Rabbit connection');
+      logger.error('Deactivated Rabbit connection');
       rabbitConnectionEstablished = false;
       await channel.cancel(consumerTag);
     } else {
-      console.log('Rabbit connection is already deactivated');
+      logger.debug('Rabbit connection is already deactivated');
     }
   }
-}
-
-/**
- * Log a message with current timestamp and worker ID
- * @param {String} msg
- */
-export function log(msg) {
-  if (!workerId) {
-    workerId = randomUUID();
-  }
-  console.log(
-    ' [*] ' + new Date().toISOString() + ' ID:' + workerId + ': ' + msg
-  );
-}
-
-/**
- * Log a message with current timestamp and worker ID
- * @param {String} msg The log message
- */
- export function debugLog(msg) {
-  if (process.env.NODE_ENV != 'development') {
-    return;
-  }
-  if (!workerId) {
-    workerId = randomUUID();
-  }
-  console.log(
-    ' [*] ' + new Date().toISOString() + ' ID:' + workerId + ': ' + msg
-  );
 }

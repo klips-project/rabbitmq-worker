@@ -1,6 +1,8 @@
 import zlib from 'zlib';
 import fs from 'fs';
-import { initialize, log } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
+import { logger } from '../logger.js';
+
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -14,14 +16,14 @@ const rabbitPass = process.env.RABBITPASS;
  * @param {Object} workerJob The job object
  * @param {Array} inputs The inputs for this process
  */
-const gunzipDownloadedFile = async(workerJob, inputs) => {
+const gunzipDownloadedFile = async (workerJob, inputs) => {
   const file = inputs[0];
   let chunks = [];
   let fileBuffer;
   let fileStream = fs.createReadStream(file);
   let fileName = file.replace(/.gz$/, '');
 
-  log('Extracting ' + file + ' …');
+  logger.debug('Extracting ' + file + ' …');
 
   fileStream.on('data', (chunk) => {
     chunks.push(chunk);
@@ -35,7 +37,7 @@ const gunzipDownloadedFile = async(workerJob, inputs) => {
           reject(error);
         }
         fs.writeFileSync(encodeURI(fileName), result.toString());
-        log('The extract has finished.');
+        logger.debug('The extract has finished.');
         fileName = encodeURI(fileName);
         workerJob.status = 'success';
         workerJob.outputs = [fileName];

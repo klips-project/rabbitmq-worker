@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer';
-import { log, initialize } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
+import { logger } from '../logger.js';
+
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -59,7 +61,7 @@ const sendEmail = async (workerJob, inputs) => {
     }
   });
 
-  log(`Sending mail to ${recipientEmail} …`);
+  logger.debug(`Sending mail to ${recipientEmail} …`);
 
   workerJob.status = 'success';
   workerJob.outputs = [];
@@ -70,7 +72,7 @@ const sendEmail = async (workerJob, inputs) => {
     // Initialize and start the worker process
     await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, sendEmail);
   } catch (e) {
-    log('Problem when initializing:', e);
+    logger.error(`Problem when initializing: ${e}`);
   }
 })();
 

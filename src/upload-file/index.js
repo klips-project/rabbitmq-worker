@@ -2,7 +2,8 @@ import fs from 'fs';
 import FormData from 'form-data';
 import fetch from 'node-fetch';
 
-import { initialize, log } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
+import { logger } from '../logger.js';
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -26,8 +27,8 @@ const rabbitPass = process.env.RABBITPASS;
       "inputs": ["/home/data/mycustomfile.zip", "http://example.com/upload"],
     }
  */
-const uploadFile = async(workerJob, inputs) => {
-  log('Uploading a file …');
+const uploadFile = async (workerJob, inputs) => {
+  logger.debug('Uploading a file …');
 
   const file = inputs[0];
   const target = inputs[1];
@@ -35,15 +36,15 @@ const uploadFile = async(workerJob, inputs) => {
 
   form.append('file', fs.readFileSync(file));
 
-  log("Pushing file to " + target);
+  logger.debug("Pushing file to " + target);
 
   const response = await fetch(target, {
     method: 'POST',
     body: form
   });
-  
+
   if (response.status === 200) {
-    log('Upload succeeded');
+    logger.debug('Upload succeeded');
     workerJob.status = 'success';
     workerJob.outputs = [];
   } else {

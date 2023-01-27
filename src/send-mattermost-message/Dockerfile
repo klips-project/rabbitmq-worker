@@ -9,4 +9,5 @@ WORKDIR /home/
 RUN npm install
 COPY src/send-mattermost-message/index.js worker/
 COPY src/workerTemplate.js .
+COPY src/logger.js .
 CMD ["./start-worker.sh"]

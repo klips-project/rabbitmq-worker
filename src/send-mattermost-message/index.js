@@ -1,5 +1,7 @@
-import { log, initialize } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
 import fetch from 'node-fetch';
+import { logger } from '../logger.js';
+
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -38,12 +40,12 @@ const sendMattermostMessage = async (workerJob, inputs) => {
     });
 
     if (response.ok) {
-      log('Successfully sent notification to Mattermost');
+      logger.debug('Successfully sent notification to Mattermost');
     } else {
-      log('Sending notification to Mattermost failed');
+      logger.error('Sending notification to Mattermost failed');
     }
   } catch (e) {
-    log('Sending notification to Mattermost failed with exception: ' + e);
+    logger.error(`Sending notification to Mattermost failed with exception: ${e}`);
   }
   workerJob.status = 'success';
   workerJob.outputs = [];

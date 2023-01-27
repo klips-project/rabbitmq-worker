@@ -1,7 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import { initialize, log } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
 import optimizeGeoTiff from './optimize-geotiff.js';
+import { logger } from '../logger.js';
+
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -27,7 +29,7 @@ const callbackWorker = async (workerJob, inputs) => {
     const parentDirectory = path.dirname(outputPath);
     fs.mkdirSync(parentDirectory, { recursive: true });
 
-    log(`Start converting to COG: ${inputPath}`)
+    logger.debug(`Start converting to COG: ${inputPath}`)
 
     // ensure target directory exists
     const outputDir = path.dirname(outputPath);
@@ -36,8 +38,8 @@ const callbackWorker = async (workerJob, inputs) => {
     });
 
     const cliOut = await optimizeGeoTiff(inputPath, outputPath);
-    log(cliOut);
-    log(`Conversion Finshed. Stored COG to: ${outputPath}`)
+    logger.debug(cliOut);
+    logger.debug(`Conversion Finshed. Stored COG to: ${outputPath}`)
 
     // delete original file
     fs.rmSync(inputPath);
@@ -51,7 +53,7 @@ const callbackWorker = async (workerJob, inputs) => {
         // Initialize and start the worker process
         await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callbackWorker);
     } catch (e) {
-        log('Problem when initializing:', e);
+        logger.error(`Problem when initializing: ${e}`);
     }
 })();
 

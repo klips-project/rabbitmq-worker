@@ -4,7 +4,9 @@ import archiver from 'archiver';
 import unzip from 'unzipper';
 import path from 'path';
 
-import { initialize, log } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
+import { logger } from '../logger.js';
+
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -27,7 +29,7 @@ const rabbitPass = process.env.RABBITPASS;
       "inputs": ["extract", "/path/to/zipfile.zip"],
     }
  */
-const zipHandler = async(workerJob, inputs) => {
+const zipHandler = async (workerJob, inputs) => {
   if (inputs[0] === 'extract') {
     await unzipFiles(workerJob, inputs);
   } else {
@@ -41,8 +43,8 @@ const zipHandler = async(workerJob, inputs) => {
  * @param {Array} inputs The inputs for this process
  * @returns {Object} The workerJob containing the path of the zip as output
  */
-const zipFiles = async(workerJob, inputs) => {
-  log('Creating a zip file …');
+const zipFiles = async (workerJob, inputs) => {
+  logger.debug('Creating a zip file …');
 
   const folder = inputs[1];
   const fileName = new Date() * 1 + '.zip';
@@ -51,15 +53,15 @@ const zipFiles = async(workerJob, inputs) => {
   const output = fs.createWriteStream(tempFilePath);
   const zip = archiver('zip');
 
-  zip.on('error', (e) => {throw e});
+  zip.on('error', (e) => { throw e });
   zip.pipe(output);
   zip.directory(folder, false);
   zip.finalize();
 
   await writeAsync(output);
-  log('Zipfile created');
+  logger.debug('Zipfile created');
   await fsPromises.rename(tempFilePath, finalFilePath);
-  log('Zipfile moved to final destination');
+  logger.debug('Zipfile moved to final destination');
 
   workerJob.status = 'success';
   workerJob.outputs = [finalFilePath];
@@ -71,14 +73,14 @@ const zipFiles = async(workerJob, inputs) => {
  * @param {Array} inputs The inputs for this process
  * @returns {Object} The workerJob containing the path to the unzipped files as output
  */
-const unzipFiles = async(workerJob, inputs) => {
-  log('Uncompressing a zip file …');
+const unzipFiles = async (workerJob, inputs) => {
+  logger.debug('Uncompressing a zip file …');
 
   const file = inputs[1];
   const dir = path.dirname(file) + new Date() * 1;
 
   const content = await unzip.Open.file(file);
-  await content.extract({path: dir, concurrency: 5});
+  await content.extract({ path: dir, concurrency: 5 });
 
   workerJob.status = 'success';
   workerJob.outputs = [dir];

@@ -1,5 +1,6 @@
 import { GeoServerRestClient } from 'geoserver-node-client';
-import { log, initialize } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
+import { logger } from '../logger.js';
 
 const url = process.env.GEOSERVER_REST_URL;
 const user = process.env.GEOSERVER_USER;
@@ -45,9 +46,8 @@ const geoserverPublishGeoTiff = async (workerJob, inputs) => {
 
   const geoServerAvailable = await isGeoServerAvailable()
 
-  if (!geoServerAvailable ){
-    log('Geoserver not available');
-    log('Job should be requeued!');
+  if (!geoServerAvailable) {
+    logger.error('Geoserver not available');
     workerJob.missingPreconditions = true;
     return;
   }
@@ -56,9 +56,9 @@ const geoserverPublishGeoTiff = async (workerJob, inputs) => {
     await grc.datastores.createGeotiffFromFile(
       workspace, dataStore, layerName, layerTitle, geoTiffPath
     );
-    log('Successfully published GeoTIFF');
+    logger.debug('Successfully published GeoTIFF');
   } catch (error) {
-    log(error)
+    logger.error(error)
     throw 'Could not publish GeoTIFF';
   }
 
@@ -80,7 +80,7 @@ const isGeoServerAvailable = async () => {
     // Initialize and start the worker process
     await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geoserverPublishGeoTiff, isGeoServerAvailable, 10);
   } catch (e) {
-    log('Problem when initializing:', e);
+    logger.error('Problem when initializing:', e);
   }
 })();
 
