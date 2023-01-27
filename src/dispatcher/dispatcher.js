@@ -1,6 +1,6 @@
 import amqp from 'amqplib';
 import { randomUUID } from 'crypto';
-import { logger } from './logger.js';
+import { logger } from '../logger.js';
 
 /**
  * Dispatcher that handles communication between all workers via RabbitMQ.

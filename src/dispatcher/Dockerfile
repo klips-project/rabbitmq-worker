@@ -9,7 +9,7 @@ WORKDIR /home/
 RUN npm install
 COPY src/dispatcher/index.js worker/
 COPY src/dispatcher/dispatcher.js worker/
-COPY src/dispatcher/logger.js worker/
+COPY src/logger.js .
 COPY src/workerTemplate.js .
 
 CMD ["./start-worker.sh"]
