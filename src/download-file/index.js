@@ -2,7 +2,9 @@ import fsPromises from 'fs/promises';
 import path from 'path';
 import { URL } from 'url';
 import downloadFile from './downloader.js';
-import { initialize, log } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
+import { logger } from '../logger.js';
+
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
@@ -26,7 +28,7 @@ const callbackWorker = async (workerJob, inputs) => {
     const password = inputs[3];
     const url = new URL(uri);
 
-    log('Downloading ' + url.href + ' …');
+    logger.debug('Downloading ' + url.href + ' …');
 
     // if provided: add basic auth credentials to request option
     const options = {};
@@ -39,7 +41,7 @@ const callbackWorker = async (workerJob, inputs) => {
 
     return downloadFile(url, downloadPath, options)
         .then((downloadPath) => {
-            log('The download has finished.');
+            logger.debug('The download has finished.');
             workerJob.status = 'success';
             workerJob.outputs = [downloadPath];
         });
@@ -51,7 +53,7 @@ const callbackWorker = async (workerJob, inputs) => {
         // Initialize and start the worker process
         await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callbackWorker);
     } catch (e) {
-        log('Problem when initializing:', e);
+        logger.error('Problem when initializing:', e);
     }
 })();
 

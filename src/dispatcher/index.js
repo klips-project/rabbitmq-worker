@@ -15,4 +15,4 @@ const dispatcher = new Dispatcher(workerQueue, resultQueue, rabbitConf);
 
 dispatcher.init();
 
-logger.info('Dispatcher started.')
+logger.info('Dispatcher started.');

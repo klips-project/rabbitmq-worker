@@ -1,7 +1,7 @@
 import http from 'http';
 import https from 'https';
 import fs from 'fs';
-import { log } from '../workerTemplate.js';
+import { logger } from '../logger.js';
 
 /**
  * Downloads a file from the internet to the local filesystem.
@@ -35,7 +35,7 @@ const downloadFile = async (url, downloadPath, options = {}) => {
                             resolve(downloadPath);
                         })
                         .on('error', (error) => {
-                            log(error);
+                            logger.error(error);
                             return reject(new Error(error))
                         });
                     response.pipe(fileWriter)

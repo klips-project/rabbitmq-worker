@@ -1,5 +1,6 @@
 import amqp from 'amqplib';
 import { randomUUID } from 'crypto';
+import {logger} from './logger.js';
 
 /*
  * This is a template RabbitMQ worker.
@@ -142,7 +143,7 @@ async function connectToQueue(
     async function (msg) {
       try {
         const job = JSON.parse(msg.content.toString());
-        log(
+        logger.debug(
           `Received a message in queue ${workerQueue}: ` +
           JSON.stringify(job.content.nextTask)
         );
@@ -162,7 +163,7 @@ async function connectToQueue(
             persistent: true
           }
         );
-        log('Worker finished');
+        logger.debug('Worker finished');
       } catch (e) {
         reportError(e, msg);
       }
