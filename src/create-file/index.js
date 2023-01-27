@@ -1,6 +1,8 @@
 import fsPromises from 'fs/promises';
 import path from 'path';
-import { initialize, log } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
+import { logger } from '../logger.js';
+
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
@@ -39,10 +41,10 @@ const callbackWorker = async (workerJob, inputs) => {
         }
     }
 
-    log('Creating file ' + finalDestinationFileName + ' …');
+    logger.debug('Creating file ' + finalDestinationFileName + ' …');
     await fsPromises.writeFile(finalDestinationFileName, content);
 
-    log('File created successfully.');
+    logger.debug('File created successfully.');
     workerJob.status = 'success';
     workerJob.outputs = [finalDestinationFileName];
 };
@@ -52,7 +54,7 @@ const callbackWorker = async (workerJob, inputs) => {
         // Initialize and start the worker process
         await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callbackWorker);
     } catch (e) {
-        log('Problem when initializing: ' + e);
+        logger.error('Problem when initializing: ' + e);
     }
 })();
 
