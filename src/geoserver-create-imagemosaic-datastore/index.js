@@ -1,6 +1,8 @@
 import { GeoServerRestClient } from 'geoserver-node-client';
-import { log, initialize } from '../workerTemplate.js';
+import { initialize } from '../workerTemplate.js';
 import { createClassicMosaicStore, createCogMosaicStore } from './create-mosaic-store.js';
+import { logger } from '../logger.js';
+
 
 const url = process.env.GEOSERVER_REST_URL;
 const user = process.env.GEOSERVER_USER;
@@ -51,8 +53,7 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
   const geoServerAvailable = await grc.about.exists();
 
   if (!geoServerAvailable) {
-    log('Geoserver not available');
-    log('Job should be requeued!');
+    logger.error('Geoserver not available');
     workerJob.missingPreconditions = true;
     return;
   }
@@ -62,13 +63,13 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     const covStoreObject = await grc.datastores.getCoverageStore(ws, covStore);
 
     if (covStoreObject) {
-      log("Datastore already exists!")
+      logger.debug("Datastore already exists! No recreation necessary.")
       workerJob.status = 'success';
       workerJob.outputs = [covStoreObject.coverageStore.name];
       return;
     }
 
-    log(`CoverageStore ${covStore} does not exist. Try to create it ...`);
+    logger.debug(`CoverageStore ${covStore} does not exist. Try to create it ...`);
 
     if (prototypeGranule.startsWith('http')){
       await createCogMosaicStore(grc, pgConf, ws, covStore, prototypeGranule);
@@ -77,7 +78,7 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     }
 
   } catch (error) {
-    log(error);
+    logger.error(error);
     throw 'Could not create CoverageStore.';
   }
 

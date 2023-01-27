@@ -13,7 +13,9 @@
     "amqplib": "^0.8.0",
     "fs.promises": "^0.1.2",
     "geoserver-node-client": "github:klips-project/geoserver-node-client#f5c0a4d7ad6c8bea0d345ffede5a2c147a61672a",
-    "jszip": "^3.10.1"
+    "jszip": "^3.10.1",
+    "pino": "^8.8.0",
+    "pino-pretty": "^9.1.1"
   },
   "devDependencies": {
     "eslint": "^7.29.0"
