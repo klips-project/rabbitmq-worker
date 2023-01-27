@@ -8,6 +8,7 @@ WORKDIR /home/
 RUN npm install
 COPY src/download-file/index.js worker/
 COPY src/download-file/downloader.js worker/
+COPY src/download-file/child-logger.js worker/
 COPY src/logger.js .
 COPY src/workerTemplate.js .
 CMD ["./start-worker.sh"]

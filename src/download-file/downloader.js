@@ -1,7 +1,7 @@
 import http from 'http';
 import https from 'https';
 import fs from 'fs';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';
 
 /**
  * Downloads a file from the internet to the local filesystem.

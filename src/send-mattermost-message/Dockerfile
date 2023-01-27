@@ -10,5 +10,6 @@ RUN npm install
 COPY src/send-mattermost-message/index.js worker/
 COPY src/workerTemplate.js .
 
+COPY src/send-mattermost-message/child-logger.js worker/
 COPY src/logger.js .
 CMD ["./start-worker.sh"]

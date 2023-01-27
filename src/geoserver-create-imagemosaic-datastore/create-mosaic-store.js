@@ -2,7 +2,7 @@ import fsPromises from 'fs/promises';
 import path from 'path';
 import { classicConfigFiles, cogConfigFiles } from './geoserver-config-templates.js';
 import AdmZip from 'adm-zip';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';
 
 /**
  * Create a COG-based image mosaic store with time support.

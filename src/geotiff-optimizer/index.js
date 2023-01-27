@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { initialize } from '../workerTemplate.js';
 import optimizeGeoTiff from './optimize-geotiff.js';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';
 
 
 const workerQueue = process.env.WORKERQUEUE;

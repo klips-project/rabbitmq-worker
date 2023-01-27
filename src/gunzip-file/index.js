@@ -1,7 +1,7 @@
 import zlib from 'zlib';
 import fs from 'fs';
 import { initialize } from '../workerTemplate.js';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';
 
 
 const workerQueue = process.env.WORKERQUEUE;

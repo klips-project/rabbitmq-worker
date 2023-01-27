@@ -3,13 +3,15 @@ import path from 'path';
 import { URL } from 'url';
 import downloadFile from './downloader.js';
 import { initialize } from '../workerTemplate.js';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
+
+logger.debug('HELLO DOWNLOAD');
 
 /**
  * Downloads data into the given target from the given URL.

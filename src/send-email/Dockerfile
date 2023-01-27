@@ -19,6 +19,7 @@ WORKDIR /home/
 RUN npm install
 COPY src/send-email/index.js worker/
 COPY src/workerTemplate.js .
+COPY src/send-email/child-logger.js worker/
 COPY src/logger.js .
 
 CMD ["./start-email-worker.sh"]

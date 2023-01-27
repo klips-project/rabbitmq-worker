@@ -1,6 +1,6 @@
 import GeoServerRestClient from 'geoserver-node-client/geoserver-rest-client.js';
 import { initialize } from '../workerTemplate.js';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';;
 
 
 const url = process.env.GSHOST;

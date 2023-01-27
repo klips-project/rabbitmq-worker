@@ -12,5 +12,6 @@ WORKDIR /home/
 RUN npm install
 COPY src/geoserver-publish-layer-from-db/index.js worker/
 COPY src/workerTemplate.js .
+COPY src/geoserver-publish-layer-from-db/child-logger.js worker/
 COPY src/logger.js .
 CMD ["sh", "-c", "node worker/index.js ${GSHOST} ${GSUSER} ${GSPASS}"]

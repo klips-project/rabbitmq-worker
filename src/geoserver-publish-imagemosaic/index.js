@@ -1,7 +1,7 @@
 import { GeoServerRestClient } from 'geoserver-node-client';
 import { initialize } from '../workerTemplate.js';
 import { publishClassicGranule, publishCogGranule } from './publish-granule.js';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';
 
 const url = process.env.GEOSERVER_REST_URL;
 const user = process.env.GEOSERVER_USER;
