@@ -1,6 +1,6 @@
 process.env.RABBITHOST = '46.4.8.29';
-import index from './dispatcher';
+import {Dispatcher} from './dispatcher';
 
-test('test if dispatcher can be loaded', () => {
-    expect(index).toBeDefined();
+test('if dispatcher class exists', () => {
+    expect(Dispatcher).toBeDefined();
 });
