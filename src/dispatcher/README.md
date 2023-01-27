@@ -4,7 +4,7 @@
 
 The dispatcher writes JSON-structured logs using the the Pino library to the path defined with the environment variable `LOG_FILE_PATH`.
 
-The logs can be viewed with a texteditor, but it is easier to read the with the tool `pino-pretty`(installation with `npm i -g pino-pretty`). Examples:
+The logs can be viewed using a texteditor, but it is easier to read the with the tool `pino-pretty`(installation with `npm i -g pino-pretty`). Examples:
 
 ```shell
 # show all logs with colors
