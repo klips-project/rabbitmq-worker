@@ -1,3 +1,3 @@
 import { logger } from '../logger.js';
 
-export default logger.child({ worker: 'geoserver-publish-sld' });
+export default logger.child({ type: 'geoserver-publish-sld' });

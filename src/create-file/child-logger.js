@@ -1,3 +1,3 @@
 import { logger } from '../logger.js';
 
-export default logger.child({ worker: 'create-file' });
+export default logger.child({ type: 'create-file' });

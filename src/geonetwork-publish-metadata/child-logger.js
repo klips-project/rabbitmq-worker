@@ -1,3 +1,3 @@
 import { logger } from '../logger.js';
 
-export default logger.child({ worker: 'geonetwork-publish-metadata' });
+export default logger.child({ type: 'geonetwork-publish-metadata' });

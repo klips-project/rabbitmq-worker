@@ -1,3 +1,3 @@
 import { logger } from '../logger.js';
 
-export default logger.child({ worker: 'send-mattermost-message' });
+export default logger.child({ type: 'send-mattermost-message' });

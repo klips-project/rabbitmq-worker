@@ -1,3 +1,3 @@
 import {logger} from '../logger.js';
 
-export default logger.child({ worker: 'dispatcher' });
+export default logger.child({ type: 'dispatcher' });

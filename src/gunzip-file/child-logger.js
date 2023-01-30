@@ -1,3 +1,3 @@
 import { logger } from '../logger.js';
 
-export default logger.child({ worker: 'gunzip-file' });
+export default logger.child({ type: 'gunzip-file' });

@@ -52,7 +52,7 @@ export async function initialize(
     durable: true
   });
 
-  logger.debug(`Worker waiting for messages in ${workerQueue}.`);
+  logger.debug({type: workerQueue}, `Worker waiting for messages ... `);
   await connectToQueue(
     workerQueue,
     resultQueue,

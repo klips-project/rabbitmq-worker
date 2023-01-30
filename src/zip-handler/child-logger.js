@@ -1,3 +1,3 @@
 import { logger } from '../logger.js';
 
-export default logger.child({ worker: 'zip-handler' });
+export default logger.child({ type: 'zip-handler' });

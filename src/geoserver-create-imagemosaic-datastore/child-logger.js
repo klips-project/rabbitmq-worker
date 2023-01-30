@@ -1,3 +1,3 @@
 import { logger } from '../logger.js';
 
-export default logger.child({ worker: 'geoserver-create-imagemosaic-datastore' });
+export default logger.child({ type: 'geoserver-create-imagemosaic-datastore' });
