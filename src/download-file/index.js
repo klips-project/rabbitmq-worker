@@ -11,8 +11,6 @@ const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
 
-logger.debug('HELLO DOWNLOAD');
-
 /**
  * Downloads data into the given target from the given URL.
  * Modifies the given job object in place with status and results.
