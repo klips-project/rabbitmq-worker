@@ -11,5 +11,6 @@ RUN npm install
 COPY src/geotiff-optimizer/index.js worker/
 COPY src/geotiff-optimizer/optimize-geotiff.js worker/
 COPY src/workerTemplate.js .
+COPY src/geotiff-optimizer/child-logger.js worker/
 COPY src/logger.js .
 CMD ["./start-worker.sh"]

@@ -3,7 +3,7 @@ import FormData from 'form-data';
 import fetch from 'node-fetch';
 
 import { initialize } from '../workerTemplate.js';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;

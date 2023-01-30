@@ -14,6 +14,7 @@ COPY src/geoserver-create-imagemosaic-datastore/util.js worker/
 COPY src/geoserver-create-imagemosaic-datastore/create-mosaic-store.js worker/
 COPY src/geoserver-create-imagemosaic-datastore/geoserver-config-templates.js worker/
 COPY src/workerTemplate.js .
+COPY src/geoserver-create-imagemosaic-datastore/child-logger.js worker/
 COPY src/logger.js .
 
 CMD ["./start-worker.sh"]

@@ -1,7 +1,7 @@
 import { GeoServerRestClient } from 'geoserver-node-client';
 import { initialize } from '../workerTemplate.js';
 import { createClassicMosaicStore, createCogMosaicStore } from './create-mosaic-store.js';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';
 
 
 const url = process.env.GEOSERVER_REST_URL;

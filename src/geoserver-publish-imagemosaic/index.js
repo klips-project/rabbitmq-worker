@@ -1,7 +1,7 @@
 import { GeoServerRestClient } from 'geoserver-node-client';
 import { initialize } from '../workerTemplate.js';
 import { publishClassicGranule, publishCogGranule } from './publish-granule.js';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';
 
 const url = process.env.GEOSERVER_REST_URL;
 const user = process.env.GEOSERVER_USER;
@@ -47,6 +47,8 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
 
   const geoServerAvailable = await grc.about.exists();
 
+  logger.debug('Publishing GeoTIFF to image mosaic store...');
+
   if (!geoServerAvailable) {
     logger.debug('Geoserver not available');
     workerJob.missingPreconditions = true;
@@ -70,6 +72,8 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
     logger.error(error);
     throw 'Could not add new granule to coverage store.';
   }
+
+  logger.debug('Publishing GeoTIFF finished.');
 
   workerJob.status = 'success';
   workerJob.outputs = [newPath];

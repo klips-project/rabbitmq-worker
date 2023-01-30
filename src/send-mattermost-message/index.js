@@ -1,6 +1,6 @@
 import { initialize } from '../workerTemplate.js';
 import fetch from 'node-fetch';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';
 
 
 const workerQueue = process.env.WORKERQUEUE;

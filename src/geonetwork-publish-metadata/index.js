@@ -1,5 +1,5 @@
 import GeoNetworkClient from '../gnos-client.js';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';
 import { initialize } from '../workerTemplate.js';
 
 const url = process.env.GNHOST;

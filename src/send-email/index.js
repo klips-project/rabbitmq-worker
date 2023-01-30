@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import { initialize } from '../workerTemplate.js';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';
 
 
 const workerQueue = process.env.WORKERQUEUE;

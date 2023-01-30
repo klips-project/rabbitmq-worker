@@ -1,5 +1,5 @@
 import { Dispatcher } from './dispatcher.js';
-import { logger } from '../logger.js';
+import logger from './child-logger.js';
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
