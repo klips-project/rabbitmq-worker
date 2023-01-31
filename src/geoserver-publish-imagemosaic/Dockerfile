@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:16-alpine
 
 COPY src/geoserver-publish-imagemosaic/package.json src/geoserver-publish-imagemosaic/package-lock.json /home/
 

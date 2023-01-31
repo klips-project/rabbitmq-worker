@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:16-alpine
 
 COPY src/zip-handler/package.json src/zip-handler/package-lock.json /home/
 WORKDIR /home/

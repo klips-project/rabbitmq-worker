@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:16-alpine
 
 ENV GSHOST http://localhost:8080/geoserver/rest/
 ENV GSUSER admin

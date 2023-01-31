@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:16-alpine
 
 COPY src/gunzip-file/package.json src/gunzip-file/package-lock.json /home/
 WORKDIR /home/

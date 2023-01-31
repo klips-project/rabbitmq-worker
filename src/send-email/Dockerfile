@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:16-alpine
 
 ENV MAILHOST mail.organization.org
 ENV MAILPORT 587
