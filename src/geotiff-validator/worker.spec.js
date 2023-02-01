@@ -40,7 +40,7 @@ test('test if geotiff validation function can be called', async () => {
     const validateGeoTiff = createGeotiffValidationFun(config);
 
     let job = {};
-    const downloadPath = path.join('/tmp', 'sampl.tif');
+    const downloadPath = path.join('/tmp', 'sample.tif');
     await download(job, [
         'https://raw.githubusercontent.com/klips-project/rabbitmq-worker/main/src/geotiff-validator/sample_data/sample.tif',
         downloadPath
