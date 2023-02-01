@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:16-alpine
 
 COPY src/send-mattermost-message/package.json src/send-mattermost-message/package-lock.json /home/
 

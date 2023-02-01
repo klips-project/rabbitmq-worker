@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:16-alpine
 
 COPY src/geoserver-publish-geotiff/package.json src/geoserver-publish-geotiff/package-lock.json /home/
 COPY util/start-worker.sh util/wait-for.sh /home/

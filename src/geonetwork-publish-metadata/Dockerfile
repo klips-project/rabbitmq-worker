@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:16-alpine
 
 ENV GNHOST http://geonetwork:8080/geonetwork/srv/
 ENV GNUSER admin
