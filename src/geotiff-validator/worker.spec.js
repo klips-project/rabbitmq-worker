@@ -12,28 +12,23 @@ test('test if geotiff validation function can be called', async () => {
         "extent": {
             "allowedExtent": [
                 [
-                    5.85,
-                    47.27
+                    2,
+                    39
                 ],
                 [
-                    15.02,
-                    55.07
+                    4,
+                    41
                 ]
             ]
         },
         "projection": {
             "allowedEPSGCodes": [
-                3857,
                 4326,
-                3035
             ]
         },
         "dataType": {
             "allowedDataTypes": [
-                "Byte",
-                "Int16",
-                "Float32",
-                "Float64"
+                "Byte"
             ]
         },
         "fileSize": {
@@ -45,9 +40,9 @@ test('test if geotiff validation function can be called', async () => {
     const validateGeoTiff = createGeotiffValidationFun(config);
 
     let job = {};
-    const downloadPath = path.join('/tmp', 'sample_germany_small.tif');
+    const downloadPath = path.join('/tmp', 'sample.tif');
     await download(job, [
-        'https://raw.githubusercontent.com/klips-project/klips-sdi/main/mocked-webspace/sample_germany_small.tif',
+        'https://raw.githubusercontent.com/klips-project/rabbitmq-worker/main/src/geotiff-validator/sample_data/sample.tif',
         downloadPath
     ]);
     job = {};
