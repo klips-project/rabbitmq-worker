@@ -6,6 +6,8 @@ import { register } from 'ol/proj/proj4.js';
 import { transformExtent } from 'ol/proj.js';
 import { boundingExtent, containsExtent } from 'ol/extent.js';
 
+import logger from './child-logger.js';
+
 const PROJECTION_NAME = 'projection';
 const EXTENT_NAME = 'extent';
 const DATATYPE_NAME = 'dataType';
@@ -190,7 +192,7 @@ const validateExtent = async (dataset, allowedExtent) => {
     };
 
     if (!ALLOWED_PROJECTIONS.includes(projectionCode)) {
-        result.info(`Projection code '${projectionCode}' is not allowed`);
+        logger.info(`Projection code '${projectionCode}' is not allowed`);
         return result;
     }
 
