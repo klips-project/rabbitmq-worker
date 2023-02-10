@@ -29,12 +29,14 @@ const execShellCommand = (cmd) => {
  *
  * @param {String} inputPath The path of the GeoTIFF to convert
  * @param {String} outputPath The path where the created COG shall be stored
+ * @param {String} [compression=DEFLATE] The compression to use. For possible options see:
+ *                                       https://gdal.org/drivers/raster/cog.html#creation-options
  *
  * @returns {Promise<String>} A Promise that resolves to the console output of the underlying GDAL process
  *
  * @throws If provided paths are invalid or conversion fails, an error is thrown
  */
-const optimizeGeoTiff = async (inputPath, outputPath) => {
+const optimizeGeoTiff = async (inputPath, outputPath, compression = "DEFLATE") => {
     // valdate inputPath
     if (! await fs.existsSync(inputPath)){
         throw `Input file does not exist: ${inputPath}`;
@@ -46,7 +48,7 @@ const optimizeGeoTiff = async (inputPath, outputPath) => {
         throw `Output directory does not exist: ${outputDir}`;
     }
 
-    const makeCogCmd = `gdal_translate ${inputPath} ${outputPath} -of COG -co COMPRESS=LZW`;
+    const makeCogCmd = `gdal_translate ${inputPath} ${outputPath} -of COG -co COMPRESS=${compression}`;
 
     return await execShellCommand(makeCogCmd);
 }
