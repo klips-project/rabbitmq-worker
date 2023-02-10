@@ -177,7 +177,10 @@ tail -f worker.log | pino-pretty -c -i job
 tail -f worker.log | pino-pretty -c -S
 
 # filter by an attribute using 'jq'
-cat logs/worker.log | jq -c 'select(.type == "download-file")' | pino-pretty -c
+tail -f logs/worker.log | jq --unbuffered -c 'select(.type == "download-file")' | pino-pretty -c
+
+# filter by many attributes
+tail -f logs/worker.log | jq --unbuffered -c 'select(.type == "download-file" or .type == "dispatcher")' | pino-pretty -c
 ```
 
 ## logrotate
