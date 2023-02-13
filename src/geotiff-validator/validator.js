@@ -296,7 +296,7 @@ const validateNoDataValue = async (dataset, expectedNoDataValue) => {
     if (valid) {
         result.valid = true;
     } else {
-        result.info = `Invalid noDataValue. Expected ${expectedNoDataValue}. Actual values of bands ${noDataValues}`;
+        result.info = `Invalid noDataValue. Expected: ${expectedNoDataValue}. Actual values of bands: ${JSON.stringify(noDataValues)}`;
     }
     console.log(result);
     return result;
