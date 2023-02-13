@@ -13,6 +13,7 @@ const EXTENT_NAME = 'extent';
 const DATATYPE_NAME = 'dataType';
 const BAND_NAME = 'bands';
 const FILESIZE_NAME = 'fileSize';
+const NO_DATA_VALUE_NAME = 'noDataValue'
 
 const ALLOWED_PROJECTIONS = ["4326", "3857", "3035"];
 
@@ -84,6 +85,8 @@ class GeotiffValidator {
                     return await validateDataType(dataset, this.config.dataType.allowedDataTypes);
                 case BAND_NAME:
                     return await validateBands(dataset, this.config.bands.expectedCount);
+                case NO_DATA_VALUE_NAME:
+                    return await validateNoDataValue(dataset, this.config.noDataValue.expectedValue)
                 default:
                     break;
             }
@@ -246,6 +249,7 @@ const validateDataType = async (dataset, allowedDataTypes) => {
  * Checks if a GeoTIFF has the expected count of bands.
  *
  * @param {Object} dataset GDAL dataset
+ * @param {number} expectedCountOfBands The expected count of bands
  *
  * @returns {Object} result The result object of the validation
  * @returns {String} result.type The name of the validation
@@ -269,4 +273,32 @@ const validateBands = async (dataset, expectedCountOfBands) => {
     return result;
 }
 
-export { GeotiffValidator, validateFilesize, validateBands, validateDataType, validateExtent, validateProjection };
+/**
+ * Checks if all bands have the provided NoDataValue.
+ *
+ * @param {Object} dataset GDAL dataset
+ * @param {any} expectedNoDataValue The expected NoDataValue
+ *
+ * @returns {Object} result The result object of the validation
+ * @returns {String} result.type The name of the validation
+ * @returns {Boolean} result.valid If all bands have the expected NoDataValue
+ * @returns {String} [result.info] Additional information if validation was not succesful
+ */
+const validateNoDataValue = async (dataset, expectedNoDataValue) => {
+    const noDataValues = dataset?.bands?.map(band => band.noDataValue);
+    const valid = noDataValues.every(value => value === expectedNoDataValue);
+
+    const result = {
+        type: NO_DATA_VALUE_NAME ,
+        valid: false
+    };
+
+    if (valid) {
+        result.valid = true;
+    } else {
+        result.info = `Invalid noDataValue. Expected: ${expectedNoDataValue}. Actual values of bands: ${JSON.stringify(noDataValues)}`;
+    }
+    return result;
+}
+
+export { GeotiffValidator, validateFilesize, validateBands, validateDataType, validateExtent, validateProjection, validateNoDataValue };
