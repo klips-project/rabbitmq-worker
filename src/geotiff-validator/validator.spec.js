@@ -1,4 +1,4 @@
-import { GeotiffValidator, validateFilesize, validateBands, validateDataType, validateExtent, validateProjection } from './validator.js';
+import { GeotiffValidator, validateFilesize, validateBands, validateDataType, validateExtent, validateProjection, validateNoDataValue } from './validator.js';
 import gdal from 'gdal-async';
 
 const path = 'src/geotiff-validator/sample_data/sample.tif';
@@ -35,10 +35,13 @@ describe('GeotiffValidator', () => {
             },
             bands: {
                 expectedCount: 4
+            },
+            noDataValue: {
+                expectedValue: 42
             }
         }
         const geotiffValidator = new GeotiffValidator(config);
-        const result = await geotiffValidator.performValidation(path, ['extent', 'projection', 'dataType', 'fileSize', 'bands'])
+        const result = await geotiffValidator.performValidation(path, ['extent', 'projection', 'dataType', 'fileSize', 'bands', 'noDataValue'])
         const allStepsAreValid = result.every(stepResult => stepResult.valid)
         expect(allStepsAreValid).toBe(true);
     });
@@ -47,7 +50,7 @@ describe('GeotiffValidator', () => {
 
 describe('validateFilesize', () => {
     it('returns true if size is in valid range', () => {
-        const result = validateFilesize(path, 33000, 34000);
+        const result = validateFilesize(path, 34000, 36000);
         expect(result.valid).toBe(true);
     });
     it('returns false if size is outside valid range', () => {
@@ -114,6 +117,24 @@ describe('validate Extent', () => {
         const dataset = await gdal.openAsync(path);
         const invalidExtent = [2.2, 39.1, 3.5, 39.9];
         const result = await validateExtent(dataset, invalidExtent);
+        expect(result.valid).toBe(false);
+        expect(result.info).toBeDefined();
+    });
+});
+
+describe('validate NoDataValue', () => {
+    it('returns true on valid noDataValue', async () => {
+        const dataset = await gdal.openAsync(path);
+        const validNoDataValue = 42;
+        const result = await validateNoDataValue(dataset, validNoDataValue);
+        console.log(result);
+        expect(result.valid).toBe(true);
+    });
+
+    it('returns false on invalid noDataValue', async () => {
+        const dataset = await gdal.openAsync(path);
+        const invalidNoDataValue = 123;
+        const result = await validateNoDataValue(dataset, invalidNoDataValue);
         expect(result.valid).toBe(false);
         expect(result.info).toBeDefined();
     });
