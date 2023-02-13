@@ -298,7 +298,6 @@ const validateNoDataValue = async (dataset, expectedNoDataValue) => {
     } else {
         result.info = `Invalid noDataValue. Expected: ${expectedNoDataValue}. Actual values of bands: ${JSON.stringify(noDataValues)}`;
     }
-    console.log(result);
     return result;
 }
 
