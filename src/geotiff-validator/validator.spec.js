@@ -1,4 +1,4 @@
-import { GeotiffValidator, validateFilesize, validateBandCount, validateDataType, validateExtent, validateProjection, validateNoDataValue } from './validator.js';
+import { GeotiffValidator, validateFilesize, validateBandCount, validateDataType, validateExtent, validateProjection, validateNoDataValue, validateValueRange } from './validator.js';
 import gdal from 'gdal-async';
 
 const path = 'src/geotiff-validator/sample_data/sample.tif';
@@ -38,10 +38,18 @@ describe('GeotiffValidator', () => {
             },
             noDataValue: {
                 expectedValue: 42
+            },
+            valueRange: {
+                expectedBandRanges: [
+                    { min: 230, max: 255 },
+                    { min: 229, max: 255 },
+                    { min: 219, max: 255 },
+                    { min: 255, max: 255 }
+                ]
             }
         }
         const geotiffValidator = new GeotiffValidator(config);
-        const result = await geotiffValidator.performValidation(path, ['extent', 'projection', 'dataType', 'fileSize', 'bandCount', 'noDataValue'])
+        const result = await geotiffValidator.performValidation(path, ['extent', 'projection', 'dataType', 'fileSize', 'bandCount', 'noDataValue', 'valueRange'])
         const allStepsAreValid = result.every(stepResult => stepResult.valid)
         expect(allStepsAreValid).toBe(true);
     });
@@ -136,5 +144,64 @@ describe('validate NoDataValue', () => {
         const result = await validateNoDataValue(dataset, invalidNoDataValue);
         expect(result.valid).toBe(false);
         expect(result.info).toBeDefined();
+    });
+});
+
+describe('validate value range', () => {
+    it('returns true if band values are within expected ranges', async () => {
+        const dataset = await gdal.openAsync(path);
+        const expectedBandRanges = [
+            { min: 230, max: 255 },
+            { min: 229, max: 255 },
+            { min: 219, max: 255 },
+            { min: 255, max: 255 }
+        ];
+        const result = await validateValueRange(dataset, expectedBandRanges);
+        expect(result.valid).toBe(true);
+    });
+
+    it('returns false if band values are outside expected ranges', async () => {
+        const dataset = await gdal.openAsync(path);
+        const expectedBandRanges = [
+            { min: 230, max: 255 },
+            { min: 229, max: 255 },
+            { min: 999, max: 255 },
+            { min: 255, max: 255 }
+        ];
+        const result = await validateValueRange(dataset, expectedBandRanges);
+        expect(result.valid).toBe(false);
+    });
+
+    it('throws error if input array has not right length', async () => {
+        const dataset = await gdal.openAsync(path);
+        const expectedBandRanges = [
+            { min: 230, max: 255 },
+            { min: 229, max: 255 },
+            { min: 255, max: 255 }
+        ];
+        let errorThrown = false;
+        try {
+            await validateValueRange(dataset, expectedBandRanges);
+        } catch (error) {
+            errorThrown = true;
+        }
+        expect(errorThrown).toBe(true);
+    });
+
+    it('throws error if min or max are not defined', async () => {
+        const dataset = await gdal.openAsync(path);
+        const expectedBandRanges = [
+            { min: 230, max: 255 },
+            { min: 229 },
+            { max: 255 },
+            { min: 255, max: 255 }
+        ];
+        let errorThrown = false;
+        try {
+            await validateValueRange(dataset, expectedBandRanges);
+        } catch (error) {
+            errorThrown = true;
+        }
+        expect(errorThrown).toBe(true);
     });
 });

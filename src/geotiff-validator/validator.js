@@ -14,6 +14,7 @@ const DATATYPE_NAME = 'dataType';
 const BAND_COUNT_NAME = 'bandCount';
 const FILESIZE_NAME = 'fileSize';
 const NO_DATA_VALUE_NAME = 'noDataValue';
+const VALUE_RANGE_NAME = 'valueRange';
 
 const ALLOWED_PROJECTIONS = ["4326", "3857", "3035"];
 
@@ -87,6 +88,8 @@ class GeotiffValidator {
                     return await validateBandCount(dataset, this.config[BAND_COUNT_NAME].expectedCount);
                 case NO_DATA_VALUE_NAME:
                     return await validateNoDataValue(dataset, this.config[NO_DATA_VALUE_NAME].expectedValue)
+                case VALUE_RANGE_NAME:
+                    return await validateValueRange(dataset, this.config[VALUE_RANGE_NAME].expectedBandRanges)
                 default:
                     break;
             }
@@ -301,4 +304,58 @@ const validateNoDataValue = async (dataset, expectedNoDataValue) => {
     return result;
 }
 
-export { GeotiffValidator, validateFilesize, validateBandCount, validateDataType, validateExtent, validateProjection, validateNoDataValue };
+/**
+ * Checks if values of bands are within expected ranges.
+ *
+ * @param {Object} dataset GDAL dataset
+ * @param {Object[]} expectedBandRanges The expected Ranges. An Array of objects containing the 'min' and 'max' property for each band.
+ * @param {Boolean} allowApproximation If the read raster statistics shall be approximated. See https://mmomtchev.github.io/node-gdal-async/#computestatistics for details.
+ *
+ * @returns {Object} result The result object of the validation
+ * @returns {String} result.type The name of the validation
+ * @returns {Boolean} result.valid If all the values of all bands are within expected ranges.
+ * @returns {String} [result.info] Additional information if validation was not succesful
+ */
+const validateValueRange = async (dataset, expectedBandRanges, allowApproximation = false) => {
+
+    // ensure expected band ranges have same length as bands
+    const countBands = dataset?.bands?.count();
+    if (countBands !== expectedBandRanges.length) {
+        throw 'Count of bands must be equal to length of input array for expected values';
+    }
+
+    // compute raster statistics for each band
+    const rasterStats = dataset?.bands?.map(
+        band => band.computeStatistics(allowApproximation)
+    );
+
+    const result = {
+        type: VALUE_RANGE_NAME,
+        valid: true
+    };
+
+    rasterStats.forEach((bandStats, i) => {
+        const expectedRange = expectedBandRanges[i];
+        const { min: expectedMin, max: expectedMax } = expectedRange;
+
+        if (expectedMin === undefined || expectedMax === undefined) {
+            throw `Both min and max value for band '${i + 1}' must be set.`
+        }
+
+        if (expectedMin > bandStats.min || expectedMax < bandStats.max) {
+            result.valid = false;
+            const errorText =
+                `Raster value for band '${i + 1}' must be within ${expectedMin} and ${expectedMax}.`;
+
+            if (result.info) {
+                result.info = result.info + ' ' + errorText;
+            } else {
+                result.info = errorText;
+            }
+        }
+    });
+
+    return result;
+}
+
+export { GeotiffValidator, validateFilesize, validateBandCount, validateDataType, validateExtent, validateProjection, validateNoDataValue, validateValueRange };
