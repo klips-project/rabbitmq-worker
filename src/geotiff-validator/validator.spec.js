@@ -1,16 +1,16 @@
-import { GeotiffValidator, validateFilesize, validateBands, validateDataType, validateExtent, validateProjection, validateNoDataValue } from './validator.js';
+import { GeotiffValidator, validateFilesize, validateBandCount, validateDataType, validateExtent, validateProjection, validateNoDataValue } from './validator.js';
 import gdal from 'gdal-async';
 
 const path = 'src/geotiff-validator/sample_data/sample.tif';
 
 describe('GeotiffValidator', () => {
     it('returns true if GeoTIFF is valid', async () => {
-       const config =  {
+        const config = {
             extent: {
-               allowedExtent: [
+                allowedExtent: [
                     [
-                       1,
-                       1
+                        1,
+                        1
                     ],
                     [
                         89,
@@ -33,7 +33,7 @@ describe('GeotiffValidator', () => {
                 minFileSize: 1000,
                 maxFileSize: 10000000
             },
-            bands: {
+            bandCount: {
                 expectedCount: 4
             },
             noDataValue: {
@@ -41,7 +41,7 @@ describe('GeotiffValidator', () => {
             }
         }
         const geotiffValidator = new GeotiffValidator(config);
-        const result = await geotiffValidator.performValidation(path, ['extent', 'projection', 'dataType', 'fileSize', 'bands', 'noDataValue'])
+        const result = await geotiffValidator.performValidation(path, ['extent', 'projection', 'dataType', 'fileSize', 'bandCount', 'noDataValue'])
         const allStepsAreValid = result.every(stepResult => stepResult.valid)
         expect(allStepsAreValid).toBe(true);
     });
@@ -90,16 +90,16 @@ describe('validateDataType', () => {
     });
 });
 
-describe('validateBands', () => {
+describe('validateBandCount', () => {
     it('returns true on valid band count', async () => {
         const dataset = await gdal.openAsync(path);
-        const result = await validateBands(dataset, 4);
+        const result = await validateBandCount(dataset, 4);
         expect(result.valid).toBe(true);
     });
 
     it('returns false on invalid band count', async () => {
         const dataset = await gdal.openAsync(path);
-        const result = await validateBands(dataset, 1);
+        const result = await validateBandCount(dataset, 1);
         expect(result.valid).toBe(false);
         expect(result.info).toBeDefined();
     });
@@ -127,7 +127,6 @@ describe('validate NoDataValue', () => {
         const dataset = await gdal.openAsync(path);
         const validNoDataValue = 42;
         const result = await validateNoDataValue(dataset, validNoDataValue);
-        console.log(result);
         expect(result.valid).toBe(true);
     });
 

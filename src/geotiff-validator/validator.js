@@ -11,9 +11,9 @@ import logger from './child-logger.js';
 const PROJECTION_NAME = 'projection';
 const EXTENT_NAME = 'extent';
 const DATATYPE_NAME = 'dataType';
-const BAND_NAME = 'bands';
+const BAND_COUNT_NAME = 'bandCount';
 const FILESIZE_NAME = 'fileSize';
-const NO_DATA_VALUE_NAME = 'noDataValue'
+const NO_DATA_VALUE_NAME = 'noDataValue';
 
 const ALLOWED_PROJECTIONS = ["4326", "3857", "3035"];
 
@@ -47,7 +47,7 @@ class GeotiffValidator {
             PROJECTION_NAME,
             EXTENT_NAME,
             DATATYPE_NAME,
-            BAND_NAME
+            BAND_COUNT_NAME
         ].includes(step)).length;
 
         if (requiresGdalvalidation) {
@@ -76,17 +76,17 @@ class GeotiffValidator {
             switch (step) {
                 case FILESIZE_NAME:
                     return validateFilesize(
-                        filePath, this.config.fileSize.minFileSize, this.config.fileSize.maxFileSize);
+                        filePath, this.config[FILESIZE_NAME].minFileSize, this.config[FILESIZE_NAME].maxFileSize);
                 case PROJECTION_NAME:
-                    return await validateProjection(dataset, this.config.projection.allowedEPSGCodes);
+                    return await validateProjection(dataset, this.config[PROJECTION_NAME].allowedEPSGCodes);
                 case EXTENT_NAME:
-                    return await validateExtent(dataset, boundingExtent(this.config.extent.allowedExtent));
+                    return await validateExtent(dataset, boundingExtent(this.config[EXTENT_NAME].allowedExtent));
                 case DATATYPE_NAME:
-                    return await validateDataType(dataset, this.config.dataType.allowedDataTypes);
-                case BAND_NAME:
-                    return await validateBands(dataset, this.config.bands.expectedCount);
+                    return await validateDataType(dataset, this.config[DATATYPE_NAME].allowedDataTypes);
+                case BAND_COUNT_NAME:
+                    return await validateBandCount(dataset, this.config[BAND_COUNT_NAME].expectedCount);
                 case NO_DATA_VALUE_NAME:
-                    return await validateNoDataValue(dataset, this.config.noDataValue.expectedValue)
+                    return await validateNoDataValue(dataset, this.config[NO_DATA_VALUE_NAME].expectedValue)
                 default:
                     break;
             }
@@ -256,11 +256,11 @@ const validateDataType = async (dataset, allowedDataTypes) => {
  * @returns {Boolean} result.valid If count of bands equal expected count
  * @returns {String} [result.info] Additional information if validation was not succesful
  */
-const validateBands = async (dataset, expectedCountOfBands) => {
+const validateBandCount = async (dataset, expectedCountOfBands) => {
     const countBands = dataset?.bands?.count();
 
     const result = {
-        type: BAND_NAME,
+        type: BAND_COUNT_NAME,
         valid: false
     };
 
@@ -289,7 +289,7 @@ const validateNoDataValue = async (dataset, expectedNoDataValue) => {
     const valid = noDataValues.every(value => value === expectedNoDataValue);
 
     const result = {
-        type: NO_DATA_VALUE_NAME ,
+        type: NO_DATA_VALUE_NAME,
         valid: false
     };
 
@@ -301,4 +301,4 @@ const validateNoDataValue = async (dataset, expectedNoDataValue) => {
     return result;
 }
 
-export { GeotiffValidator, validateFilesize, validateBands, validateDataType, validateExtent, validateProjection, validateNoDataValue };
+export { GeotiffValidator, validateFilesize, validateBandCount, validateDataType, validateExtent, validateProjection, validateNoDataValue };
