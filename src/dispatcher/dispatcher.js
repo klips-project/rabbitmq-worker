@@ -84,7 +84,7 @@ export class Dispatcher {
     });
 
     logger.debug(
-      `Dispatcher waiting for messages in ${this.workerQueue} and ${this.resultQueue}.`
+      `Waiting for messages in ${this.workerQueue} and ${this.resultQueue}.`
     );
 
     this.channel.consume(this.workerQueue, this.createHandleNextTaskFun(), {
@@ -120,7 +120,7 @@ export class Dispatcher {
       try {
         const job = JSON.parse(msg.content.toString());
         const chain = job.job;
-        logger.debug('Received a job configuration ...');
+        logger.debug({ job: job }, 'Received job configuration ...');
 
         if (job.error) {
           throw job.error;
@@ -128,7 +128,9 @@ export class Dispatcher {
 
         // validate
         if (!chain || chain.length < 1) {
-          throw 'Invalid arguments given' + job;
+          const errorMessage = 'Invalid argument given';
+          logger.error({ job: job },errorMessage)
+          throw errorMessage + job;
         }
 
         // create unique ID if necessary (on first run)
@@ -162,13 +164,13 @@ export class Dispatcher {
           if (isRollBackJob) {
             logger.warn({ job_id: job.id, job: job, isRollBackJob: isRollBackJob }, 'Rollback job finished successfully');
           } else {
-            logger.info({ job_id: job.id, job: job }, 'Job finished successfully:');
+            logger.info({ job_id: job.id, job: job }, 'Job finished successfully');
           }
         }
 
         this.channel.ack(msg);
       } catch (taskError) {
-        logger.error({error: taskError}, 'Processing failed');
+        logger.error({ error: taskError }, 'Processing failed');
         // send to dead letter exchange
         this.channel.nack(msg, false, false);
       }
@@ -208,7 +210,7 @@ export class Dispatcher {
         });
         this.channel.ack(msg);
       } catch (taskError) {
-        logger.error({error: taskError}, 'Handling result failed');
+        logger.error({ error: taskError }, 'Handling result failed');
         // send to dead letter exchange
         this.channel.nack(msg, false, false);
       }

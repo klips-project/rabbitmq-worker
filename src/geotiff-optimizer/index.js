@@ -51,6 +51,8 @@ const callbackWorker = async (workerJob, inputs) => {
 
     workerJob.status = 'success';
     workerJob.outputs = [outputPath];
+
+    logger.debug('Finished successfully.')
 };
 
 (async () => {
