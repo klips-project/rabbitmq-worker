@@ -1,4 +1,5 @@
 import { GeotiffValidator } from './validator.js';
+import logger from './child-logger.js';
 
 /**
  * Creates the callback function that validates a GeoTIFF.
@@ -28,8 +29,12 @@ const createGeotiffValidationFun = (config) => {
             config = { ...config, ...jobConfig };
         }
 
+        logger.debug({jobConfig: config}, 'Starting  ... ')
+
         const geotiffValidator = new GeotiffValidator(config);
         const validationResults = await geotiffValidator.performValidation(filePath, validationSteps);
+
+        logger.debug({results: validationResults}, 'Validation finished');
 
         const validationErrors = validationResults.filter(result => {
             return !result.valid;
@@ -38,11 +43,13 @@ const createGeotiffValidationFun = (config) => {
         if (validationErrors.length === 0) {
             workerJob.status = 'success';
             workerJob.outputs = [filePath];
+            logger.debug('GeoTIFF is valid')
         } else {
             let errorMessage = 'GeoTIFF is invalid:';
             validationErrors.forEach(validationError => {
                 errorMessage = `${errorMessage}\n${validationError.type}: ${validationError.info}`;
             });
+            logger.debug(errorMessage);
             throw errorMessage;
         }
     }
