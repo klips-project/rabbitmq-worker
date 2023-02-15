@@ -87,11 +87,11 @@ export class Dispatcher {
       `Dispatcher waiting for messages in ${this.workerQueue} and ${this.resultQueue}.`
     );
 
-    this.channel.consume(this.workerQueue, this.#createHandleNextTaskFun(), {
+    this.channel.consume(this.workerQueue, this.createHandleNextTaskFun(), {
       noAck: false
     });
 
-    this.channel.consume(this.resultQueue, this.#createHandleResultFun(), {
+    this.channel.consume(this.resultQueue, this.createHandleResultFun(), {
       noAck: false
     });
   }
@@ -104,7 +104,7 @@ export class Dispatcher {
    *
    * @returns {Function} The function
    */
-  #createHandleNextTaskFun() {
+  createHandleNextTaskFun() {
 
     /**
      * Determine the next task from job list and sends it to worker queue.
@@ -183,7 +183,7 @@ export class Dispatcher {
    *
    * @returns {Function} The function
    */
-  #createHandleResultFun() {
+  createHandleResultFun() {
 
     /**
      * Handles the messages from the result queue.
