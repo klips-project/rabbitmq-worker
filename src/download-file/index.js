@@ -28,11 +28,12 @@ const callbackWorker = async (workerJob, inputs) => {
     const password = inputs[3];
     const url = new URL(uri);
 
-    logger.debug('Downloading ' + url.href + ' …');
+    logger.debug(`Downloading ${url.href} ...`);
 
     // if provided: add basic auth credentials to request option
     const options = {};
     if (username && password) {
+        logger.debug('Using credentials to download file.')
         options.auth = `${username}:${password}`
     }
 
@@ -52,8 +53,8 @@ const callbackWorker = async (workerJob, inputs) => {
     try {
         // Initialize and start the worker process
         await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callbackWorker);
-    } catch (e) {
-        logger.error('Problem when initializing:', e);
+    } catch (error) {
+        logger.error({error: error}, 'Problem when initializing');
     }
 })();
 

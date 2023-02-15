@@ -29,21 +29,26 @@ const downloadFile = async (url, downloadPath, options = {}) => {
             options,
             response => {
                 if (response.statusCode === 200) {
+                    logger.debug('URL responds with 200');
+
                     const fileWriter = fs
                         .createWriteStream(downloadPath)
                         .on('finish', () => {
+                            logger.debug('Download finished');
                             resolve(downloadPath);
                         })
                         .on('error', (error) => {
-                            logger.error(error);
+                            logger.error({ error: error }, 'Download failed.')
                             return reject(new Error(error))
                         });
                     response.pipe(fileWriter)
                 } else {
+                    logger.error({ statusMessage: response.statusMessage, statusCode: response.statusCode }, 'URL returned invalid HTTP code.');
                     return reject(new Error(response.statusMessage))
                 }
             })
             .on('error', (error) => {
+                logger.error({ error: error }, 'Download failed.')
                 return reject(error);
             });
     })
