@@ -331,7 +331,8 @@ const validateValueRange = async (dataset, expectedBandRanges, allowApproximatio
 
     const result = {
         type: VALUE_RANGE_NAME,
-        valid: true
+        valid: true,
+        info: ""
     };
 
     rasterStats.forEach((bandStats, i) => {
@@ -345,14 +346,10 @@ const validateValueRange = async (dataset, expectedBandRanges, allowApproximatio
         if (expectedMin > bandStats.min || expectedMax < bandStats.max) {
             result.valid = false;
             const errorText =
-                `Raster value for band '${i + 1}' must be within ${expectedMin} and ${expectedMax}.`;
+                `Raster values for band '${i + 1}' must be within ${expectedMin} and ${expectedMax}.`;
 
-            if (result.info) {
-                result.info = result.info + ' ' + errorText;
-            } else {
-                result.info = errorText;
-            }
-        }
+            result.info = result.info + errorText + ' ';
+         }
     });
 
     return result;
