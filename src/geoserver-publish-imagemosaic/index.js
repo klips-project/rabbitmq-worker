@@ -73,7 +73,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
     throw 'Could not add new granule to coverage store.';
   }
 
-  logger.debug('Publishing GeoTIFF finished.');
+  logger.debug('Finished');
 
   workerJob.status = 'success';
   workerJob.outputs = [newPath];

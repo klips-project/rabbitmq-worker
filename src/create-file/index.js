@@ -37,14 +37,14 @@ const callbackWorker = async (workerJob, inputs) => {
             await fsPromises.opendir(finalDestinationFileName);
             finalDestinationFileName = path.join(destinationFileName, "file.txt")
         } catch (err) {
-            throw "Could not open folder " + finalDestinationFileName;
+            throw `Could not open folder ${finalDestinationFileName}`;
         }
     }
 
-    logger.debug('Creating file ' + finalDestinationFileName + ' …');
+    logger.debug(`Creating file ${finalDestinationFileName}`);
     await fsPromises.writeFile(finalDestinationFileName, content);
 
-    logger.debug('File created successfully.');
+    logger.debug('File created successfully');
     workerJob.status = 'success';
     workerJob.outputs = [finalDestinationFileName];
 };
@@ -53,8 +53,8 @@ const callbackWorker = async (workerJob, inputs) => {
     try {
         // Initialize and start the worker process
         await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callbackWorker);
-    } catch (e) {
-        logger.error('Problem when initializing: ' + e);
+    } catch (error) {
+        logger.error({error: error}, 'Problem when initializing');
     }
 })();
 

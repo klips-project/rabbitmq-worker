@@ -79,8 +79,8 @@ const isGeoServerAvailable = async () => {
   try {
     // Initialize and start the worker process
     await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, geoserverPublishGeoTiff, isGeoServerAvailable, 10);
-  } catch (e) {
-    logger.error('Problem when initializing:', e);
+  } catch (error) {
+    logger.error({error: error}, 'Problem when initializing');
   }
 })();
 

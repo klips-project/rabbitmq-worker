@@ -78,12 +78,15 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     }
 
   } catch (error) {
+    const errorMessage = 'Could not create CoverageStore';
     logger.error(error);
-    throw 'Could not create CoverageStore.';
+    throw errorMessage;
   }
 
   workerJob.status = 'success';
   workerJob.outputs = [covStore];
+
+  logger.debug('Finished successfully');
 };
 
 // Initialize and start the worker process

@@ -20,8 +20,8 @@ const callback = createGeotiffValidationFun(config);
   try {
     // Initialize and start the worker process
     await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callback);
-  } catch (e) {
-    logger.error(`Error when initializing: ${e}`);
+  } catch (error) {
+    logger.error( {error:error}, `Error when initializing`);
   }
 })();
 

@@ -29,7 +29,13 @@ const callbackWorker = async (workerJob, inputs) => {
     const parentDirectory = path.dirname(outputPath);
     fs.mkdirSync(parentDirectory, { recursive: true });
 
-    logger.debug(`Start converting to COG: ${inputPath}`)
+    logger.debug(`Start converting to COG: ${inputPath}`);
+
+    // check if target file already exists
+    const outPathExists = await fs.existsSync(outputPath);
+    if (outPathExists) {
+        logger.info({ outputPath: outputPath }, 'Target file already exists. It will be overwritten.')
+    }
 
     // ensure target directory exists
     const outputDir = path.dirname(outputPath);
@@ -38,22 +44,23 @@ const callbackWorker = async (workerJob, inputs) => {
     });
 
     const cliOut = await optimizeGeoTiff(inputPath, outputPath);
-    logger.debug(cliOut);
-    logger.debug(`Conversion Finshed. Stored COG to: ${outputPath}`)
+    logger.debug({ cliOutput: cliOut, outputPath: outputPath }, `Conversion Finshed. Stored COG to: ${outputPath}`)
 
     // delete original file
     fs.rmSync(inputPath);
 
     workerJob.status = 'success';
     workerJob.outputs = [outputPath];
+
+    logger.debug('Finished successfully.')
 };
 
 (async () => {
     try {
         // Initialize and start the worker process
         await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callbackWorker);
-    } catch (e) {
-        logger.error(`Problem when initializing: ${e}`);
+    } catch (error) {
+        logger.error({ error: error }, `Problem when initializing`);
     }
 })();
 
