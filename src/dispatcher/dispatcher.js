@@ -129,7 +129,7 @@ export class Dispatcher {
         // validate
         if (!chain || chain.length < 1) {
           const errorMessage = 'Invalid argument given';
-          logger.error({ job: job },errorMessage)
+          logger.error({ job: job }, errorMessage)
           throw errorMessage + job;
         }
 
@@ -164,7 +164,7 @@ export class Dispatcher {
           if (isRollBackJob) {
             logger.warn({ job_id: job.id, job: job, isRollBackJob: isRollBackJob }, 'Rollback job finished successfully');
           } else {
-            logger.info({ job_id: job.id, job: job }, 'Job finished successfully');
+            logger.info({ job_id: job.id }, 'Job finished successfully');
           }
         }
 

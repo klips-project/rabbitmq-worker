@@ -47,7 +47,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
 
   const geoServerAvailable = await grc.about.exists();
 
-  logger.debug('Publishing GeoTIFF to image mosaic store...');
+  logger.info('Publishing GeoTIFF to image mosaic store...');
 
   if (!geoServerAvailable) {
     logger.debug('Geoserver not available');
@@ -73,7 +73,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
     throw 'Could not add new granule to coverage store.';
   }
 
-  logger.debug('Finished');
+  logger.info('Finished');
 
   workerJob.status = 'success';
   workerJob.outputs = [newPath];

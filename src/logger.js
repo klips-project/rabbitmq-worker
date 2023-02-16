@@ -11,16 +11,24 @@ if (!fs.existsSync(logFilePath)) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
-const logLevel = process.env.LOG_LEVEL || 'debug';
-
 export const logger = pino(
   {
-    level: logLevel
+    level: 'debug'
   },
   pino.multistream(
     [
-      { stream: pretty({ colorize: true }), level: logLevel },
-      { stream: pino.destination(logFilePath), level: logLevel },
+      {
+        stream: pretty({
+          colorize: true,
+          // hide worker type, because it is already shown by docker-compose logs
+          // hide pid and hostname, because typically not needed
+          ignore: 'type,pid,hostname',
+          translateTime: 'HH:MM:ss'
+        }),
+        level: process.env.PINO_STREAM_LOG_LEVEL || 'debug'
+      },
+      // write lowest log level to files
+      { stream: pino.destination(logFilePath), level: 'debug' },
     ]
   )
 );

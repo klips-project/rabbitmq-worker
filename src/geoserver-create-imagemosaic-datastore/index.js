@@ -52,6 +52,7 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
   const prototypeGranule = inputs[2];
   const geoServerAvailable = await grc.about.exists();
 
+  logger.info('Start creating image mosaic store');
   if (!geoServerAvailable) {
     logger.error('Geoserver not available');
     workerJob.missingPreconditions = true;
@@ -63,13 +64,13 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
     const covStoreObject = await grc.datastores.getCoverageStore(ws, covStore);
 
     if (covStoreObject) {
-      logger.debug("Datastore already exists! No recreation necessary.")
+      logger.info("Datastore already exists! No recreation necessary.")
       workerJob.status = 'success';
       workerJob.outputs = [covStoreObject.coverageStore.name];
       return;
     }
 
-    logger.debug(`CoverageStore ${covStore} does not exist. Try to create it ...`);
+    logger.info(`CoverageStore ${covStore} does not exist. Try to create it ...`);
 
     if (prototypeGranule.startsWith('http')){
       await createCogMosaicStore(grc, pgConf, ws, covStore, prototypeGranule);
@@ -86,7 +87,7 @@ const geoserverCreateImageMosaicDatastore = async (workerJob, inputs) => {
   workerJob.status = 'success';
   workerJob.outputs = [covStore];
 
-  logger.debug('Finished successfully');
+  logger.info('Finished successfully');
 };
 
 // Initialize and start the worker process
