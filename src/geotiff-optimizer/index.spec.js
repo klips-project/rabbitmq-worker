@@ -1,4 +1,3 @@
-process.env.RABBITHOST = '46.4.8.29';
 import callbackWorker from './index';
 import fs from 'fs';
 import path from 'path';

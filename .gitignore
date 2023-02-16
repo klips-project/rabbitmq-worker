@@ -119,3 +119,6 @@ dist
 
 data/
 .vscode
+
+# computing raster statistics creates an auxiliary file
+src/geotiff-validator/sample_data/sample.tif.aux.xml

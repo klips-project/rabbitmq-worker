@@ -1,52 +1,15 @@
-process.env.RABBITHOST = '46.4.8.29';
+import { sampleConfig } from './sharedConfig.js';
 import { createGeotiffValidationFun } from './worker.js';
-import download from '../download-file/index';
-import path from 'path';
 
-test('test if createGeotiffValidationFun can be loaded', () => {
-    expect(createGeotiffValidationFun).toBeDefined();
-});
+describe('createGeotiffValidationFun', () => {
 
-test('test if geotiff validation function can be called', async () => {
-    const config = {
-        "extent": {
-            "allowedExtent": [
-                [
-                    2,
-                    39
-                ],
-                [
-                    4,
-                    41
-                ]
-            ]
-        },
-        "projection": {
-            "allowedEPSGCodes": [
-                4326,
-            ]
-        },
-        "dataType": {
-            "allowedDataTypes": [
-                "Byte"
-            ]
-        },
-        "fileSize": {
-            "minFileSize": 1000,
-            "maxFileSize": 10000000
-        }
-    };
+    it('provides correct outputs', async () => {
+        const validateGeoTiff = createGeotiffValidationFun(sampleConfig);
 
-    const validateGeoTiff = createGeotiffValidationFun(config);
-
-    let job = {};
-    const downloadPath = path.join('/tmp', 'sample.tif');
-    await download(job, [
-        'https://raw.githubusercontent.com/klips-project/rabbitmq-worker/main/src/geotiff-validator/sample_data/sample.tif',
-        downloadPath
-    ]);
-    job = {};
-    await validateGeoTiff(job, [downloadPath]);
-    expect(job.outputs).toBeDefined();
-    expect(job.outputs.length).toBe(1);
+        const job = {};
+        const path = 'src/geotiff-validator/sample_data/sample.tif';
+        await validateGeoTiff(job, [path]);
+        expect(job.outputs).toBeDefined();
+        expect(job.outputs.length).toBe(1);
+    });
 });
