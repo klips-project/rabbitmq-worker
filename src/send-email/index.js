@@ -71,8 +71,8 @@ const sendEmail = async (workerJob, inputs) => {
   try {
     // Initialize and start the worker process
     await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, sendEmail);
-  } catch (e) {
-    logger.error(`Problem when initializing: ${e}`);
+  } catch (error) {
+    logger.error({error: error}, 'Problem when initializing');
   }
 })();
 
