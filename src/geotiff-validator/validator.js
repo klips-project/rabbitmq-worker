@@ -18,6 +18,13 @@ const VALUE_RANGE_NAME = 'valueRange';
 
 const ALLOWED_PROJECTIONS = ["4326", "3857", "3035"];
 
+// prevents creation of auxilliary XML file when reading raster statistics
+if (gdal?.config?.set) {
+    // NOTE: check above is done, because in some environments like
+    //       GitHub CI this functionality is not available
+    gdal.config.set('GDAL_PAM_ENABLED', 'OFF');
+}
+
 /** Class for a GeoTIFF validator */
 class GeotiffValidator {
     /**
@@ -349,7 +356,7 @@ const validateValueRange = async (dataset, expectedBandRanges, allowApproximatio
                 `Raster values for band '${i + 1}' must be within ${expectedMin} and ${expectedMax}.`;
 
             result.info = result.info + errorText + ' ';
-         }
+        }
     });
 
     return result;
