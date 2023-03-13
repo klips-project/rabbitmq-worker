@@ -44,7 +44,7 @@
       "url": "https://github.com/weskamm"
     }
   ],
-  "license": "MIT",
+  "license": "BSD 2-Clause",
   "bugs": {
     "url": "https://github.com/klips-project/rabbitmq-worker/issues"
   },

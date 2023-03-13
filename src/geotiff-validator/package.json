@@ -27,7 +27,7 @@
     "type": "git",
     "url": "git+https://github.com/klips-project/rabbitmq-worker.git"
   },
-  "license": "MIT",
+  "license": "BSD 2-Clause",
   "bugs": {
     "url": "https://github.com/klips-project/rabbitmq-worker/issues"
   },
