@@ -29,12 +29,14 @@ const createGeotiffValidationFun = (config) => {
             config = { ...config, ...jobConfig };
         }
 
-        logger.debug({jobConfig: config}, 'Starting  ... ')
+        logger.info('Starting validation');
+        logger.debug({jobConfig: config});
 
         const geotiffValidator = new GeotiffValidator(config);
         const validationResults = await geotiffValidator.performValidation(filePath, validationSteps);
 
-        logger.debug({results: validationResults}, 'Validation finished');
+        logger.info('Validation finished');
+        logger.debug({results: validationResults});
 
         const validationErrors = validationResults.filter(result => {
             return !result.valid;

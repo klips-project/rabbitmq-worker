@@ -28,7 +28,7 @@ const callbackWorker = async (workerJob, inputs) => {
     const password = inputs[3];
     const url = new URL(uri);
 
-    logger.debug(`Downloading ${url.href} ...`);
+    logger.info(`Downloading ${url.href} ...`);
 
     // if provided: add basic auth credentials to request option
     const options = {};
@@ -42,7 +42,7 @@ const callbackWorker = async (workerJob, inputs) => {
 
     return downloadFile(url, downloadPath, options)
         .then((downloadPath) => {
-            logger.debug('The download has finished.');
+            logger.info('Download has finished.');
             workerJob.status = 'success';
             workerJob.outputs = [downloadPath];
         });
