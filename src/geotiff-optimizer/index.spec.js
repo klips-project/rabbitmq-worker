@@ -1,11 +1,10 @@
-process.env.RABBITHOST = '46.4.8.29';
 import callbackWorker from './index';
 import fs from 'fs';
 import path from 'path';
 
 const baseDir = 'src/geotiff-optimizer/sample_data/'
 const originalFilePath = path.join(baseDir, 'sample.tif');
-const workingDir = path.join(baseDir, 'tmp/');
+const workingDir = path.join(baseDir, '/tmp/geotiff-optimzer-test/');
 const inputPath = path.join(workingDir, 'sample.tif');
 const outputPath = path.join(workingDir, 'sample-cog.tif');
 

@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 
 const baseDir = 'src/geotiff-optimizer/sample_data/'
 const originalFilePath = path.join(baseDir, 'sample.tif');
-const workingDir = path.join(baseDir, 'tmp/');
+const workingDir = path.join(baseDir, '/tmp/geotiff-optimzer-test/');
 const inputPath = path.join(workingDir, 'sample.tif');
 const outputPath = path.join(workingDir, 'sample-cog.tif');
 

@@ -1,54 +1,12 @@
 import { GeotiffValidator, validateFilesize, validateBandCount, validateDataType, validateExtent, validateProjection, validateNoDataValue, validateValueRange } from './validator.js';
+import { sampleConfig } from './sharedConfig.js';
 import gdal from 'gdal-async';
 
 const path = 'src/geotiff-validator/sample_data/sample.tif';
 
 describe('GeotiffValidator', () => {
     it('returns true if GeoTIFF is valid', async () => {
-        const config = {
-            extent: {
-                allowedExtent: [
-                    [
-                        1,
-                        1
-                    ],
-                    [
-                        89,
-                        89
-                    ]
-                ]
-            },
-            projection: {
-                allowedEPSGCodes: [
-                    4326,
-                ]
-            },
-            dataType: {
-                allowedDataTypes: [
-                    "Byte",
-                    "Float32"
-                ]
-            },
-            fileSize: {
-                minFileSize: 1000,
-                maxFileSize: 10000000
-            },
-            bandCount: {
-                expectedCount: 4
-            },
-            noDataValue: {
-                expectedValue: 42
-            },
-            valueRange: {
-                expectedBandRanges: [
-                    { min: 230, max: 255 },
-                    { min: 229, max: 255 },
-                    { min: 219, max: 255 },
-                    { min: 255, max: 255 }
-                ]
-            }
-        }
-        const geotiffValidator = new GeotiffValidator(config);
+        const geotiffValidator = new GeotiffValidator(sampleConfig);
         const result = await geotiffValidator.performValidation(path, ['extent', 'projection', 'dataType', 'fileSize', 'bandCount', 'noDataValue', 'valueRange'])
         const allStepsAreValid = result.every(stepResult => stepResult.valid)
         expect(allStepsAreValid).toBe(true);
