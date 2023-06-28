@@ -38,8 +38,7 @@ const callbackWorker = async (workerJob, inputs) => {
 
     // check if incomimg dataset timestamp === current timestamp
     if (datasetTimestamp.isSame(currentTimestamp)) {
-        // dataset will become the new index 0
-        // delete previous dataset -48
+        // delete previous dataset with index -48 (49 hours before current timestamp)
         const timestampToDelete = datasetTimestamp.subtract(49, 'hours');
         const fileToDelete = `${region}_${timestampToDelete.format('YYYYMMDDTHHmm')}Z.tif`
 
