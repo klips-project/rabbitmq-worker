@@ -40,9 +40,13 @@ const callbackWorker = async (workerJob, inputs) => {
     if (datasetTimestamp.isSame(currentTimestamp)) {
         // delete previous dataset with index -48 (49 hours before current timestamp)
         const timestampToDelete = datasetTimestamp.subtract(49, 'hours');
-        const fileToDelete = `${region}_${timestampToDelete.format('YYYYMMDDTHHmm')}Z.tif`
+        const fileToDelete = `${region}_${timestampToDelete.format('YYYYMMDDTHHmm')}Z.tif`;
 
-        await fs.rm(`${finalDatadir}/${region}/${region}_temperature/${fileToDelete}`);
+        try {
+            await fs.rm(`${finalDatadir}/${region}/${region}_temperature/${fileToDelete}`);
+        } catch (error) {
+            logger.error(`Could not delete dataset with timestamp: ${timestampToDelete}.`);
+        }
     }
 
     workerJob.status = 'success';
