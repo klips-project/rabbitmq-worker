@@ -1,10 +1,13 @@
-import path from 'path';
 import { initialize } from '../workerTemplate.js';
 import logger from './child-logger.js';
+import path from 'path';
+import * as fs from 'fs/promises';
+
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
+import utc from 'dayjs/plugin/utc.js';
 dayjs.extend(customParseFormat);
-import * as fs from 'fs/promises';
+dayjs.extend(utc);
 
 const workerQueue = process.env.WORKERQUEUE;
 const resultQueue = process.env.RESULTSQUEUE;
@@ -14,14 +17,15 @@ const rabbitPass = process.env.RABBITPASS;
 
 const callbackWorker = async (workerJob, inputs) => {
     const inputPath = inputs[0];
-    const outputPath = inputs[1];
-    const finalDatadir = '/opt/cog_data/';
+    const outputPath = inputs[0];
+    const finalDatadir = inputs[1];
     const inputFilename = path.basename(inputPath);
     // get region and timestamp from input (example format: langenfeld_20230629T0500Z.tif)
     const regex = /^([^_]+)_(\d{8}T\d{4}Z)/;
     const matches = inputFilename.match(regex);
     const region = matches[1];
-    const datasetTimestamp = dayjs(matches[2], 'YYYYMMDDTHHmmZ').startOf('hour');
+    // timestamp in filename is in UTC time, round to last hour
+    const datasetTimestamp = dayjs.utc(matches[2], 'YYYYMMDDTHHmmZ').startOf('hour');
 
     if (!datasetTimestamp.isValid()) {
         // timestamp of dataset not valid
@@ -30,36 +34,17 @@ const callbackWorker = async (workerJob, inputs) => {
     }
 
     // get timestamp for current hour
-    const currentTimestamp = dayjs().startOf('hour');
+    const currentTimestamp = dayjs.utc().startOf('hour');
 
-    // check if incomimg dataset is of current timestamp
+    // check if incomimg dataset timestamp === current timestamp
     if (datasetTimestamp.isSame(currentTimestamp)) {
         // dataset will become the new index 0
-        // step 1 move new dataset 0 to archive
-        // TODO move to projetct partner archive as soon as this is available
-        const archiveDir = '/opt/cog_data_archive';
-        const archiveExists = fs.access(archiveDir);
-        if (!archiveExists) {
-            logger.error('Could not access dataset archive.');
-            throw 'Could not access dataset archive.';
-        }
-        await fs.rename(inputPath, `${archiveDir}/${inputPath}`);
-        // step 2 delete previous dataset -48
+        // delete previous dataset -48
         const timestampToDelete = datasetTimestamp.subtract(49, 'hours');
+        const fileToDelete = `${region}_${timestampToDelete.format('YYYYMMDDTHHmm')}Z.tif`
 
-        fs.rm(`${finalDatadir}_${region}_${timestampToDelete.format('YYYY')}`);
+        await fs.rm(`${finalDatadir}/${region}/${region}_temperature/${fileToDelete}`);
     }
-
-    // move dataset from staging to final directory
-
-    // check if target file already exists
-    const outPathExists = await fs.access(outputPath);
-    if (outPathExists) {
-        logger.info('Target file already exists. It will be overwritten.')
-    }
-
-    // delete original file
-    fs.rm(inputPath);
 
     workerJob.status = 'success';
     workerJob.outputs = [outputPath];
