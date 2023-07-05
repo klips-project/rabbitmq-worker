@@ -19,8 +19,6 @@ const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
 
-const geoserverDataDir = process.env.GEOSERVER_DATA_DIR;
-
 const grc = new GeoServerRestClient(url, user, pw);
 
 const callbackWorker = async (workerJob, inputs) => {
@@ -91,7 +89,7 @@ const callbackWorker = async (workerJob, inputs) => {
 (async () => {
   try {
     // Initialize and start the worker process
-    await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callbackWorker, geoserverDeleteGranule);
+    await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, callbackWorker);
   } catch (error) {
     logger.error({ error: error }, `Problem when initializing`);
   }
