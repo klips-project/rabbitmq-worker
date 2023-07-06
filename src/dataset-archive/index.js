@@ -57,7 +57,7 @@ const archiveWorker = async (workerJob, inputs) => {
                 `${dirToArchive}/${fileToArchive}`
             );
         } catch (error) {
-            logger.error(`Could not copy dataset with timestamp: ${timestampToDelete}.`);
+            logger.error(`Could not copy dataset with timestamp: ${datasetTimestamp}.`);
         }
     }
 
