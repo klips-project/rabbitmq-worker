@@ -38,9 +38,6 @@ Manages rotation mechanism of incoming datasets.
 
 ```json
 {
-    // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
-    // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
-    // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
