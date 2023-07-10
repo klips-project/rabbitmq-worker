@@ -50,7 +50,7 @@ export const createCogMosaicStore = async (grc, pgConf, ws, covStore, prototypeG
   logger.debug('init store');
   await grc.datastores.initCoverageStore(ws, covStore);
 
-  const presentation = 'LIST';
+  const presentation = 'DISCRETE_INTERVAL';
   const resolution = 3600000;
   const defaultValue = 'MAXIMUM';
   const nearestMatchEnabled = true;
@@ -112,7 +112,7 @@ export const createClassicMosaicStore = async (grc, pgConf, ws, covStore, protot
 
   await grc.datastores.initCoverageStore(ws, covStore);
 
-  const presentation = 'LIST';
+  const presentation = 'DISCRETE_INTERVAL';
   const resolution = 3600000;
   const defaultValue = 'MAXIMUM';
   const nearestMatchEnabled = true;
