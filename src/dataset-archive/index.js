@@ -45,8 +45,7 @@ const archiveWorker = async (workerJob, inputs) => {
         } catch (error) {
             logger.warn('Error');
             canAccess = false;
-        };
-
+        }
         if (!canAccess) {
             await fs.mkdir(dirToArchive);
             logger.info(`New archive directory created`);
