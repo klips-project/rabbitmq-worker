@@ -75,7 +75,7 @@ const callbackWorker = async (workerJob, inputs) => {
       } else {
         //   Deleting Granule
         await grc.imagemosaics.deleteSingleGranule(ws, covStore, coverage, covFileLocation);
-      };
+      }
     } catch (error) {
       logger.error(`Could not delete granule with timestamp: ${timestampToDelete}.`)
     }
