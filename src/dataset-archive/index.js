@@ -34,32 +34,35 @@ const archiveWorker = async (workerJob, inputs) => {
     // get timestamp for current hour
     const currentTimestamp = dayjs.utc().startOf('hour');
 
-    // check if incomimg dataset timestamp === current timestamp and create file name to archive
-    if (datasetTimestamp.isSame(currentTimestamp)) {
-        const fileToArchive = `${region}_${datasetTimestamp.format('YYYYMMDDTHHmm')}Z.tif`;
-        // create directory to archive to
-        let canAccess;
-        try {
-            await fs.access(dirToArchive);
-            canAccess = true;
-        } catch (error) {
-            logger.warn('Error');
-            canAccess = false;
-        }
-        if (!canAccess) {
-            await fs.mkdir(dirToArchive);
-            logger.info(`New archive directory created`);
-        }
-        try {
+    const copyToArchiveDir = async () => {
+        // check if incomimg dataset timestamp === current timestamp and create file name to archive
+        if (datasetTimestamp.isSame(currentTimestamp)) {
+            const fileToArchive = `${region}_${datasetTimestamp.format('YYYYMMDDTHHmm')}Z.tif`;
+            // create directory to archive to
+            let canAccess;
+            try {
+                await fs.access(dirToArchive);
+                canAccess = true;
+            } catch (error) {
+                logger.warn('Error');
+                canAccess = false;
+            }
+            if (!canAccess) {
+                await fs.mkdir(dirToArchive);
+                logger.info(`New archive directory created`);
+            }
             await fs.copyFile(
                 `${finalDatadir}/${region}/${region}_temperature/${fileToArchive}`,
                 `${dirToArchive}/${fileToArchive}`
             );
-        } catch (error) {
-            logger.error(`Could not copy dataset with timestamp: ${datasetTimestamp}.`);
         }
+    };
+    try {
+        await copyToArchiveDir();
+    } catch (error) {
+        logger.error(`Could not copy dataset with timestamp: ${datasetTimestamp}.`);
     }
-
+    
     workerJob.status = 'success';
 
     logger.info(`Archiving finished.`);
