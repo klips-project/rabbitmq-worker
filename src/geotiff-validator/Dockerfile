@@ -25,4 +25,6 @@ COPY src/geotiff-validator/child-logger.js worker/
 COPY src/logger.js .
 ADD src/geotiff-validator/config config
 
+HEALTHCHECK CMD pgrep node || exit 1
+
 CMD ["./start-worker.sh"]
