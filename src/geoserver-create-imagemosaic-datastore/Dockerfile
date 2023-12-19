@@ -17,6 +17,4 @@ COPY src/workerTemplate.js .
 COPY src/geoserver-create-imagemosaic-datastore/child-logger.js worker/
 COPY src/logger.js .
 
-HEALTHCHECK --retries=5 --start-period=30s CMD pgrep node || exit 1
-
 CMD ["./start-worker.sh"]
