@@ -13,4 +13,6 @@ COPY src/dispatcher/child-logger.js worker/
 COPY src/logger.js .
 COPY src/workerTemplate.js .
 
+HEALTHCHECK CMD pgrep node || exit 1
+
 CMD ["./start-worker.sh"]

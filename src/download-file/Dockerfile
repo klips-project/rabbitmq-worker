@@ -11,4 +11,7 @@ COPY src/download-file/downloader.js worker/
 COPY src/download-file/child-logger.js worker/
 COPY src/logger.js .
 COPY src/workerTemplate.js .
+
+HEALTHCHECK CMD pgrep node || exit 1
+
 CMD ["./start-worker.sh"]

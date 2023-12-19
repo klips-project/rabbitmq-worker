@@ -12,4 +12,7 @@ COPY src/geoserver-publish-imagemosaic/publish-granule.js worker/
 COPY src/workerTemplate.js .
 COPY src/geoserver-publish-imagemosaic/child-logger.js worker/
 COPY src/logger.js .
+
+HEALTHCHECK CMD pgrep node || exit 1
+
 CMD ["./start-worker.sh"]

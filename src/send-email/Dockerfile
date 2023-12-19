@@ -22,4 +22,6 @@ COPY src/workerTemplate.js .
 COPY src/send-email/child-logger.js worker/
 COPY src/logger.js .
 
+HEALTHCHECK CMD pgrep node || exit 1
+
 CMD ["./start-email-worker.sh"]
