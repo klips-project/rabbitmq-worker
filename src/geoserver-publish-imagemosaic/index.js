@@ -68,6 +68,7 @@ const geoserverPublishImageMosaic = async (workerJob, inputs) => {
     } else {
       newPath = await publishClassicGranule(grc, ws, covStore, coverageToAdd, replaceExistingGranule, newPath, geoserverDataDir);
     }
+    grc.resetReload.reload();
   } catch (error) {
     logger.error(error);
     throw 'Could not add new granule to coverage store.';
