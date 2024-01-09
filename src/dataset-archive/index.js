@@ -56,13 +56,28 @@ const archiveWorker = async (workerJob, inputs) => {
                 `${dirToArchive}/${fileToArchive}`
             );
         }
+        // delete older COGs
+        const files = fs.readdirSync(`${finalDatadir}/${region}/${region}_temperature/`);
+        const timestamps = files.forEach((element) => dayjs.utc(element.match(regex)[2], 'YYYYMMDDTHHmmZ').startOf('hour'));
+        const timestampsToDelete = timestamps.filter(timestamp => timestamp < currentTimestamp.subtract(49, 'hours'));
+        const filesToDelete = timestampsToDelete.forEach((timestamp) => `${finalDatadir}/${region}/${region}_temperature/${region}_${timestamp.format('YYYYMMDDTHHmm')}Z.tif`);
+
+        try {
+            filesToDelete.forEach(function (filepath) {
+                fs.unlink(filepath);
+            });
+            logger.info(`Older files removed: ${timestampsToDelete}.`)
+        } catch (err) {
+            logger.warn('No files removed.')
+        }
+
     };
     try {
         await copyToArchiveDir();
     } catch (error) {
         logger.error(`Could not copy dataset with timestamp: ${datasetTimestamp}.`);
     }
-    
+
     workerJob.status = 'success';
 
     logger.info(`Archiving finished.`);
