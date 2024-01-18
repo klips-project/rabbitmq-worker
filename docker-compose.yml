@@ -67,6 +67,12 @@ services:
       context: ./
       dockerfile: ./src/geoserver-publish-sld/Dockerfile
 
+  geoserver-create-and-apply-sld:
+    image: ghcr.io/klips-project/mqm-worker/geoserver-create-and-apply-sld:latest
+    build:
+      context: ./
+      dockerfile: ./src/geoserver-create-and-apply-sld/Dockerfile
+
   gunzip-file:
     image: ghcr.io/klips-project/mqm-worker/gunzip-file:latest
     build:

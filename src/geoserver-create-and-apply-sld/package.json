@@ -1,0 +1,47 @@
+{
+  "name": "geoserver-create-and-apply-sld",
+  "version": "0.0.1",
+  "description": "Creates and publishes a SLD in GeoServer",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=14.17.0",
+    "npm": ">=6.0.0"
+  },
+  "dependencies": {
+    "amqplib": "^0.8.0",
+    "geoserver-node-client": "1.3.0",
+    "pg": "8.11.3",
+    "pino": "^8.8.0",
+    "pino-pretty": "^9.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.29.0"
+  },
+  "scripts": {
+    "lint": "eslint -c ../../.eslintrc.yml .",
+    "test": "npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/klips-project/rabbitmq-worker.git"
+  },
+  "keywords": [
+    "RabbitMQ",
+    "message",
+    "queue"
+  ],
+  "author": "terrestris GmbH & Co. KG <info@terrestris.de>",
+  "contributors": [
+    {
+      "name": "Johannes Weskamm",
+      "email": "weskamm@terrestris.de",
+      "url": "https://github.com/weskamm"
+    }
+  ],
+  "license": "BSD 2-Clause",
+  "bugs": {
+    "url": "https://github.com/klips-project/rabbitmq-worker/issues"
+  },
+  "homepage": "https://github.com/klips-project/rabbitmq-worker#readme"
+}
