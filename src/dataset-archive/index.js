@@ -56,24 +56,25 @@ const archiveWorker = async (workerJob, inputs) => {
                 `${dirToArchive}/${fileToArchive}`
             );
         }
-        // delete older COGs
-        const files = fs.readdirSync(`${finalDatadir}/${region}/${region}_temperature/`);
-        const timestamps = files.forEach((element) => dayjs.utc(element.match(regex)[2], 'YYYYMMDDTHHmmZ').startOf('hour'));
-        const timestampsToDelete = timestamps.filter(timestamp => timestamp < currentTimestamp.subtract(49, 'hours'));
-        const filesToDelete = timestampsToDelete.forEach((timestamp) => `${finalDatadir}/${region}/${region}_temperature/${region}_${timestamp.format('YYYYMMDDTHHmm')}Z.tif`);
-
-        try {
-            filesToDelete.forEach(function (filepath) {
-                fs.unlink(filepath);
-            });
-            logger.info(`Older files removed: ${timestampsToDelete}.`)
-        } catch (err) {
-            logger.warn('No files removed.')
-        }
-
     };
+    // clean up files that are older than 49 hours
+    const cleanUpFiles = async () => {
+        // 1. get all timestamps in directory
+        const files = fs.readdirSync(`${finalDatadir}/${region}/${region}_temperature/`);
+        const timestamps = files.map((element) => dayjs.utc(element.match(regex)[2], 'YYYYMMDDTHHmmZ').startOf('hour'));
+        // 2. get timestamps that are older than 49 hours
+        const timestampsToDelete = timestamps.filter(timestamp => timestamp < currentTimestamp.subtract(49, 'hours'));
+        // 3. create list of timestamps to delete
+        const filesToDelete = timestampsToDelete.map((timestamp) => `${finalDatadir}/${region}/${region}_temperature/${region}_${timestamp.format('YYYYMMDDTHHmm')}Z.tif`);
+
+        for (const file of filesToDelete) {
+            await fs.unlink(file);
+        }
+    }
+
     try {
         await copyToArchiveDir();
+        await cleanUpFiles();
     } catch (error) {
         logger.error(`Could not copy dataset with timestamp: ${datasetTimestamp}.`);
     }
