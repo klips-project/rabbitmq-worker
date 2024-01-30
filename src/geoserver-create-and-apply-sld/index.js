@@ -33,7 +33,8 @@ const grc = new GeoServerRestClient(url, user, pw);
        "inputs": [
          "myCustomStyleName",
          "mySldWorkspace",
-         "myCoverageDbTable"
+         "myCoverageDbTable",
+         "myBand"
        ]
      }
  */
@@ -41,6 +42,7 @@ const geoServerCreateAndApplySld = async (workerJob, inputs) => {
   const sldName = inputs[0];
   const sldWorkspace = inputs[1];
   const dbTable = inputs[2];
+  const band = inputs[3];
 
   logger.debug('Checking GeoServer connectivity …')
   const gsExists = await grc.about.exists();
@@ -88,8 +90,7 @@ const geoServerCreateAndApplySld = async (workerJob, inputs) => {
   let max = 0;
   // for every dataset in the coveragestore, get min and max statistics and compute total min and max
   for (let i = 0; i < locations.length; i++) {
-    // TODO: make sure we get the stat for channel 1
-    const infoCmd = `gdalinfo -mm ${locations[i]} | grep "Computed Min/Max"`;
+    const infoCmd = `gdalinfo -mm ${locations[i]} | grep "Band ${band}" -A1 | grep "Computed Min/Max"`;
     try {
       const response = await execShellCommand(infoCmd);
       logger.debug('gdal response: ' + response);
