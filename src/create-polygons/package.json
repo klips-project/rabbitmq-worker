@@ -1,0 +1,37 @@
+{
+  "name": "dataset-archive",
+  "version": "0.0.1",
+  "description": "Manages archiving of incoming data.",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=14.17.0",
+    "npm": ">=6.0.0"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.8",
+    "pino": "^8.8.0",
+    "pino-pretty": "^9.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.29.0"
+  },
+  "scripts": {
+    "lint": "eslint -c ../../.eslintrc.yml .",
+    "test": "npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/klips-project/rabbitmq-worker.git"
+  },
+  "keywords": [
+    "RabbitMQ",
+    "message",
+    "queue"
+  ],
+  "license": "BSD 2-Clause",
+  "bugs": {
+    "url": "https://github.com/klips-project/rabbitmq-worker/issues"
+  },
+  "homepage": "https://github.com/klips-project/rabbitmq-worker#readme"
+}
