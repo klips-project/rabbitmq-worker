@@ -1,4 +1,4 @@
-import { getClient } from './get-client';
+import { getClient } from './get-client.js';
 import logger from './child-logger.js';
 
 // Add data to table
@@ -33,7 +33,7 @@ export const addData = async (
     const geom = process.argv[2] ?? polygon.geom;
     const temp = process.argv[2] ?? polygon.temp;
     const band = process.argv[2] ?? polygon.band;
-    let insertRow = await client.query(`INSERT INTO ${region}_polygons(timestamp, ST_GeomFromGeoJSON(geom), temp, band) VALUES($1);`, [timestamp, geom, temp, band]);
-    console.log(`Inserted ${insertRow.rowCount} row`);
+    let insertRow = await client.query(`INSERT INTO ${region}_polygons(timestamp, ST_GeomFromText(geom), temp, band) VALUES($1);`, [timestamp, geom, temp, band]);
+    logger.info(`Inserted ${insertRow.rowCount} row`);
     await client.end();
 };

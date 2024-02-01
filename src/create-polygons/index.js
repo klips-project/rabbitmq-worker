@@ -56,6 +56,15 @@ const polygonsWorker = async (workerJob, inputs) => {
         throw 'Could not parse dataset timestamp.';
     }
 
+    // get timestamp for current hour
+    //const currentTimestamp = dayjs.utc().startOf('hour');
+
+    if (datasetTimestamp ) {
+        // timestamp of dataset not valid
+        logger.info('Could not parse dataset timestamp.');
+        throw 'Could not parse dataset timestamp.';
+    }
+
     // Create table
     // TODO check if this can be moved to seperate file
     (async () => {
@@ -70,8 +79,8 @@ const polygonsWorker = async (workerJob, inputs) => {
     );
   `;
         const res = await client.query(createTableQuery);
-        console.log(`Created table.`);
-        console.log(res.rows[0].connected);
+        logger.info(`Created table.`);
+        logger.info(res.rows[0].connected);
         await client.end();
     })();
 
