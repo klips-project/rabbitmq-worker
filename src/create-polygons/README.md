@@ -4,19 +4,18 @@
 Manages archiving of incoming data.
 
 ### Mechanism
-- Check if incoming dataset has the same timestamp as current timestamp (rounded to current hour).
-  If yes:
-  - Check if archive directory (/opt/cog/archive) exists
-    If no:
-    - create directory
-  - Copy incoming dataset to archive.
+- Gets array of polygons using the contour_polygons-process
+- connects to postgres-database
+- creates new table in postgres-database (if it does not exist)
+- loops through polygons and adds them to table
 
-ToDo: Copy to external archive (currently copying to directory)
+- ToDo: Delete older data
+- ToDo: Add worker to publish on geoserver in WFS
 
 ### Inputs
 
-1. path to input file
-2. path to cog webspace
+1. path to input file in cog webspace (fileUrlOnWebspace)
+2. file name (fileNameWithSuffix)
 
 ## Example Worker Job JSON
 
@@ -25,10 +24,10 @@ ToDo: Copy to external archive (currently copying to directory)
     "job": [
       {
         "id": 1,
-        "type": "dataset-archive",
+        "type": "create-polygons",
         "inputs": [
-            "/opt/staging/langenfeld_20230628T1200Z.tif",
-            "/opt/cog"
+            "http://nginx/cog/dresden/dresden_temperature/dresden_20240202T0300Z.tif",
+            "dresden_20240202T0300Z.tif"
           ]
       }
     ]
