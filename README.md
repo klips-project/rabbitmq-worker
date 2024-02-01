@@ -150,8 +150,8 @@ The Docker images are built automatically by a GitHub Action. For local developm
 ```shell
 # make sure you are in the root of the project
 docker image build \
-  --file src/dispatcher/Dockerfile \
-  --tag dispatcher:my-custom-tag \
+  --file src/create-polygons/Dockerfile \
+  --tag create-polygons:my-custom-tag \
   .
 ```
 
