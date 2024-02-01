@@ -56,6 +56,7 @@ const polygonsWorker = async (workerJob, inputs) => {
         throw 'Could not parse dataset timestamp.';
     }
 
+    // Might be needed if time range needs to be adjusted
     // get timestamp for current hour
     //const currentTimestamp = dayjs.utc().startOf('hour');
 
