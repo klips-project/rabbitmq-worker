@@ -1,6 +1,7 @@
 import { initialize } from '../workerTemplate.js';
 import logger from './child-logger.js';
-import { getClient } from './get-client';
+import { getClient } from './get-client.js';
+import { addData } from './add-to-table.js'
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
@@ -17,7 +18,7 @@ const rabbitPass = process.env.RABBITPASS;
 const fetchPolygons = async (fileUrlOnWebspace) => {
     const body = {
         inputs: {
-            cogUrl: fileUrlOnWebspace[0],
+            cogUrl: fileUrlOnWebspace,
             interval: 1,
             bands: [1, 2, 3]
         }
@@ -39,11 +40,9 @@ const fetchPolygons = async (fileUrlOnWebspace) => {
     return await response.json();
 };
 
-
-
 const polygonsWorker = async (workerJob, inputs) => {
     // array aus multipolygonen (geoJSON?)
-    const polygons = await fetchPolygons(inputs);
+    const polygons = await fetchPolygons(inputs[0]);
 
     // get region and timestamp from input (example format: langenfeld_20230629T0500Z.tif)
     const regex = /^([^_]+)_(\d{8}T\d{4}Z)/;
@@ -75,24 +74,14 @@ const polygonsWorker = async (workerJob, inputs) => {
         console.log(res.rows[0].connected);
         await client.end();
     })();
-// TODO Loop through polygons and get geometry and temp of each element. Then add a new row for each element to the table
-    //TODO get geometry, temp and band from polygons
-    // TODO transform geom (geojson) to geometry
-    
-    // Add data to table
-    (async () => {
-        const client = await getClient();
-        // TODO process.argv can potentially be removed
-        const timestamp = process.argv[2] ?? datasetTimestamp;
-        const geom = process.argv[2] ?? geometry;
-        const temp = process.argv[2] ?? temperature;
-        const band = process.argv[2] ?? band;
-        let insertRow = await client.query(`INSERT INTO ${region}_polygons(timestamp, geom, temp, band) VALUES($1);`, [timestamp, geom, temp, band]);
-        console.log(`Inserted ${insertRow.rowCount} row`);
-        await client.end();
-    })();
 
 
+    // Add rows to table
+    polygons.forEach(polygon => addData(
+        datasetTimestamp,
+        polygon,
+        region
+    ));
 
     workerJob.status = 'success';
 
