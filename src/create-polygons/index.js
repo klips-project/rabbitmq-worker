@@ -24,7 +24,7 @@ const fetchPolygons = async (fileUrlOnWebspace) => {
             bands: [1, 2, 3]
         }
     };
-    const url = 'https://klips-dev.terrestris.de/processes/contour_polygons/execution';
+    const url = 'https://klips-dev.terrestris.de/processes/contour-polygons/execution';
     const response = await fetch(url, {
         body: JSON.stringify(body),
         method: 'POST',
