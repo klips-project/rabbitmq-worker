@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "engines": {
-    "node": ">=14.17.0",
+    "node": ">=18.0.0",
     "npm": ">=6.0.0"
   },
   "dependencies": {
@@ -13,6 +13,7 @@
     "dayjs": "^1.11.8",
     "dotenv": "^16.4.1",
     "node": "^21.6.1",
+    "node-fetch": "^3.3.2",
     "pg": "^8.11.3",
     "pino": "^8.8.0",
     "pino-pretty": "^9.1.1"
