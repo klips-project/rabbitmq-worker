@@ -134,7 +134,9 @@ const geoServerCreateAndApplySld = async (workerJob, inputs) => {
 
   // we have to delete the old style first as publish can not override existing styles
   try {
-    await grc.styles.delete(sldWorkspace, sldName);
+    const recurese = true
+    const purge = true;
+    await grc.styles.delete(sldWorkspace, sldName, recurese, purge);
     logger.debug('Succesfully deleted previous SLD');
   } catch {
     logger.error('Could not delete old SLD');
