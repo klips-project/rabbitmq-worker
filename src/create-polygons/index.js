@@ -1,4 +1,4 @@
-import { initialize } from '../workerTemplate.js';
+// import { initialize } from '../workerTemplate.js';
 import logger from './child-logger.js';
 import { getClient } from './get-client.js';
 import { addData } from './add-to-table.js'
@@ -10,16 +10,10 @@ import utc from 'dayjs/plugin/utc.js';
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 
-const workerQueue = process.env.WORKERQUEUE;
-const resultQueue = process.env.RESULTSQUEUE;
-const rabbitHost = process.env.RABBITHOST;
-const rabbitUser = process.env.RABBITUSER;
-const rabbitPass = process.env.RABBITPASS;
-
 const fetchPolygons = async (fileUrlOnWebspace) => {
     const body = {
         inputs: {
-            cogUrl: fileUrlOnWebspace,
+            cogURL: fileUrlOnWebspace,
             interval: 1,
             bands: [1, 2, 3]
         }
@@ -45,6 +39,7 @@ const polygonsWorker = async (workerJob, inputs) => {
     // array aus multipolygonen (geoJSON?)
     const polygons = await fetchPolygons(inputs[0]);
 
+    console.log(polygons)
     // get region and timestamp from input (example format: langenfeld_20230629T0500Z.tif)
     const regex = /^([^_]+)_(\d{8}T\d{4}Z)/;
     const matches = inputs[1].match(regex);
@@ -61,11 +56,11 @@ const polygonsWorker = async (workerJob, inputs) => {
     // get timestamp for current hour
     //const currentTimestamp = dayjs.utc().startOf('hour');
 
-    if (datasetTimestamp ) {
-        // timestamp of dataset not valid
-        logger.info('Could not parse dataset timestamp.');
-        throw 'Could not parse dataset timestamp.';
-    }
+    // if (datasetTimestamp ) {
+    //     // timestamp of dataset not valid
+    //     logger.info('Could not parse dataset timestamp.');
+    //     throw 'Could not parse dataset timestamp.';
+    // }
 
     // Create table
     // TODO check if this can be moved to seperate file
@@ -100,11 +95,14 @@ const polygonsWorker = async (workerJob, inputs) => {
 };
 
 (async () => {
-    try {
+    // try {
         // Initialize and start the worker process
-        await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, polygonsWorker);
-    } catch (error) {
-        logger.error({ error: error }, `Problem when initializing`);
-    }
+        // todo: here is an input missing
+        // await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, polygonsWorker);
+        await polygonsWorker({}, ['https://klips-dev.terrestris.de/cog/langenfeld/langenfeld_temperature/langenfeld_20240204T1000Z.tif', 'langenfeld_20240204T1000Z.tif']);
+
+    // } catch (error) {
+    //     logger.error({ error: error }, `Problem when initializing`);
+    // }
 })();
 export default polygonsWorker;
