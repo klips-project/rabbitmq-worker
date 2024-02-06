@@ -10,6 +10,12 @@ import utc from 'dayjs/plugin/utc.js';
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 
+const workerQueue = process.env.WORKERQUEUE;
+const resultQueue = process.env.RESULTSQUEUE;
+const rabbitHost = process.env.RABBITHOST;
+const rabbitUser = process.env.RABBITUSER;
+const rabbitPass = process.env.RABBITPASS;
+
 const fetchPolygons = async (fileUrlOnWebspace) => {
     const body = {
         inputs: {
