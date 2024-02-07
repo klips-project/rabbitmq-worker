@@ -18,7 +18,7 @@ const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
 
 
-const polygonsWorker = async (workerJob, inputs) => {
+const contourLinesWorker = async (workerJob, inputs) => {
     // todo put these information into converter.ts
     const inputPath = inputs[0];
     const fileName = inputs[1];
@@ -90,9 +90,9 @@ const polygonsWorker = async (workerJob, inputs) => {
 (async () => {
     try {
         // Initialize and start the worker process
-        await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, polygonsWorker);
+        await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, contourLinesWorker);
     } catch (error) {
         logger.error({ error: error }, `Problem when initializing`);
     }
 })();
-export default polygonsWorker;
+export default contourLinesWorker;
