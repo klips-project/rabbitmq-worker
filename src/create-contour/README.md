@@ -16,6 +16,7 @@ Manages archiving of incoming data.
 
 1. path to input file in cog webspace (fileUrlOnWebspace)
 2. file name (fileNameWithSuffix)
+3. Interval
 
 ## Example Worker Job JSON
 
