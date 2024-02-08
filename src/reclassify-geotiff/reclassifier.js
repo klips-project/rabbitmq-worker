@@ -26,19 +26,35 @@ const execShellCommand = (cmd) => {
  *
  * Relies on GRASS
  *
- * @param {String} inputPath The path of the GeoTIFF to convert
+ * @param {String} inputPath The path of the GeoTIFF to converted
+ * @param {String} inputFile The filename of the GeoTIFF to converted
  * @param {String} outputPath The path where the created COG shall be stored
- * @param {String} outputPath The levels according to which the GeoTIFF shall be reclassified
+ * @param {String} levels The levels according to which the GeoTIFF shall be reclassified. 
+ * Levels are an array including the boundaries for the classes example: [0, 13, 21, 26, 31, 40, 53] defines classes from <=0, 0-13,[...],<53
  *
  * @returns {Promise<String>} A Promise that resolves to the console output of the underlying GDAL process
  *
  * @throws If provided paths are invalid or conversion fails, an error is thrown
  */
-const optimizeGeoTiff = async (inputPath, outputPath, levels) => {
+const reclassifyGeoTiff = async (inputPath, outputPath, levels) => {
+    
     // valdate inputPath
     if (! await fs.existsSync(inputPath)) {
         throw `Input file does not exist: ${inputPath}`;
     }
+
+    const cmdInput = [];
+    levels.forEach((element, index, array) => {
+        if (index > 0) {
+            const lower = array[index - 1];
+            const upper = element;
+            cmdInput.push(`logical_and(A>${lower},A<=${upper})*${index+1}`);
+        } else {
+            return '';
+        }
+    });
+
+    const lastLevel = levels[levels.length - 1];
 
     // validate outputPath
     const outputDir = path.dirname(outputPath);
@@ -48,10 +64,10 @@ const optimizeGeoTiff = async (inputPath, outputPath, levels) => {
 
     // build command for sub-process
     //   -q: prevent non-error output
-    const reclassifyCmd = `gdal_calc -A dresden_20240209T0400Z.tif --calc="(A<=0)*1 + logical_and(A>0,A<=13)*2 + logical_and(A>13,A<=21)*3 + logical_and(A>21,A<=26)*4 + logical_and(A>26,A<=31)*5 + logical_and(A>31,A<=40)*6 + logical_and(A>40,A<=53)*7 + (A>53)*8" --outfile test.tif`;
+    const reclassifyCmd = `gdal_calc.py -A ${inputPath} --calc="(A<=${levels[0]})*1 + ${cmdInput.join(' + ')} + (A>${lastLevel})*${levels.length + 1}" --outfile ${outputPath}`;
 
     return await execShellCommand(reclassifyCmd);
 }
 
-export default optimizeGeoTiff;
+export default reclassifyGeoTiff;
 
