@@ -97,8 +97,8 @@ services:
       context: ./
       dockerfile: ./src/create-file/Dockerfile
 
-  reclassify-geotiffs:
-    image: ghcr.io/klips-project/mqm-worker/reclassify-geotiffs:latest
+  reclassify-geotiff:
+    image: ghcr.io/klips-project/mqm-worker/reclassify-geotiff:latest
     build:
       context: ./
-      dockerfile: ./src/reclassify-geotiffs/Dockerfile
+      dockerfile: ./src/reclassify-geotiff/Dockerfile
