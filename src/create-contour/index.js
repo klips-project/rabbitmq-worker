@@ -26,7 +26,7 @@ const contourLinesWorker = async (workerJob, inputs) => {
 
     await createContourLines(inputPath, fileName, interval);
 
-    // array aus multipolygonen (geoJSON?)
+    // array aus multiLines als geoJSON
     // todo check if it needs a relative path
     const contourLines = fetch("/tmp/output.geojson")
         .then((response) => response.json())
@@ -65,7 +65,6 @@ const contourLinesWorker = async (workerJob, inputs) => {
       timestamp timestamp without timezone,
       geom geometry,
       temp number,
-      band int,
     );
   `;
         const res = await client.query(createTableQuery);

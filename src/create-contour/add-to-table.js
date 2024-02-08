@@ -7,7 +7,7 @@ export const addData = async (
     contourLine,
     region
 ) => {
-    // Check if polygon object contains all necessary properties
+    // Check if line-vector contains all necessary properties
     if (!('geometry' in contourLine)) {
         // timestamp of dataset not valid
         logger.error('Object is missing geometry');
