@@ -97,6 +97,12 @@ services:
       context: ./
       dockerfile: ./src/create-file/Dockerfile
 
+  create-contour:
+    image: ghcr.io/klips-project/mqm-worker/create-contour:latest
+    build:
+      context: ./
+      dockerfile: ./src/create-contour/Dockerfile
+
   reclassify-geotiff:
     image: ghcr.io/klips-project/mqm-worker/reclassify-geotiff:latest
     build:

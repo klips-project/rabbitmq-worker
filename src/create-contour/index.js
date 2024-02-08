@@ -7,6 +7,7 @@ import fetch from 'node-fetch';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
 import utc from 'dayjs/plugin/utc.js';
+import createContourLines from './contour.js';
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 
@@ -16,34 +17,20 @@ const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
 
-const fetchPolygons = async (fileUrlOnWebspace) => {
-    const body = {
-        inputs: {
-            cogUrl: fileUrlOnWebspace,
-            interval: 1,
-            bands: [1, 2, 3]
-        }
-    };
-    const url = 'https://klips-dev.terrestris.de/processes/contour-polygons/execution';
-    const response = await fetch(url, {
-        body: JSON.stringify(body),
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    });
 
+const contourLinesWorker = async (workerJob, inputs) => {
+    // todo put these information into converter.ts
+    const inputPath = inputs[0];
+    const interval = inputs[2];
 
-    if (!response.ok) {
-        throw new Error(`HTTP error status: ${response.status}`);
-    }
+    await createContourLines(inputPath, interval);
 
-    return await response.json();
-};
+    // array aus multiLines als geoJSON
+    // todo check if it needs a relative path
+    const contourLines = fetch("/tmp/output.geojson")
+        .then((response) => response.json())
+        .then(data => { return (data) })
 
-const polygonsWorker = async (workerJob, inputs) => {
-    // array aus multipolygonen (geoJSON?)
-    const polygons = await fetchPolygons(inputs[0]);
 
     // get region and timestamp from input (example format: langenfeld_20230629T0500Z.tif)
     const regex = /^([^_]+)_(\d{8}T\d{4}Z)/;
@@ -61,7 +48,7 @@ const polygonsWorker = async (workerJob, inputs) => {
     // get timestamp for current hour
     //const currentTimestamp = dayjs.utc().startOf('hour');
 
-    if (datasetTimestamp ) {
+    if (datasetTimestamp) {
         // timestamp of dataset not valid
         logger.info('Could not parse dataset timestamp.');
         throw 'Could not parse dataset timestamp.';
@@ -72,12 +59,11 @@ const polygonsWorker = async (workerJob, inputs) => {
     (async () => {
         const client = await getClient();
         let createTableQuery = `
-    CREATE TABLE IF NOT EXISTS ${region}_polygons(
+    CREATE TABLE IF NOT EXISTS ${region}_contourLines(
       id BIGSERIAL PRIMARY KEY NOT NULL ,
       timestamp timestamp without timezone,
       geom geometry,
       temp number,
-      band int,
     );
   `;
         const res = await client.query(createTableQuery);
@@ -88,9 +74,9 @@ const polygonsWorker = async (workerJob, inputs) => {
 
 
     // Add rows to table
-    polygons.forEach(polygon => addData(
+    contourLines.features.forEach(contourLine => addData(
         datasetTimestamp,
-        polygon,
+        contourLine,
         region
     ));
 
@@ -102,9 +88,9 @@ const polygonsWorker = async (workerJob, inputs) => {
 (async () => {
     try {
         // Initialize and start the worker process
-        await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, polygonsWorker);
+        await initialize(rabbitHost, rabbitUser, rabbitPass, workerQueue, resultQueue, contourLinesWorker);
     } catch (error) {
         logger.error({ error: error }, `Problem when initializing`);
     }
 })();
-export default polygonsWorker;
+export default contourLinesWorker;

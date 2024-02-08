@@ -4,10 +4,10 @@
 Manages archiving of incoming data.
 
 ### Mechanism
-- Gets array of polygons using the contour_polygons-process
+- Gets array of lines using the contour_polygons-process
 - connects to postgres-database
 - creates new table in postgres-database (if it does not exist)
-- loops through polygons and adds them to table
+- loops through lines and adds them to table
 
 - ToDo: Delete older data
 - ToDo: Add worker to publish on geoserver in WFS
@@ -16,6 +16,7 @@ Manages archiving of incoming data.
 
 1. path to input file in cog webspace (fileUrlOnWebspace)
 2. file name (fileNameWithSuffix)
+3. Interval
 
 ## Example Worker Job JSON
 
@@ -24,10 +25,11 @@ Manages archiving of incoming data.
     "job": [
       {
         "id": 1,
-        "type": "create-polygons",
+        "type": "create-contour",
         "inputs": [
             "http://nginx/cog/dresden/dresden_temperature/dresden_20240202T0300Z.tif",
-            "dresden_20240202T0300Z.tif"
+            "dresden_20240202T0300Z.tif",
+            "2"
           ]
       }
     ]
@@ -58,5 +60,5 @@ Manages archiving of incoming data.
 ### Send example job
 
 ```bash
-cat workflows/create-polygon-test.json | rabbitmqadmin -u rabbit -p rabbit publish exchange=amq.default routing_key=dispatcher
+cat workflows/create-contour.json | rabbitmqadmin -u rabbit -p rabbit publish exchange=amq.default routing_key=dispatcher
 ```
