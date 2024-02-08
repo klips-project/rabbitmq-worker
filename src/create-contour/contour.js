@@ -33,14 +33,14 @@ const execShellCommand = (cmd) => {
  *
  * @throws If provided paths are invalid or conversion fails, an error is thrown
  */
-const createContourLines = async (inputPath, fileName, interval) => {
+const createContourLines = async (inputPath, interval) => {
     // valdate inputPath
     if (! await fs.existsSync(inputPath)) {
         throw `Input file does not exist: ${inputPath}/`;
     }
 
     // build command for sub-process
-    const contourCmd = `gdal_contour -b 2 -a TEMP -i ${interval} -f "GeoJSON" /${inputPath}/${fileName} /tmp/output.geojson`;
+    const contourCmd = `gdal_contour -b 2 -a TEMP -i ${interval} -f "GeoJSON" /${inputPath} /tmp/output.geojson`;
 
     return await execShellCommand(contourCmd);
 }

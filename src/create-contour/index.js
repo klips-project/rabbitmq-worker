@@ -21,10 +21,9 @@ const rabbitPass = process.env.RABBITPASS;
 const contourLinesWorker = async (workerJob, inputs) => {
     // todo put these information into converter.ts
     const inputPath = inputs[0];
-    const fileName = inputs[1];
     const interval = inputs[2];
 
-    await createContourLines(inputPath, fileName, interval);
+    await createContourLines(inputPath, interval);
 
     // array aus multiLines als geoJSON
     // todo check if it needs a relative path
