@@ -97,8 +97,8 @@ services:
       context: ./
       dockerfile: ./src/create-file/Dockerfile
 
-  create-polygons:
-    image: ghcr.io/klips-project/mqm-worker/create-polygons:latest
+  reclassify-geotiffs:
+    image: ghcr.io/klips-project/mqm-worker/reclassify-geotiffs:latest
     build:
       context: ./
-      dockerfile: ./src/create-polygons/Dockerfile
+      dockerfile: ./src/reclassify-geotiffs/Dockerfile
