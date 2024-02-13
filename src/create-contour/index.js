@@ -3,6 +3,7 @@ import logger from './child-logger.js';
 import { getClient } from './get-client.js';
 import { addData } from './add-to-table.js'
 import fetch from 'node-fetch';
+import fs from 'fs';
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
@@ -25,12 +26,25 @@ const contourLinesWorker = async (workerJob, inputs) => {
 
     await createContourLines(inputPath, interval);
 
+    // validate contour lines
+    if (! await fs.existsSync('/tmp/output.geojson')) {
+        throw `Contour lines were not created.`;
+    } else {
+        logger.info('Successfully created contour lines in /tmp/output.geojson')
+    }
+
     // array aus multiLines als geoJSON
     // todo check if it needs a relative path
-    const contourLines = fetch("/tmp/output.geojson")
+    const contourLines = fetch('/tmp/output.geojson')
         .then((response) => response.json())
         .then(data => { return (data) })
-
+    
+    // validate sucessfull fetch
+    if (! contourLines) {
+        throw 'Could not fetch contour lines from /tmp/output.geojson';
+    } else {
+        logger.info('Successfully fetched contour lines')
+    }
 
     // get region and timestamp from input (example format: langenfeld_20230629T0500Z.tif)
     const regex = /^([^_]+)_(\d{8}T\d{4}Z)/;
@@ -47,12 +61,6 @@ const contourLinesWorker = async (workerJob, inputs) => {
     // Might be needed if time range needs to be adjusted
     // get timestamp for current hour
     //const currentTimestamp = dayjs.utc().startOf('hour');
-
-    if (datasetTimestamp) {
-        // timestamp of dataset not valid
-        logger.info('Could not parse dataset timestamp.');
-        throw 'Could not parse dataset timestamp.';
-    }
 
     // Create table
     // TODO check if this can be moved to seperate file
