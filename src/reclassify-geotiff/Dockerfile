@@ -19,7 +19,6 @@ RUN npm install gdal-async --build-from-source --shared_gdal
 
 COPY src/reclassify-geotiff/index.js worker/
 COPY src/reclassify-geotiff/reclassifier.js worker/
-COPY src/reclassify-geotiff/worker.js worker/
 COPY src/workerTemplate.js .
 COPY src/reclassify-geotiff/child-logger.js worker/
 COPY src/logger.js .
