@@ -1,26 +1,19 @@
-FROM osgeo/gdal:ubuntu-small-3.6.2
+FROM osgeo/gdal:alpine-small-3.5.3
 
-# netcat needed for 'wait-for' script
-RUN apt-get update && apt-get install -y netcat
+RUN apk add --update nodejs npm
 
-# build environment needed for installing 'gdal-async'
-RUN apt-get install -y build-essential
-
-# install node
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && apt install -y nodejs
-
-COPY src/reclassify-geotiff/package.json src/reclassify-geotiff/package-lock.json /home/
+COPY src/geoserver-create-and-apply-sld/package.json src/geoserver-create-and-apply-sld/package-lock.json /home/
 COPY util/start-worker.sh util/wait-for.sh /home/
 RUN chmod +x /home/start-worker.sh /home/wait-for.sh
 
 WORKDIR /home/
 RUN npm install
-RUN npm install gdal-async --build-from-source --shared_gdal
-
-COPY src/reclassify-geotiff/index.js worker/
-COPY src/reclassify-geotiff/reclassifier.js worker/
+COPY src/create-contour/index.js worker/
+COPY src/create-contour/get-client.js worker/
+COPY src/create-contour/add-to-table.js worker/
+COPY src/create-contour/contour.js worker/
 COPY src/workerTemplate.js .
-COPY src/reclassify-geotiff/child-logger.js worker/
+COPY src/create-contour/child-logger.js worker/
 COPY src/logger.js .
 
 HEALTHCHECK CMD pgrep node || exit 1
