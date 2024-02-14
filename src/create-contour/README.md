@@ -60,5 +60,5 @@ Manages archiving of incoming data.
 ### Send example job
 
 ```bash
-cat workflows/create-contour.json | rabbitmqadmin -u rabbit -p rabbit publish exchange=amq.default routing_key=dispatcher
+cat workflows/create-contour-test.json | rabbitmqadmin -u rabbit -p rabbit publish exchange=amq.default routing_key=dispatcher
 ```
