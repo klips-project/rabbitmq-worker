@@ -42,20 +42,6 @@ const contourLinesWorker = async (workerJob, inputs) => {
 
     await createContourLines(inputPath, datasetTimestampUnformated, interval);
 
-    // array aus multiLines als geoJSON
-    // todo check if it needs a relative path
-    const file = `/tmp/output${datasetTimestampUnformated}.geojson`;
-    let contourLines;
-    async function getContourLines() {
-        try {
-            contourLines = fs.readFile(file);
-        } catch (err) {
-            logger.error(`Contour lines could not be fetched.`);
-            throw `Contour lines could not be fetched.`;
-        }
-    }
-    await getContourLines();
-
     // Create table
     // TODO check if this can be moved to seperate file
     (async () => {
@@ -74,9 +60,12 @@ const contourLinesWorker = async (workerJob, inputs) => {
         await client.end();
     })();
 
-
     // Add rows to table
-    contourLines.features.forEach(contourLine => addData(
+    // array aus multiLines als geoJSON
+    // todo check if it needs a relative path
+    const file = `/tmp/output${datasetTimestampUnformated}.geojson`;
+
+    fs.readFile(file).features.forEach(contourLine => addData(
         datasetTimestamp,
         contourLine,
         region
