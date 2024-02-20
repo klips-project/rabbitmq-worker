@@ -65,7 +65,7 @@ const contourLinesWorker = async (workerJob, inputs) => {
     // todo check if it needs a relative path
     const file = `/tmp/output${datasetTimestampUnformated}.geojson`;
 
-    fs.readFile(file).features.forEach(contourLine => addData(
+    fs.readFileSync(file).features.forEach(contourLine => addData(
         datasetTimestamp,
         contourLine,
         region
