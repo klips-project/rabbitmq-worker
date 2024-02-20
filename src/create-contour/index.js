@@ -2,7 +2,7 @@ import { initialize } from '../workerTemplate.js';
 import logger from './child-logger.js';
 import { getClient } from './get-client.js';
 import { addData } from './add-to-table.js'
-import * as fs from 'fs/promises';
+import fs from 'fs';
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
@@ -73,7 +73,7 @@ const contourLinesWorker = async (workerJob, inputs) => {
 
     workerJob.status = 'success';
 
-    logger.info(`Archiving finished.`);
+    logger.info(`Created contour lines finished.`);
 };
 
 (async () => {
