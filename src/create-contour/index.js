@@ -62,10 +62,11 @@ const contourLinesWorker = async (workerJob, inputs) => {
 
     // Add rows to table
     // array aus multiLines als geoJSON
-    // todo check if it needs a relative path
     const file = `/tmp/output${datasetTimestampUnformated}.geojson`;
+    const contourLines = fs.readFileSync(file, { encoding: 'utf-8' });
+    const contourLinesJson = JSON.parse(contourLines);
 
-    fs.readFileSync(file).features.forEach(contourLine => addData(
+    contourLinesJson.features.forEach(contourLine => addData(
         datasetTimestamp,
         contourLine,
         region
