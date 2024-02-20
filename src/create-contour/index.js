@@ -28,7 +28,8 @@ const contourLinesWorker = async (workerJob, inputs) => {
     const matches = inputs[1].match(regex);
     const region = matches[1];
     // timestamp in filename is in UTC time, round to last hour
-    const datasetTimestamp = dayjs.utc(matches[2], 'YYYYMMDDTHHmmZ').startOf('hour');
+    const datasetTimestampUnformated = matches[2]
+    const datasetTimestamp = dayjs.utc(datasetTimestampUnformated, 'YYYYMMDDTHHmmZ').startOf('hour');
     if (!datasetTimestamp.isValid()) {
         // timestamp of dataset not valid
         logger.error('Could not parse dataset timestamp.');
@@ -39,11 +40,11 @@ const contourLinesWorker = async (workerJob, inputs) => {
     // get timestamp for current hour
     //const currentTimestamp = dayjs.utc().startOf('hour');
 
-    await createContourLines(inputPath, datasetTimestamp, interval);
+    await createContourLines(inputPath, datasetTimestampUnformated, interval);
 
     // array aus multiLines als geoJSON
     // todo check if it needs a relative path
-    const contourLines = fetch(`/tmp/output${datasetTimestamp}.geojson`)
+    const contourLines = fetch(`/tmp/output${datasetTimestampUnformated}.geojson`)
         .then((response) => response.json())
         .then(data => { return (data) });
 
