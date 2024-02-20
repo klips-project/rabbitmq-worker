@@ -1,6 +1,7 @@
 FROM osgeo/gdal:alpine-small-3.5.3
 
 RUN apk add --update nodejs npm
+RUN apk add gdal-tools
 
 COPY src/reclassify-geotiff/package.json src/reclassify-geotiff/package-lock.json /home/
 COPY util/start-worker.sh util/wait-for.sh /home/
