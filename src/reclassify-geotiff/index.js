@@ -25,6 +25,7 @@ const reclassifyWorker = async (workerJob, inputs) => {
 
     // output File 
     const outputFileName = `${inputFile.replace(/\.[^/.]+$/, "")}_reclassified.tif`
+    const tmpOutputFileName = `${inputFile.replace(/\.[^/.]+$/, "")}_tmp_reclassified.tif`
 
     // ensure directory exists
     const parentDirectory = path.dirname(outputPath);
@@ -35,7 +36,9 @@ const reclassifyWorker = async (workerJob, inputs) => {
     splitPath.pop();
     splitPath.pop(); 
     const outputDir = `${splitPath.join('/')}/${region}_reclassified/`;
-    const outputFile = outputDir + outputFileName
+    const outputFile = outputDir + outputFileName;
+    const tmpOutputFile = outputDir + tmpOutputFileName;
+
 
     logger.info(`Start converting to COG: ${inputPath}`);
 
@@ -50,10 +53,10 @@ const reclassifyWorker = async (workerJob, inputs) => {
         recursive: true
     });
 
-    const cliOut = await reclassifyGeoTiff(inputPath, outputFile, levels);
+    const cliOut = await reclassifyGeoTiff(inputPath, outputFile, tmpOutputFile, levels);
 
-    // delete original file
-    fs.rmSync(inputPath);
+    // delete temporary file
+    fs.rmSync(tmpOutputFile);
 
     workerJob.status = 'success';
     workerJob.outputs = [outputPath];
