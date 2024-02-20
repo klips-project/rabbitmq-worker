@@ -46,15 +46,15 @@ const contourLinesWorker = async (workerJob, inputs) => {
     // todo check if it needs a relative path
     const file = `/tmp/output${datasetTimestampUnformated}.geojson`;
     let contourLines;
-    fs.readFile(file, (err, data) => {
-        if (err) throw err;
-        contourLines = data;
-    });
-
-    if (!contourLines) {
-        logger.error(`Contour lines could not be fetched.`);
-        throw `Contour lines could not be fetched.`;
+    async function getContourLines() {
+        try {
+            contourLines = fs.readFile(file);
+        } catch (err) {
+            logger.error(`Contour lines could not be fetched.`);
+            throw `Contour lines could not be fetched.`;
+        }
     }
+    await getContourLines();
 
     // Create table
     // TODO check if this can be moved to seperate file
