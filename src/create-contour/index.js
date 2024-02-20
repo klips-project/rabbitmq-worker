@@ -3,6 +3,7 @@ import logger from './child-logger.js';
 import { getClient } from './get-client.js';
 import { addData } from './add-to-table.js'
 import fetch from 'node-fetch';
+import * as fs from 'fs/promises';
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
@@ -44,7 +45,8 @@ const contourLinesWorker = async (workerJob, inputs) => {
 
     // array aus multiLines als geoJSON
     // todo check if it needs a relative path
-    const contourLines = fetch(`/tmp/output${datasetTimestampUnformated}.geojson`)
+    const file = `https://klips-dev.terrestris.de/cog/output${datasetTimestampUnformated}.geojson`;
+    const contourLines = fetch(file)
         .then((response) => response.json())
         .then(data => { return (data) });
 
@@ -73,6 +75,18 @@ const contourLinesWorker = async (workerJob, inputs) => {
         contourLine,
         region
     ));
+
+    //Delete temporal file
+    if (!contourLines) {
+        logger.error(`Contour lines could not be fetched.`);
+        throw `Contour lines could not be fetched.`;
+    }
+
+    try {
+        await fs.unlink(file);
+    } catch (error) {
+        logger.error({ error: error }, `Problem deleting file.`);
+    }
 
     workerJob.status = 'success';
 
