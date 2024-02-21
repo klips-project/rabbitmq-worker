@@ -44,9 +44,11 @@ const contourLinesWorker = async (workerJob, inputs) => {
 
     // Create table
     // TODO check if this can be moved to seperate file
-    (async () => {
-        const client = await getClient();
-        let createTableQuery = `
+    let client;
+    try {
+        (async () => {
+            client = await getClient();
+            let createTableQuery = `
     CREATE TABLE IF NOT EXISTS ${region}_contourLines(
       id BIGSERIAL PRIMARY KEY NOT NULL ,
       timestamp timestamp without timezone,
@@ -54,11 +56,17 @@ const contourLinesWorker = async (workerJob, inputs) => {
       temp number,
     );
   `;
-        const res = await client.query(createTableQuery);
-        logger.info(`Created table.`);
-        logger.info(res.rows[0].connected);
-        await client.end();
-    })();
+            await client.query(createTableQuery);
+            logger.info(`Created table.`);
+        })();
+    } catch (e) {
+        logger.error(e);
+        throw 'SQL execution aborted: ' + e;
+    } finally {
+        if (client) {
+            await client.end();
+        }
+    }
 
     // Add rows to table
     // array aus multiLines als geoJSON

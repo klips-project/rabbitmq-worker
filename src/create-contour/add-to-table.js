@@ -21,12 +21,21 @@ export const addData = async (
     }
 
     // Add to table
-    const client = await getClient();
-    // TODO process.argv can potentially be removed
-    const timestamp = process.argv[2] ?? datasetTimestamp;
-    const geom = process.argv[2] ?? contourLine.geometry;
-    const temp = process.argv[2] ?? contourLine.properties.TEMP;
-    let insertRow = await client.query(`INSERT INTO ${region}_contourLines(timestamp, geom, temp) VALUES($1);`, [timestamp, geom, temp]);
-    logger.info(`Inserted ${insertRow.rowCount} row`);
-    await client.end();
+    let client;
+    try {
+        client = await getClient();
+        // TODO process.argv can potentially be removed
+        const timestamp = process.argv[2] ?? datasetTimestamp;
+        const geom = process.argv[2] ?? contourLine.geometry;
+        const temp = process.argv[2] ?? contourLine.properties.TEMP;
+        let insertRow = await client.query(`INSERT INTO ${region}_contourLines(timestamp, geom, temp) VALUES($1);`, [timestamp, geom, temp]);
+        logger.info(`Inserted ${insertRow.rowCount} row`);
+    } catch (e) {
+        logger.error(e);
+        throw 'SQL execution aborted: ' + e;
+    } finally {
+        if (client) {
+            await client.end();
+        }
+    }
 };
