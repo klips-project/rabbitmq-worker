@@ -64,10 +64,11 @@ const reclassifyGeoTiff = async (inputPath, outputPath, tmpOutputPath, levels) =
 
     // build command for sub-process
     //   -q: prevent non-error output
-    const reclassifyCmd = `gdal_calc.py -A ${inputPath} --calc="(A<=${levels[0]})*1 + ${cmdInput.join(' + ')} + (A>${lastLevel})*${levels.length + 1}" --outfile ${tmpOutputPath} |
-    gdal_translate ${tmpOutputPath} ${outputPath} -q -of COG -co COMPRESS="DEFLATE"`;
-
-    return await execShellCommand(reclassifyCmd);
+    const reclassifyCmd = `gdal_calc.py -A ${inputPath} --calc="(A<=${levels[0]})*1 + ${cmdInput.join(' + ')} + (A>${lastLevel})*${levels.length + 1}" --outfile ${tmpOutputPath}`;
+    const optimizeCmd = `gdal_translate ${tmpOutputPath} ${outputPath} -q -of COG -co COMPRESS="DEFLATE"`
+    
+    await execShellCommand(reclassifyCmd);
+    return await execShellCommand(optimizeCmd);
 }
 
 export default reclassifyGeoTiff;
