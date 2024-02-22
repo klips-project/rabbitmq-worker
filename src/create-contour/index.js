@@ -41,10 +41,13 @@ const contourLinesWorker = async (workerJob, inputs) => {
 
     await createContourLines(inputPath, datasetTimestampUnformated, interval);
 
-    // Create table
-    // TODO check if this can be moved to seperate file
+    const file = `/tmp/output${datasetTimestampUnformated}.geojson`;
+    const contourLines = fs.readFileSync(file, { encoding: 'utf-8' });
+    const contourLinesJson = JSON.parse(contourLines);
+    
     let client;
     try {
+        // connect to database
         client = await getClient();
         let createTableQuery = `
     CREATE TABLE IF NOT EXISTS ${region}_contourLines(
@@ -56,23 +59,8 @@ const contourLinesWorker = async (workerJob, inputs) => {
   `;
         await client.query(createTableQuery);
         logger.info(`Created table.`);
-    } catch (e) {
-        logger.error('SQL execution aborted:' + e);
-    } finally {
-        if (client) {
-            await client.end();
-        }
-    }
 
-    // Add rows to table
-    // array aus multiLines als geoJSON
-    const file = `/tmp/output${datasetTimestampUnformated}.geojson`;
-    const contourLines = fs.readFileSync(file, { encoding: 'utf-8' });
-    const contourLinesJson = JSON.parse(contourLines);
-
-    try {
-        client = await getClient();
-
+        // adds rows to table
         for (let index = 0; index < contourLinesJson.features.length; index++) {
             const contourLine = contourLinesJson.features[index];
 
@@ -94,7 +82,6 @@ const contourLinesWorker = async (workerJob, inputs) => {
             let insertRow = await client.query(`INSERT INTO ${region}_contourLines(timestamp, geom, temperature) VALUES(${timestamp}, ${geom}, ${temp});`);
             logger.info(`Inserted ${insertRow.rowCount} row`);
         }
-
     } catch (e) {
         logger.error('SQL execution aborted:' + e);
     } finally {
