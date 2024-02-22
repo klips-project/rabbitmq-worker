@@ -1,9 +1,6 @@
 // Connect to databse
-
 import pkg from 'pg';
-const { Client } = pkg
-import dotenv from 'dotenv'
-dotenv.config();
+const { Client } = pkg;
 
 const pgHost = process.env.POSTGRES_HOST;
 const pgPort = process.env.POSTGRES_PORT;

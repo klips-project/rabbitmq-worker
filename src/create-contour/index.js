@@ -46,9 +46,8 @@ const contourLinesWorker = async (workerJob, inputs) => {
     // TODO check if this can be moved to seperate file
     let client;
     try {
-        (async () => {
-            client = await getClient();
-            let createTableQuery = `
+        client = await getClient();
+        let createTableQuery = `
     CREATE TABLE IF NOT EXISTS ${region}_contourLines(
       id BIGSERIAL PRIMARY KEY NOT NULL ,
       timestamp timestamp,
@@ -56,9 +55,8 @@ const contourLinesWorker = async (workerJob, inputs) => {
       temperature numeric
     );
   `;
-            await client.query(createTableQuery);
-            logger.info(`Created table.`);
-        })();
+        await client.query(createTableQuery);
+        logger.info(`Created table.`);
     } catch (e) {
         logger.error(e);
         throw 'SQL execution aborted: ' + e;
