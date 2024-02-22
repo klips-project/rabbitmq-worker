@@ -88,9 +88,9 @@ const contourLinesWorker = async (workerJob, inputs) => {
                 throw 'Object is missing properties.';
             }
 
-            const timestamp = process.argv[2] ?? datasetTimestamp;
-            const geom = process.argv[2] ?? contourLine.geometry;
-            const temp = process.argv[2] ?? contourLine.properties.TEMP;
+            const timestamp = datasetTimestamp;
+            const geom = contourLine.geometry;
+            const temp = contourLine.properties.TEMP;
             let insertRow = await client.query(`INSERT INTO ${region}_contourLines(timestamp, geom, temperature) VALUES(${timestamp}, ${geom}, ${temp});`);
             logger.info(`Inserted ${insertRow.rowCount} row`);
         }
