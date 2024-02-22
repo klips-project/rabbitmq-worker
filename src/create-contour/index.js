@@ -51,9 +51,9 @@ const contourLinesWorker = async (workerJob, inputs) => {
             let createTableQuery = `
     CREATE TABLE IF NOT EXISTS ${region}_contourLines(
       id BIGSERIAL PRIMARY KEY NOT NULL ,
-      timestamp timestamp without timezone,
+      timestamp timestamp,
       geom geometry,
-      temp number,
+      temperature numeric
     );
   `;
             await client.query(createTableQuery);
