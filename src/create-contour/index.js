@@ -57,8 +57,7 @@ const contourLinesWorker = async (workerJob, inputs) => {
         await client.query(createTableQuery);
         logger.info(`Created table.`);
     } catch (e) {
-        logger.error(e);
-        throw 'SQL execution aborted: ' + e;
+        logger.error('SQL execution aborted:' + e);
     } finally {
         if (client) {
             await client.end();
@@ -97,8 +96,7 @@ const contourLinesWorker = async (workerJob, inputs) => {
         }
 
     } catch (e) {
-        logger.error(e);
-        throw 'SQL execution aborted: ' + e;
+        logger.error('SQL execution aborted:' + e);
     } finally {
         if (client) {
             await client.end();
