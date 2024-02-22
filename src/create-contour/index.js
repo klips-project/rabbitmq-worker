@@ -1,7 +1,6 @@
 import { initialize } from '../workerTemplate.js';
 import logger from './child-logger.js';
 import { getClient } from './get-client.js';
-import { addData } from './add-to-table.js'
 import fs from 'fs';
 
 import dayjs from 'dayjs';
@@ -105,7 +104,7 @@ const contourLinesWorker = async (workerJob, inputs) => {
             await client.end();
         }
     }
-    
+
     workerJob.status = 'success';
 
     logger.info(`Created contour lines finished.`);
