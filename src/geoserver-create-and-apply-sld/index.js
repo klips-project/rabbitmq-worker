@@ -1,8 +1,7 @@
 import {GeoServerRestClient} from 'geoserver-node-client';
 import { initialize } from '../workerTemplate.js';
 import logger from './child-logger.js';
-import pg from 'pg';
-const { Client } = pg;
+import * as fs from 'fs/promises';
 import { exec } from 'child_process';
 
 const url = process.env.GEOSERVER_REST_URL;
@@ -13,11 +12,6 @@ const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
-const pgpasswd = process.env.POSTGRES_PASSWORD;
-const pghost = process.env.POSTGRES_HOST;
-const pgport = process.env.POSTGRES_PORT;
-const pguser = process.env.POSTGRES_USER;
-const pgdb = process.env.POSTGRES_DB;
 const grc = new GeoServerRestClient(url, user, pw);
 
 /**
@@ -33,16 +27,16 @@ const grc = new GeoServerRestClient(url, user, pw);
        "inputs": [
          "myCustomStyleName",
          "mySldWorkspace",
-         "myCoverageDbTable",
-         "myBand"
+         "myBand",
+         "myFilePathtoTheCOGWebspace"
        ]
      }
  */
 const geoServerCreateAndApplySld = async (workerJob, inputs) => {
   const sldName = inputs[0];
   const sldWorkspace = inputs[1];
-  const dbTable = inputs[2];
-  const band = inputs[3];
+  const band = inputs[2];
+  const filepath = inputs[3];
 
   logger.debug('Checking GeoServer connectivity …')
   const gsExists = await grc.about.exists();
@@ -60,31 +54,15 @@ const geoServerCreateAndApplySld = async (workerJob, inputs) => {
     }
   }
 
-  let pgClient;
   let locations = [];
   try {
-    pgClient = new Client({
-      host: pghost,
-      port: pgport,
-      database: pgdb,
-      user: pguser,
-      password: pgpasswd,
-    });
-    await pgClient.connect();
+    locations = fs.readdirSync(`${filepath}/${sldWorkspace}/${sldWorkspace}_temperature/`); 
 
-    const sqlQuery = `SELECT location FROM "${dbTable}"`;
-    const res = await pgClient.query(sqlQuery);
-    
-    locations = res.rows.map(row => row.location);
     logger.debug("Locations found for coveragestore: " + locations);
   } catch (e) {
     logger.error(e);
-    throw 'SQL execution aborted: ' + e;
-  } finally {
-    if (pgClient) {
-      await pgClient.end();   
-    }
-  }
+    throw 'Could not find COG Files: ' + e;
+  } 
 
   let min = 0;
   let max = 0;
