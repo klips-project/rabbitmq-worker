@@ -72,12 +72,40 @@ const contourLinesWorker = async (workerJob, inputs) => {
     const contourLines = fs.readFileSync(file, { encoding: 'utf-8' });
     const contourLinesJson = JSON.parse(contourLines);
 
-    contourLinesJson.features.forEach(contourLine => addData(
-        datasetTimestamp,
-        contourLine,
-        region
-    ));
+    try {
+        client = await getClient();
 
+        for (let index = 0; index < contourLinesJson.features.length; index++) {
+            const contourLine = contourLinesJson.features[index];
+
+            if (!('geometry' in contourLine)) {
+                // timestamp of dataset not valid
+                logger.error('Object is missing geometry');
+                throw 'Object is missing geometry.';
+            }
+
+            if (!('properties' in contourLine)) {
+                // timestamp of dataset not valid
+                logger.error('Object is missing properties');
+                throw 'Object is missing properties.';
+            }
+
+            const timestamp = process.argv[2] ?? datasetTimestamp;
+            const geom = process.argv[2] ?? contourLine.geometry;
+            const temp = process.argv[2] ?? contourLine.properties.TEMP;
+            let insertRow = await client.query(`INSERT INTO ${region}_contourLines(timestamp, geom, temperature) VALUES(${timestamp}, ${geom}, ${temp});`);
+            logger.info(`Inserted ${insertRow.rowCount} row`);
+        }
+
+    } catch (e) {
+        logger.error(e);
+        throw 'SQL execution aborted: ' + e;
+    } finally {
+        if (client) {
+            await client.end();
+        }
+    }
+    
     workerJob.status = 'success';
 
     logger.info(`Created contour lines finished.`);
