@@ -1,7 +1,6 @@
 import { initialize } from '../workerTemplate.js';
 import logger from './child-logger.js';
 import { getClient } from './get-client.js';
-import { addData } from './add-to-table.js'
 import fs from 'fs';
 
 import dayjs from 'dayjs';
@@ -42,10 +41,13 @@ const contourLinesWorker = async (workerJob, inputs) => {
 
     await createContourLines(inputPath, datasetTimestampUnformated, interval);
 
-    // Create table
-    // TODO check if this can be moved to seperate file
+    const file = `/tmp/output${datasetTimestampUnformated}.geojson`;
+    const contourLines = fs.readFileSync(file, { encoding: 'utf-8' });
+    const contourLinesJson = JSON.parse(contourLines);
+    
     let client;
     try {
+        // connect to database
         client = await getClient();
         let createTableQuery = `
     CREATE TABLE IF NOT EXISTS ${region}_contourLines(
@@ -57,26 +59,36 @@ const contourLinesWorker = async (workerJob, inputs) => {
   `;
         await client.query(createTableQuery);
         logger.info(`Created table.`);
+
+        // adds rows to table
+        for (let index = 0; index < contourLinesJson.features.length; index++) {
+            const contourLine = contourLinesJson.features[index];
+
+            if (!('geometry' in contourLine)) {
+                // timestamp of dataset not valid
+                logger.error('Object is missing geometry');
+                throw 'Object is missing geometry.';
+            }
+
+            if (!('properties' in contourLine)) {
+                // timestamp of dataset not valid
+                logger.error('Object is missing properties');
+                throw 'Object is missing properties.';
+            }
+
+            const timestamp = datasetTimestamp;
+            const geom = contourLine.geometry;
+            const temp = contourLine.properties.TEMP;
+            let insertRow = await client.query(`INSERT INTO ${region}_contourLines(timestamp, geom, temperature) VALUES(${timestamp}, ${geom}, ${temp});`);
+            logger.info(`Inserted ${insertRow.rowCount} row`);
+        }
     } catch (e) {
-        logger.error(e);
-        throw 'SQL execution aborted: ' + e;
+        logger.error('SQL execution aborted:' + e);
     } finally {
         if (client) {
             await client.end();
         }
     }
-
-    // Add rows to table
-    // array aus multiLines als geoJSON
-    const file = `/tmp/output${datasetTimestampUnformated}.geojson`;
-    const contourLines = fs.readFileSync(file, { encoding: 'utf-8' });
-    const contourLinesJson = JSON.parse(contourLines);
-
-    contourLinesJson.features.forEach(contourLine => addData(
-        datasetTimestamp,
-        contourLine,
-        region
-    ));
 
     workerJob.status = 'success';
 

@@ -12,7 +12,6 @@ RUN npm install dayjs
 RUN npm install dotenv
 COPY src/create-contour/index.js worker/
 COPY src/create-contour/get-client.js worker/
-COPY src/create-contour/add-to-table.js worker/
 COPY src/create-contour/contour.js worker/
 COPY src/workerTemplate.js .
 COPY src/create-contour/child-logger.js worker/
