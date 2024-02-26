@@ -68,7 +68,12 @@ const archiveWorker = async (workerJob, inputs) => {
         const filesToDelete = timestampsToDelete.map((timestamp) => `${finalDatadir}/${region}/${region}_temperature/${region}_${timestamp.format('YYYYMMDDTHHmm')}Z.tif`);
 
         for (const file of filesToDelete) {
-            await fs.unlink(file);
+            await fs.unlink(file, (err => {
+                if (err) logger.error(err);
+                else {
+                    logger.info('Deleted file:', file)
+                }
+            }));
         }
     }
 
