@@ -75,6 +75,25 @@ const archiveWorker = async (workerJob, inputs) => {
                 }
             }));
         }
+
+        // 4. do the same thing for reclassified files
+        const reclassifiedFiles = fs.readdirSync(`${finalDatadir}/${region}/${region}_reclassified/`);
+        const reclassifiedTimestamps = reclassifiedFiles.map((element) => dayjs.utc(element.match(regex)[2], 'YYYYMMDDTHHmmZ').startOf('hour'));
+        // 2. get timestamps that are older than 49 hours
+        const reclassifiedTimestampsToDelete = reclassifiedTimestamps.filter(timestamp => timestamp < currentTimestamp.subtract(49, 'hours'));
+        // 3. create list of timestamps to delete
+
+        // todo: hier fehlen noch die potentiellen tmp dateien!
+        const reclassifiedFilesToDelete = reclassifiedTimestampsToDelete.map((timestamp) => `${finalDatadir}/${region}/${region}_reclassified/${region}_${timestamp.format('YYYYMMDDTHHmm')}Z.tif`);
+
+        for (const file of reclassifiedFilesToDelete) {
+            await fs.unlink(file, (err => {
+                if (err) logger.error(err);
+                else {
+                    logger.info('Deleted file:', file)
+                }
+            }));
+        }
     }
 
     try {
