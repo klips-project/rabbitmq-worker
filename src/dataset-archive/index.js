@@ -78,7 +78,7 @@ const archiveWorker = async (workerJob, inputs) => {
     ]
 
     const cleanUpFiles = async (directoryPath) => {
-        console.log('cleanup started');
+        logger.info('File cleanup started');
         // 1. get all timestamps in directory
         const files = fs.readdirSync(directoryPath);
         const timestamps = files.map((element) => dayjs.utc(element.match(regex)[2], 'YYYYMMDDTHHmmZ').startOf('hour'));
@@ -111,6 +111,7 @@ const archiveWorker = async (workerJob, inputs) => {
 
     // Clean up databse tables
     const cleanUpDb = async (datatype) => {
+        logger.info('Database cleanup started');
         const timestamp = currentTimestamp.subtract(49, 'hours').format('YYYY-MM-DD HH:mm:ss');
 
         let client;
