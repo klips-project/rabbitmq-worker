@@ -12,6 +12,7 @@ COPY src/dataset-archive/index.js worker/
 COPY src/workerTemplate.js .
 COPY src/dataset-archive/child-logger.js worker/
 COPY src/logger.js .
+COPY src/dataset-archive/get-client.js worker/
 
 HEALTHCHECK CMD pgrep node || exit 1
 
