@@ -6,6 +6,7 @@ import * as fs from 'fs/promises';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
 import utc from 'dayjs/plugin/utc.js';
+import { getClient } from './get-client.js';
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 
@@ -57,11 +58,24 @@ const archiveWorker = async (workerJob, inputs) => {
             );
         }
     };
+
     // clean up files that are older than 49 hours
-    const directoryPath = [
-        `${finalDatadir}/${region}/${region}_temperature/`,
-        `${finalDatadir}/${region}/${region}_reclassified/`
-    ];
+    const datatype = [
+        {
+            name: '_temperature',
+            timecol: 'time',
+            directoryPath: `${finalDatadir}/${region}/${region}_temperature/`
+        },
+        {
+            name: '_reclassified',
+            timecol: 'time',
+            directoryPath: `${finalDatadir}/${region}/${region}_reclassified/`
+        },
+        {
+            name: '_contourlines',
+            timecol: 'timestamp'
+        }
+    ]
 
     const cleanUpFiles = async (directoryPath) => {
         console.log('cleanup started');
@@ -95,10 +109,32 @@ const archiveWorker = async (workerJob, inputs) => {
         }
     };
 
+    // Clean up databse tables
+    const cleanUpDb = async (datatype) => {
+        const timestamp = currentTimestamp.subtract(49, 'hours').format('YYYY-MM-DD HH:mm:ss');
+
+        let client;
+        try {
+            // connect to database
+            client = await getClient();
+            // delete rows older than 49 hours
+            const cleanUpQuery = `DELETE * FROM ${region}${datatype.name} WHERE ${datatype.timecol} < '${timestamp}';`;
+            await client.query(cleanUpQuery);
+            logger.info(`Cleaned up table.`);
+        } catch (e) {
+            logger.error('SQL execution aborted:' + e);
+        } finally {
+            if (client) {
+                await client.end();
+            }
+        }
+    }
+
     try {
         await copyToArchiveDir();
-        for (const directory of directoryPath) {
-            await cleanUpFiles(directory);
+        for (const type of datatype) {
+            await cleanUpFiles(type.directoryPath);
+            await cleanUpDb(type);
         }
     } catch (error) {
         logger.error(`Could not copy dataset with timestamp: ${datasetTimestamp}.`);
