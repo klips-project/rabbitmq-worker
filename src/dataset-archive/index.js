@@ -58,16 +58,34 @@ const archiveWorker = async (workerJob, inputs) => {
         }
     };
     // clean up files that are older than 49 hours
-    const cleanUpFiles = async () => {
+    const directoryPath = [
+        `${finalDatadir}/${region}/${region}_temperature/`,
+        `${finalDatadir}/${region}/${region}_reclassified/`
+    ];
+
+    const cleanUpFiles = async (directoryPath) => {
+        console.log('cleanup started');
         // 1. get all timestamps in directory
-        const files = fs.readdirSync(`${finalDatadir}/${region}/${region}_temperature/`);
+        const files = fs.readdirSync(directoryPath);
         const timestamps = files.map((element) => dayjs.utc(element.match(regex)[2], 'YYYYMMDDTHHmmZ').startOf('hour'));
         // 2. get timestamps that are older than 49 hours
         const timestampsToDelete = timestamps.filter(timestamp => timestamp < currentTimestamp.subtract(49, 'hours'));
-        // 3. create list of timestamps to delete
-        const filesToDelete = timestampsToDelete.map((timestamp) => `${finalDatadir}/${region}/${region}_temperature/${region}_${timestamp.format('YYYYMMDDTHHmm')}Z.tif`);
+        // 3. create list of files to delete
+
+        const fileNamesToDelete = [];
+        for (const timestamp of timestampsToDelete) {
+            const fileToDelete = files.filter(file => file.includes(timestamp.format('YYYYMMDDTHH')));
+            if (fileToDelete) {
+                fileNamesToDelete.push(fileToDelete);
+            } else {
+                continue
+            }
+        }
+
+        const filesToDelete = fileNamesToDelete.map((fileName) => `${directoryPath}${fileName}`);
 
         for (const file of filesToDelete) {
+
             await fs.unlink(file, (err => {
                 if (err) logger.error(err);
                 else {
@@ -75,30 +93,13 @@ const archiveWorker = async (workerJob, inputs) => {
                 }
             }));
         }
-
-        // 4. do the same thing for reclassified files
-        const reclassifiedFiles = fs.readdirSync(`${finalDatadir}/${region}/${region}_reclassified/`);
-        const reclassifiedTimestamps = reclassifiedFiles.map((element) => dayjs.utc(element.match(regex)[2], 'YYYYMMDDTHHmmZ').startOf('hour'));
-        // 2. get timestamps that are older than 49 hours
-        const reclassifiedTimestampsToDelete = reclassifiedTimestamps.filter(timestamp => timestamp < currentTimestamp.subtract(49, 'hours'));
-        // 3. create list of timestamps to delete
-
-        // todo: hier fehlen noch die potentiellen tmp dateien!
-        const reclassifiedFilesToDelete = reclassifiedTimestampsToDelete.map((timestamp) => `${finalDatadir}/${region}/${region}_reclassified/${region}_${timestamp.format('YYYYMMDDTHHmm')}Z.tif`);
-
-        for (const file of reclassifiedFilesToDelete) {
-            await fs.unlink(file, (err => {
-                if (err) logger.error(err);
-                else {
-                    logger.info('Deleted file:', file)
-                }
-            }));
-        }
-    }
+    };
 
     try {
         await copyToArchiveDir();
-        await cleanUpFiles();
+        for (const directory of directoryPath) {
+            await cleanUpFiles(directory);
+        }
     } catch (error) {
         logger.error(`Could not copy dataset with timestamp: ${datasetTimestamp}.`);
     }
