@@ -77,7 +77,7 @@ const contourLinesWorker = async (workerJob, inputs) => {
             }
 
             const timestamp = datasetTimestamp.format('YYYY-MM-DD HH:mm:ss');
-            const geom = contourLine.geometry;
+            const geom = JSON.stringify(contourLine.geometry);
             const temp = contourLine.properties.TEMP;
             let insertRow = await client.query(`INSERT INTO ${region}_contourLines(timestamp, geom, temperature) VALUES('${timestamp}', ST_GeomFromGeoJSON('${geom}'), ${temp});`);
             logger.info(`Inserted ${insertRow.rowCount} row`);
