@@ -79,6 +79,12 @@ const contourLinesWorker = async (workerJob, inputs) => {
             const timestamp = datasetTimestamp.format('YYYY-MM-DD HH:mm:ss');
             const geom = JSON.stringify(contourLine.geometry);
             const temp = contourLine.properties.TEMP;
+
+            // delete old rows with redundant timestamp
+            let deleteRows = await client.query(`DELETE FROM ${region}_contourLines WHERE timestamp < '${timestamp}';`);
+            logger.info(`Deleted ${deleteRows.rowCount} row`);
+
+            // add new rows to table
             let insertRow = await client.query(`INSERT INTO ${region}_contourLines(timestamp, geom, temperature) VALUES('${timestamp}', ST_GeomFromGeoJSON('${geom}'), ${temp});`);
             logger.info(`Inserted ${insertRow.rowCount} row`);
         }
