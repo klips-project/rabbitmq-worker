@@ -81,7 +81,7 @@ const contourLinesWorker = async (workerJob, inputs) => {
             const temp = contourLine.properties.TEMP;
 
             // delete old rows with redundant timestamp
-            let deleteRows = await client.query(`DELETE FROM ${region}_contourLines WHERE timestamp < '${timestamp}';`);
+            let deleteRows = await client.query(`DELETE FROM ${region}_contourLines WHERE timestamp = '${timestamp}';`);
             logger.info(`Deleted ${deleteRows.rowCount} row`);
 
             // add new rows to table
