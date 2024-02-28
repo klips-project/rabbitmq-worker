@@ -119,7 +119,7 @@ const archiveWorker = async (workerJob, inputs) => {
             // connect to database
             client = await getClient();
             // delete rows older than 49 hours
-            const cleanUpQuery = `DELETE * FROM ${region}${datatype.name} WHERE ${datatype.timecol} < '${timestamp}';`;
+            const cleanUpQuery = `DELETE FROM ${region}${datatype.name} WHERE ${datatype.timecol} < '${timestamp}';`;
             await client.query(cleanUpQuery);
             logger.info(`Cleaned up table.`);
         } catch (e) {
