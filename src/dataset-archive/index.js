@@ -1,7 +1,7 @@
 import { initialize } from '../workerTemplate.js';
 import logger from './child-logger.js';
 import path from 'path';
-import * as fs from 'fs/promises';
+import * as fs from 'fs';
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
@@ -134,7 +134,9 @@ const archiveWorker = async (workerJob, inputs) => {
     try {
         await copyToArchiveDir();
         for (const type of datatype) {
-            await cleanUpFiles(type.directoryPath);
+            if (type.directoryPath) {
+                await cleanUpFiles(type.directoryPath);
+              }
             await cleanUpDb(type);
         }
     } catch (error) {
