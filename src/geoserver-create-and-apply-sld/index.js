@@ -173,12 +173,12 @@ const sldTemplate = (minValue, maxValue) => {
                     </sld:GrayChannel>
                   </sld:ChannelSelection>
                 <sld:ColorMap type="ramp">
-                  <sld:ColorMapEntry color="#000000" quantity="${minValue}" label="${minValue}"/>
-                  <sld:ColorMapEntry color="#3a3a3a" quantity="${minValue  + step}" label="${minValue + step}"/>
-                  <sld:ColorMapEntry color="#6a6a6a" quantity="${minValue + 2 * step}" label="${minValue + 2 * step}"/>
-                  <sld:ColorMapEntry color="#9a9a9a" quantity="${minValue + 3 * step}" label="${minValue + 3 * step}"/>
-                  <sld:ColorMapEntry color="#cacaca" quantity="${minValue + 4 * step}" label="${minValue + 4 * step}"/>
-                  <sld:ColorMapEntry color="#ffffff" quantity="${maxValue}" label="${maxValue}"/>
+                  <sld:ColorMapEntry color="#000000" quantity="${minValue}" label="  ${minValue}"/>
+                  <sld:ColorMapEntry color="#3a3a3a" quantity="${minValue  + step}" label="  ${minValue + step}"/>
+                  <sld:ColorMapEntry color="#6a6a6a" quantity="${minValue + 2 * step}" label="  ${minValue + 2 * step}"/>
+                  <sld:ColorMapEntry color="#9a9a9a" quantity="${minValue + 3 * step}" label="  ${minValue + 3 * step}"/>
+                  <sld:ColorMapEntry color="#cacaca" quantity="${minValue + 4 * step}" label="  ${minValue + 4 * step}"/>
+                  <sld:ColorMapEntry color="#ffffff" quantity="${maxValue}" label="  ${maxValue}"/>
                 </sld:ColorMap>
               </sld:RasterSymbolizer>
             </sld:Rule>
