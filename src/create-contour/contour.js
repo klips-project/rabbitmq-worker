@@ -40,7 +40,7 @@ const createContourLines = async (inputPath, datasetTimestamp, interval) => {
     }
 
     // build command for sub-process
-    const contourCmd = `gdal_contour -b 2 -a TEMP -i ${interval} -f "GeoJSON" ${inputPath} /tmp/output${datasetTimestamp}.geojson`;
+    const contourCmd = `gdal_contour -p -b 2 -a TEMP -i ${interval} -f "GeoJSON" ${inputPath} /tmp/output${datasetTimestamp}.geojson`;
 
     return await execShellCommand(contourCmd);
 }
