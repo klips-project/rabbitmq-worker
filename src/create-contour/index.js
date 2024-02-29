@@ -94,6 +94,17 @@ const contourLinesWorker = async (workerJob, inputs) => {
         if (client) {
             await client.end();
         }
+        // delete temporary files
+        const filesToDelete = fs.readdirSync('/tmp/')
+        for (const file of filesToDelete) {
+
+            await fs.unlink(file, (err => {
+                if (err) logger.error(err);
+                else {
+                    logger.info('Deleted file:', file)
+                }
+            }));
+        }
     }
 
     workerJob.status = 'success';
