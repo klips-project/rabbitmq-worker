@@ -2,6 +2,7 @@ import { initialize } from '../workerTemplate.js';
 import logger from './child-logger.js';
 import path from 'path';
 import * as fs from 'fs';
+import { exec } from 'child_process';
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
@@ -15,6 +16,10 @@ const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
+// TODO: Add user, passwort and path for curl command to environmental variables in klips-sdi
+const iorUser = process.env.IORUSER;
+const iorPass = process.env.IORPASS;
+const iorPath = process.env.IORPATH;
 
 const archiveWorker = async (workerJob, inputs) => {
     const inputPath = inputs[0];
@@ -34,11 +39,30 @@ const archiveWorker = async (workerJob, inputs) => {
     }
     // get timestamp for current hour
     const currentTimestamp = dayjs.utc().startOf('hour');
+    const fileToArchive = `${region}_${datasetTimestamp.format('YYYYMMDDTHHmm')}Z.tif`;
+
+    /**
+ * Executes a shell command and return it as a Promise.
+ * Kudos to https://ali-dev.medium.com/how-to-use-promise-with-exec-in-node-js-a39c4d7bbf77
+ *
+ * @param cmd {String} The command to execute
+ * @return {Promise<String>} A Promise returning the console output
+ */
+    const execShellCommand = (cmd) => {
+        return new Promise((resolve, reject) => {
+            exec(cmd, (error, stdout, stderr) => {
+                if (error) {
+                    logger.warn(error);
+                    reject(error);
+                }
+                resolve(stdout ? stdout : stderr);
+            });
+        });
+    };
 
     const copyToArchiveDir = async () => {
         // check if incomimg dataset timestamp === current timestamp and create file name to archive
         if (datasetTimestamp.isSame(currentTimestamp)) {
-            const fileToArchive = `${region}_${datasetTimestamp.format('YYYYMMDDTHHmm')}Z.tif`;
             // create directory to archive to
             let canAccess;
             try {
@@ -59,6 +83,16 @@ const archiveWorker = async (workerJob, inputs) => {
         }
     };
 
+    const copyToArchive = async () => {
+        // check if incomimg dataset timestamp === current timestamp and create file name to archive
+        if (datasetTimestamp.isSame(currentTimestamp)) {
+            const filePath = `${finalDatadir}/${region}/${region}_temperature/${fileToArchive}`
+
+            const curlCmd = `curl --user ${iorUser}:${iorPass} -s -S -X POST -H "Content-type: application/zip" --data-binary @${filePath} ${iorPath}?file_name=${fileToArchive}`;
+
+            return await execShellCommand(curlCmd);
+        }
+    };
     // clean up files that are older than 49 hours
     const datatype = [
         {
@@ -133,6 +167,7 @@ const archiveWorker = async (workerJob, inputs) => {
 
     try {
         await copyToArchiveDir();
+        await copyToArchive();
         for (const type of datatype) {
             if (type.directoryPath) {
                 await cleanUpFiles(type.directoryPath);
