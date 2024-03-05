@@ -1,6 +1,7 @@
 FROM node:16-alpine
 
 RUN apk add --update nodejs npm
+RUN apk add curl
 
 COPY src/dataset-archive/package.json src/dataset-archive/package-lock.json /home/
 COPY util/start-worker.sh util/wait-for.sh /home/
