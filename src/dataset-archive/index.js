@@ -88,14 +88,14 @@ const archiveWorker = async (workerJob, inputs) => {
             const filePath = `${finalDatadir}/${region}/${region}_temperature/${fileToArchive}`
 
             const curlCmd = `curl --user ${iorUser}:${iorPass} -s -S -X POST -H "Content-type: application/zip" -d @${filePath} ${iorPath}?file_name=${fileToArchive}`;
-        try {
-             await execShellCommand(curlCmd);
-             logger.info("Successfuly excuted cURL command.");
+            try {
+                await execShellCommand(curlCmd);
+                logger.info("Successfuly excuted cURL command.");
+            }
+            catch {
+                logger.debug("Could not execute cURL command.");
+            }
         }
-        catch {
-            logger.debug("Could not execute cURL command.");
-        }
-    }
     };
     // clean up files that are older than 49 hours
     const datatype = [
@@ -175,7 +175,7 @@ const archiveWorker = async (workerJob, inputs) => {
         for (const type of datatype) {
             if (type.directoryPath) {
                 await cleanUpFiles(type.directoryPath);
-              }
+            }
             await cleanUpDb(type);
         }
     } catch (error) {
