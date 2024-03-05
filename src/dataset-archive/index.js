@@ -16,7 +16,6 @@ const resultQueue = process.env.RESULTSQUEUE;
 const rabbitHost = process.env.RABBITHOST;
 const rabbitUser = process.env.RABBITUSER;
 const rabbitPass = process.env.RABBITPASS;
-// TODO: Add user, passwort and path for curl command to environmental variables in klips-sdi
 const iorUser = process.env.IORUSER;
 const iorPass = process.env.IORPASS;
 const iorPath = process.env.IORPATH;
