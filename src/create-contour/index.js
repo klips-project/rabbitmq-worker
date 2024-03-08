@@ -96,7 +96,7 @@ const contourLinesWorker = async (workerJob, inputs) => {
         const filesToDelete = fs.readdirSync('/tmp/')
         for (const file of filesToDelete) {
 
-            await fs.unlink(file, (err => {
+            await fs.unlink(`/tmp/${file}`, (err => {
                 if (err) logger.error(err);
             }));
         }
