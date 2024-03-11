@@ -63,7 +63,7 @@ const archiveWorker = async (workerJob, inputs) => {
         // check if incomimg dataset timestamp === current timestamp and create file name to archive
         if (datasetTimestamp.isSame(currentTimestamp)) {
             // ensures that the archive folder exists
-            fs.access(dirToArchive, (err) => {
+            await fs.access(dirToArchive, (err) => {
                 err ? fs.mkdir(dirToArchive) : logger.info('Archive Folder does already exists');
             })
 
@@ -139,7 +139,7 @@ const archiveWorker = async (workerJob, inputs) => {
         for (const file of filesToDelete) {
 
             await fs.unlink(file, (err => {
-                err ? logger.error(err) : logger.info('Deleted file:', file)
+                err ? logger.error(err) : logger.info('Deleted file:', file);
             }));
         }
     };
