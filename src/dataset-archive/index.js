@@ -23,7 +23,7 @@ const iorPath = process.env.IORPATH;
 const archiveWorker = async (workerJob, inputs) => {
     const inputPath = inputs[0];
     const finalDatadir = inputs[1];
-    const dirToArchive = `${finalDatadir}/archive`;
+    const dirToArchive = `${finalDatadir}archive`;
     const inputFilename = path.basename(inputPath);
     // get region and timestamp from input (example format: langenfeld_20230629T0500Z.tif)
     const regex = /^([^_]+)_(\d{8}T\d{4}Z)/;
@@ -62,30 +62,19 @@ const archiveWorker = async (workerJob, inputs) => {
     const copyToArchiveDir = async () => {
         // check if incomimg dataset timestamp === current timestamp and create file name to archive
         if (datasetTimestamp.isSame(currentTimestamp)) {
-            // create directory to archive to
-            let canAccess;
-            try {
-                await fs.access(dirToArchive);
-                canAccess = true;
-            } catch (error) {
-                logger.warn(`Could not access ${dirToArchive} because of the following error: ${error}`);
-                canAccess = false;
-            }
-            if (!canAccess) {
-                await fs.mkdir(dirToArchive);
-                logger.info('New archive directory created');
-            }
-            try {
-                await fs.copyFile(
-                    `${finalDatadir}/${region}/${region}_temperature/${fileToArchive}`,
-                    `${dirToArchive}/${fileToArchive}`
-                );
-                logger.info('Successful copy')
-            } catch (error) {
-                logger.error(`Could not copy: ${error}`)
-            }
+            // ensures that the archive folder exists
+            await fs.access(dirToArchive, (err) => {
+                err ? fs.mkdir(dirToArchive) : logger.info('Archive Folder does already exists');
+            })
 
-           
+            await fs.copyFile(
+                `${finalDatadir}/${region}/${region}_temperature/${fileToArchive}`,
+                `${dirToArchive}/${fileToArchive}`,
+                (err) => {
+                    err ? logger.warn(`${fileToArchive} could not be copied because of the following error: ${err}`)
+                        : logger.info(`${fileToArchive} is successfully copied`)
+                }
+            );
         }
     };
 
@@ -127,7 +116,9 @@ const archiveWorker = async (workerJob, inputs) => {
     const cleanUpFiles = async (directoryPath) => {
         logger.info('File cleanup started');
         // 1. get all timestamps in directory
-        const files = fs.readdirSync(directoryPath);
+        const files = fs.readdirSync(directoryPath, (err) => {
+            if (err) logger.warn(err)
+        });
         const timestamps = files.map((element) => dayjs.utc(element.match(regex)[2], 'YYYYMMDDTHHmmZ').startOf('hour'));
         // 2. get timestamps that are older than 49 hours
         const timestampsToDelete = timestamps.filter(timestamp => timestamp < currentTimestamp.subtract(49, 'hours'));
@@ -148,10 +139,7 @@ const archiveWorker = async (workerJob, inputs) => {
         for (const file of filesToDelete) {
 
             await fs.unlink(file, (err => {
-                if (err) logger.error(err);
-                else {
-                    logger.info('Deleted file:', file)
-                }
+                err ? logger.error(err) : logger.info('Deleted file:', file);
             }));
         }
     };
