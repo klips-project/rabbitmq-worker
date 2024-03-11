@@ -68,12 +68,12 @@ const archiveWorker = async (workerJob, inputs) => {
                 await fs.access(dirToArchive);
                 canAccess = true;
             } catch (error) {
-                logger.warn(`Error: ${error}`);
+                logger.warn(`Could not access ${dirToArchive} because of the following error: ${error}`);
                 canAccess = false;
             }
             if (!canAccess) {
                 await fs.mkdir(dirToArchive);
-                logger.info(`New archive directory created`);
+                logger.info('New archive directory created');
             }
             try {
                 await fs.copyFile(
@@ -82,7 +82,7 @@ const archiveWorker = async (workerJob, inputs) => {
                 );
                 logger.info('Successful copy')
             } catch (error) {
-                logger.error(`Did not copy because: ${error}`)
+                logger.error(`Could not copy: ${error}`)
             }
 
            
