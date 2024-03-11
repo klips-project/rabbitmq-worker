@@ -68,17 +68,24 @@ const archiveWorker = async (workerJob, inputs) => {
                 await fs.access(dirToArchive);
                 canAccess = true;
             } catch (error) {
-                logger.warn('Error');
+                logger.warn(`Error: ${error}`);
                 canAccess = false;
             }
             if (!canAccess) {
                 await fs.mkdir(dirToArchive);
                 logger.info(`New archive directory created`);
             }
-            await fs.copyFile(
-                `${finalDatadir}/${region}/${region}_temperature/${fileToArchive}`,
-                `${dirToArchive}/${fileToArchive}`
-            );
+            try {
+                await fs.copyFile(
+                    `${finalDatadir}/${region}/${region}_temperature/${fileToArchive}`,
+                    `${dirToArchive}/${fileToArchive}`
+                );
+                logger.info('Successful copy')
+            } catch (error) {
+                logger.error(`Did not copy because: ${error}`)
+            }
+
+           
         }
     };
 
@@ -95,6 +102,8 @@ const archiveWorker = async (workerJob, inputs) => {
             catch {
                 logger.debug("Could not execute cURL command.");
             }
+        } else {
+            logger.info(`${datasetTimestamp} did not match the currentTimestamp: ${currentTimestamp}`)
         }
     };
     // clean up files that are older than 49 hours
@@ -170,8 +179,8 @@ const archiveWorker = async (workerJob, inputs) => {
     }
 
     try {
-        await copyToArchiveDir();
-        await copyToArchive();
+        copyToArchiveDir();
+        copyToArchive();
         for (const type of datatype) {
             if (type.directoryPath) {
                 await cleanUpFiles(type.directoryPath);
