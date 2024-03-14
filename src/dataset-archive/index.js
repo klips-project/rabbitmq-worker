@@ -83,7 +83,7 @@ const archiveWorker = async (workerJob, inputs) => {
         if (datasetTimestamp.isSame(currentTimestamp)) {
             const filePath = `${finalDatadir}/${region}/${region}_temperature/${fileToArchive}`
 
-            const curlCmd = `curl --user ${iorUser}:${iorPass} -s -S -X POST -H "Content-type: application/zip" -d @${filePath} ${iorPath}?file_name=${fileToArchive}`;
+            const curlCmd = `curl --user ${iorUser}:${iorPass} -s -S -X POST -H "Content-type: image/tiff" -d @${filePath} ${iorPath}?file_name=${fileToArchive}`;
             try {
                 await execShellCommand(curlCmd);
                 logger.info("Successfuly excuted cURL command.");
