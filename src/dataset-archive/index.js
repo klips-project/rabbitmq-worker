@@ -23,7 +23,6 @@ const iorPath = process.env.IORPATH;
 const archiveWorker = async (workerJob, inputs) => {
     const inputPath = inputs[0];
     const finalDatadir = inputs[1];
-    const dirToArchive = `${finalDatadir}archive`;
     const inputFilename = path.basename(inputPath);
     // get region and timestamp from input (example format: langenfeld_20230629T0500Z.tif)
     const regex = /^([^_]+)_(\d{8}T\d{4}Z)/;
