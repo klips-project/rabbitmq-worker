@@ -23,7 +23,6 @@ const iorPath = process.env.IORPATH;
 const archiveWorker = async (workerJob, inputs) => {
     const inputPath = inputs[0];
     const finalDatadir = inputs[1];
-    const dirToArchive = `${finalDatadir}archive`;
     const inputFilename = path.basename(inputPath);
     // get region and timestamp from input (example format: langenfeld_20230629T0500Z.tif)
     const regex = /^([^_]+)_(\d{8}T\d{4}Z)/;
@@ -59,31 +58,31 @@ const archiveWorker = async (workerJob, inputs) => {
         });
     };
 
-    const copyToArchiveDir = async () => {
-        // check if incomimg dataset timestamp === current timestamp and create file name to archive
-        if (datasetTimestamp.isSame(currentTimestamp)) {
-            // ensures that the archive folder exists
-            await fs.access(dirToArchive, (err) => {
-                err ? fs.mkdir(dirToArchive) : logger.info('Archive Folder does already exists');
-            })
+    // const copyToArchiveDir = async () => {
+    //     // check if incomimg dataset timestamp === current timestamp and create file name to archive
+    //     if (datasetTimestamp.isSame(currentTimestamp)) {
+    //         // ensures that the archive folder exists
+    //         await fs.access(dirToArchive, (err) => {
+    //             err ? fs.mkdir(dirToArchive) : logger.info('Archive Folder does already exists');
+    //         })
 
-            await fs.copyFile(
-                `${finalDatadir}/${region}/${region}_temperature/${fileToArchive}`,
-                `${dirToArchive}/${fileToArchive}`,
-                (err) => {
-                    err ? logger.warn(`${fileToArchive} could not be copied because of the following error: ${err}`)
-                        : logger.info(`${fileToArchive} is successfully copied`)
-                }
-            );
-        }
-    };
+    //         await fs.copyFile(
+    //             `${finalDatadir}/${region}/${region}_temperature/${fileToArchive}`,
+    //             `${dirToArchive}/${fileToArchive}`,
+    //             (err) => {
+    //                 err ? logger.warn(`${fileToArchive} could not be copied because of the following error: ${err}`)
+    //                     : logger.info(`${fileToArchive} is successfully copied`)
+    //             }
+    //         );
+    //     }
+    // };
 
     const copyToArchive = async () => {
         // check if incomimg dataset timestamp === current timestamp and create file name to archive
         if (datasetTimestamp.isSame(currentTimestamp)) {
             const filePath = `${finalDatadir}/${region}/${region}_temperature/${fileToArchive}`
 
-            const curlCmd = `curl --user ${iorUser}:${iorPass} -s -S -X POST -H "Content-type: image/tiff" -d @${filePath} ${iorPath}?file_name=${fileToArchive}`;
+            const curlCmd = `curl --user ${iorUser}:${iorPass} -s -S -X POST -F "file=@${filePath}" ${iorPath}?file_name=${fileToArchive}`;
             try {
                 await execShellCommand(curlCmd);
                 logger.info("Successfuly excuted cURL command.");
@@ -167,7 +166,8 @@ const archiveWorker = async (workerJob, inputs) => {
     }
 
     try {
-        copyToArchiveDir();
+        // The archive is now only stored externally
+        // copyToArchiveDir();
         copyToArchive();
         for (const type of datatype) {
             if (type.directoryPath) {
